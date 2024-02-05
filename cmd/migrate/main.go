@@ -830,7 +830,7 @@ func findOrFetchPage(client *notion.Client, pageID string, buffer *bufio.Writer)
 	} else {
 		// There could be pages that self reference them
 		// We need a way to mark that a page is being work on
-		// to avid endless loop
+		// to avoid endless loop
 		if mentionCache.IsWorking(pageID) {
 			return nil
 		}
