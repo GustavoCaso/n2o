@@ -7,6 +7,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -164,7 +166,14 @@ If you rather want to provide a skip list separate the ID and the skip list usin
 var token = flag.String("token", os.Getenv("NOTION_TOKEN"), "notion token")
 var databaseID = flag.String("id", os.Getenv("NOTION_DATABASE_ID"), databaseIDUsage)
 var obsidianVault = flag.String("vault", os.Getenv("OBSIDIAN_VAULT_PATH"), "Obsidian vault location")
+var destination = flag.String("d", "", "Destination to store pages within Obsidian Vault")
 var pagePath = flag.String("path", "", "Page path in which to store the pages. Support selecting different page attribute and formatting")
+var storeImages = flag.Bool("i", false, "download external images to Obsidan vault and link in the resulting page")
+var obsidianVaultImagePath string
+
+func vaultDestination() string {
+	return filepath.Join(*obsidianVault, *destination)
+}
 
 func main() {
 	flag.Parse()
@@ -214,6 +223,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	if empty(destination) {
+		flag.Usage()
+		fmt.Println("You must provide the destination path to run the script")
+		os.Exit(1)
+	}
+
 	pagePathFilters := pathAttributes{}
 	if !empty(pagePath) {
 		pagePathResults := strings.Split(*pagePath, ",")
@@ -224,6 +239,15 @@ func main() {
 			} else {
 				pagePathFilters[strings.ToLower(pageWithFormatOptions[0])] = ""
 			}
+		}
+	}
+
+	if *storeImages {
+		obsidianVaultImagePath = filepath.Join(*obsidianVault, "Images")
+		err := os.MkdirAll(obsidianVaultImagePath, 0770)
+		if err != nil {
+			fmt.Println("failed to create image folder")
+			os.Exit(1)
 		}
 	}
 
@@ -292,7 +316,7 @@ func filePath(page notion.Page, pagePathProperties pathAttributes) string {
 	}
 
 	fileName := fmt.Sprintf("%s.md", str)
-	return path.Join(*obsidianVault, fileName)
+	return path.Join(vaultDestination(), fileName)
 }
 
 func fetchNotionDBPages(client *notion.Client, id string) ([]notion.Page, error) {
@@ -360,6 +384,7 @@ func fetchAndSaveToObsidianVault(client *notion.Client, page notion.Page, pagePr
 				}
 			}
 		}
+
 		if len(selectedProps) > 0 {
 			propertiesToFrontMatter(selectedProps, buffer)
 		}
@@ -568,15 +593,24 @@ func pageToMarkdown(client *notion.Client, blocks []notion.Block, buffer *bufio.
 				} else {
 					buffer.WriteString(fmt.Sprintf("![](%s)", block.External.URL))
 				}
+				buffer.WriteString("\n")
 			}
-			if block.Type == notion.FileTypeFile {
-				if indent {
-					buffer.WriteString(fmt.Sprintf("	![](%s)", block.File.URL))
-				} else {
-					buffer.WriteString(fmt.Sprintf("![](%s)", block.File.URL))
+			if block.Type == notion.FileTypeFile && *storeImages {
+				name := block.ID() + ".png"
+				err := downloadImage(name, block.File.URL)
+
+				if err != nil {
+					fmt.Printf("failed to download image. error %s\n", err.Error())
 				}
+
+				if indent {
+					buffer.WriteString(fmt.Sprintf("	![[Images/%s]]", name))
+				} else {
+					buffer.WriteString(fmt.Sprintf("![[Images/%s]]", name))
+				}
+				buffer.WriteString("\n")
 			}
-			buffer.WriteString("\n")
+
 		case *notion.VideoBlock:
 			if block.Type == notion.FileTypeExternal {
 				if indent {
@@ -632,6 +666,29 @@ func pageToMarkdown(client *notion.Client, blocks []notion.Block, buffer *bufio.
 		}
 	}
 
+	return nil
+}
+
+func downloadImage(name, url string) error {
+	response, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	// We should not worry about checking if the file exists
+	// it has been created by the caller
+	file, err := os.Create(filepath.Join(obsidianVaultImagePath, name))
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Use io.Copy to just dump the response body to the file. This supports huge files
+	_, err = io.Copy(file, response.Body)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -869,7 +926,7 @@ func findOrFetchPage(client *notion.Client, pageID string, buffer *bufio.Writer)
 				childPath = fmt.Sprintf("%s.md", childTitle)
 			}
 
-			if err = fetchAndSaveToObsidianVault(client, mentionPage, emptyList, emptyList, path.Join(*obsidianVault, childPath), true); err != nil {
+			if err = fetchAndSaveToObsidianVault(client, mentionPage, emptyList, emptyList, path.Join(vaultDestination(), childPath), true); err != nil {
 				return fmt.Errorf("failed to fetch and save mention page %s content with DB %s. error: %w", childTitle, mentionPage.Parent.DatabaseID, err)
 			}
 		case notion.ParentTypeBlock:
@@ -894,7 +951,7 @@ func findOrFetchPage(client *notion.Client, pageID string, buffer *bufio.Writer)
 
 			childTitle = extractPlainTextFromRichText(title)
 
-			if err = fetchAndSaveToObsidianVault(client, mentionPage, emptyList, emptyList, path.Join(*obsidianVault, childTitle), false); err != nil {
+			if err = fetchAndSaveToObsidianVault(client, mentionPage, emptyList, emptyList, path.Join(vaultDestination(), childTitle), false); err != nil {
 				return fmt.Errorf("failed to fetch and save mention page %s content with block parent %s. error: %w", childTitle, mentionPage.Parent.BlockID, err)
 			}
 		case notion.ParentTypePage:
@@ -919,7 +976,7 @@ func findOrFetchPage(client *notion.Client, pageID string, buffer *bufio.Writer)
 			}
 
 			childTitle = extractPlainTextFromRichText(title)
-			if err = fetchAndSaveToObsidianVault(client, mentionPage, emptyList, emptyList, path.Join(*obsidianVault, childTitle), false); err != nil {
+			if err = fetchAndSaveToObsidianVault(client, mentionPage, emptyList, emptyList, path.Join(vaultDestination(), childTitle), false); err != nil {
 				fmt.Printf("failed to fetch mention page content with page parent: %s\n", childTitle)
 			}
 		default:
