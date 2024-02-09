@@ -13,148 +13,14 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"sync"
-	"time"
 
+	"github.com/GustavoCaso/n2o/internal/cache"
+	"github.com/GustavoCaso/n2o/internal/queue"
 	"github.com/dstotijn/go-notion"
 	"github.com/itchyny/timefmt-go"
-	"github.com/schollz/progressbar/v3"
 )
 
-type cache struct {
-	storage map[string]string
-	working map[string]bool
-	mu      sync.RWMutex
-}
-
-func (c *cache) Get(value string) (string, bool) {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	val, ok := c.storage[value]
-	return val, ok
-}
-
-func (c *cache) Set(key, value string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.storage[key] = value
-	c.working[key] = false
-}
-
-func (c *cache) Mark(key string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.working[key] = true
-}
-
-func (c *cache) IsWorking(key string) bool {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	return c.working[key]
-}
-
-func newCache() *cache {
-	storage := map[string]string{}
-	working := map[string]bool{}
-	return &cache{
-		storage: storage,
-		working: working,
-	}
-}
-
-var mentionCache = newCache()
-
-type job struct {
-	path string
-	run  func() error
-}
-
-type errJob struct {
-	job job
-	err error
-}
-
-type queue struct {
-	jobs        chan job
-	progressBar *progressbar.ProgressBar
-	wg          sync.WaitGroup
-	cancel      context.CancelFunc
-	ctx         context.Context
-}
-
-func newQueue(description string) *queue {
-	ctx, cancel := context.WithCancel(context.Background())
-
-	progressbar := progressbar.NewOptions(
-		0,
-		progressbar.OptionSetDescription(description),
-		progressbar.OptionSetWriter(os.Stderr),
-		progressbar.OptionSetWidth(10),
-		progressbar.OptionThrottle(65*time.Millisecond),
-		progressbar.OptionShowCount(),
-		progressbar.OptionShowIts(),
-		progressbar.OptionOnCompletion(func() {
-			fmt.Fprint(os.Stderr, "\n")
-		}),
-		progressbar.OptionSpinnerType(14),
-		progressbar.OptionFullWidth(),
-		progressbar.OptionSetRenderBlankState(false),
-	)
-
-	return &queue{
-		jobs:        make(chan job),
-		ctx:         ctx,
-		cancel:      cancel,
-		progressBar: progressbar,
-	}
-}
-
-func (q *queue) addJobs(jobs []job) {
-	total := len(jobs)
-	q.wg.Add(total)
-	max := q.progressBar.GetMax()
-	q.progressBar.ChangeMax(max + total)
-
-	for _, pageJob := range jobs {
-		go func(job job) {
-			q.jobs <- job
-			if q.progressBar != nil {
-				q.progressBar.Add(1)
-			}
-			q.wg.Done()
-		}(pageJob)
-	}
-
-	go func() {
-		q.wg.Wait()
-		q.cancel()
-	}()
-}
-
-type worker struct {
-	queue     *queue
-	errorJobs []errJob
-}
-
-func (w *worker) doWork() bool {
-	for {
-		select {
-		case <-w.queue.ctx.Done():
-			fmt.Print("Finish migrating pages\n")
-			return true
-		case job := <-w.queue.jobs:
-			err := job.run()
-			if err != nil {
-				errJob := errJob{
-					job: job,
-					err: err,
-				}
-				w.errorJobs = append(w.errorJobs, errJob)
-				continue
-			}
-		}
-	}
-}
+var mentionCache = cache.NewCache()
 
 type pathAttributes map[string]string
 
@@ -255,9 +121,9 @@ func main() {
 
 	pages, _ := fetchNotionDBPages(client, *databaseID)
 
-	var jobs []job
+	var jobs []queue.Job
 
-	queue := newQueue("migrating notion pages")
+	q := queue.NewQueue("migrating notion pages")
 
 	for _, page := range pages {
 		// We need to do this, because variables declared in for loops are passed by reference.
@@ -266,9 +132,9 @@ func main() {
 
 		path := filePath(newPage, pagePathFilters)
 
-		job := job{
-			path: path,
-			run: func() error {
+		job := queue.Job{
+			Path: path,
+			Run: func() error {
 				return fetchAndSaveToObsidianVault(client, newPage, dbPropertiesSet, dbPropertiesSkipSet, path, true)
 			},
 		}
@@ -277,16 +143,16 @@ func main() {
 	}
 
 	// enequeue page to download and parse
-	queue.addJobs(jobs)
+	q.AddJobs(jobs)
 
-	worker := worker{
-		queue: queue,
+	worker := queue.Worker{
+		Queue: q,
 	}
 
-	worker.doWork()
+	worker.DoWork()
 
-	for _, errJob := range worker.errorJobs {
-		fmt.Printf("an error ocurred when processing a page %s. error: %v\n", errJob.job.path, errors.Unwrap(errJob.err))
+	for _, errJob := range worker.ErrorJobs {
+		fmt.Printf("an error ocurred when processing a page %s. error: %v\n", errJob.Job.Path, errors.Unwrap(errJob.Err))
 	}
 }
 

@@ -15,3 +15,5 @@ require (
 	golang.org/x/term v0.14.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 )
+
+replace github.com/GustavoCaso/n2o/internal/queue => ../internal/greetings
