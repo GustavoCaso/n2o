@@ -30,7 +30,8 @@ If you rather want to provide a skip list separate the ID and the skip list usin
 `
 
 var token = flag.String("token", os.Getenv("NOTION_TOKEN"), "notion token")
-var databaseID = flag.String("id", os.Getenv("NOTION_DATABASE_ID"), databaseIDUsage)
+var databaseID = flag.String("db", os.Getenv("NOTION_DATABASE_ID"), databaseIDUsage)
+var pageID = flag.String("pageID", os.Getenv("NOTION_PAGE_ID"), "page to downwload")
 var obsidianVault = flag.String("vault", os.Getenv("OBSIDIAN_VAULT_PATH"), "Obsidian vault location")
 var destination = flag.String("d", "", "Destination to store pages within Obsidian Vault")
 var pagePath = flag.String("path", "", "Page path in which to store the pages. Support selecting different page attribute and formatting")
@@ -50,37 +51,45 @@ func main() {
 		os.Exit(1)
 	}
 
-	if empty(databaseID) {
+	if empty(databaseID) && empty(pageID) {
 		flag.Usage()
-		fmt.Println("You must provide the notion database id to run the script")
+		fmt.Println("You must provide a notion database ID or a page ID to run the script")
 		os.Exit(1)
 	}
 
-	databaseIDCopy := *databaseID
+	if !empty(databaseID) && !empty(pageID) {
+		flag.Usage()
+		fmt.Println("You must provide a notion database ID or a page ID not both to run the script")
+		os.Exit(1)
+	}
+
 	dbPropertiesSet := map[string]bool{}
 	dbPropertiesSkipSet := map[string]bool{}
+	if !empty(databaseID) {
+		databaseIDCopy := *databaseID
 
-	results := strings.Split(databaseIDCopy, ":")
-	if len(results) > 1 {
-		dbProperties := strings.Split(results[1], ",")
-		for _, dbProp := range dbProperties {
-			dbPropertiesSet[strings.ToLower(dbProp)] = true
+		results := strings.Split(databaseIDCopy, ":")
+		if len(results) > 1 {
+			dbProperties := strings.Split(results[1], ",")
+			for _, dbProp := range dbProperties {
+				dbPropertiesSet[strings.ToLower(dbProp)] = true
+			}
 		}
-	}
 
-	results = strings.Split(databaseIDCopy, ">")
-	if len(results) > 1 {
-		dbPropertiesToSkip := strings.Split(results[1], ",")
-		for _, dbProp := range dbPropertiesToSkip {
-			dbPropertiesSkipSet[strings.ToLower(dbProp)] = true
+		results = strings.Split(databaseIDCopy, ">")
+		if len(results) > 1 {
+			dbPropertiesToSkip := strings.Split(results[1], ",")
+			for _, dbProp := range dbPropertiesToSkip {
+				dbPropertiesSkipSet[strings.ToLower(dbProp)] = true
+			}
 		}
-	}
 
-	databaseID = &results[0]
+		*databaseID = results[0]
 
-	if len(dbPropertiesSet) > 0 && len(dbPropertiesSkipSet) > 0 {
-		fmt.Println("You can not provide both skip list and include list for DB properties")
-		os.Exit(1)
+		if len(dbPropertiesSet) > 0 && len(dbPropertiesSkipSet) > 0 {
+			fmt.Println("You can not provide both skip list and include list for DB properties")
+			os.Exit(1)
+		}
 	}
 
 	if empty(obsidianVault) {
@@ -119,7 +128,20 @@ func main() {
 
 	client := notion.NewClient(*token)
 
-	pages, _ := fetchNotionDBPages(client, *databaseID)
+	var pages []notion.Page
+
+	if !empty(databaseID) {
+		pages, _ = fetchNotionDBPages(client, *databaseID)
+	} else {
+		page, err := client.FindPageByID(context.Background(), *pageID)
+		if err != nil {
+			fmt.Printf("failed to find the page. make sure the page exists in your Notioin workspace. error: %s\n", err.Error())
+			os.Exit(1)
+		}
+		pages = []notion.Page{
+			page,
+		}
+	}
 
 	var jobs []queue.Job
 
@@ -437,7 +459,7 @@ func pageToMarkdown(client *notion.Client, blocks []notion.Block, buffer *bufio.
 			}
 			buffer.WriteString("\n")
 		case *notion.LinkToPageBlock:
-			err := findOrFetchPage(client, block.PageID, buffer)
+			err := fetchPage(client, block.PageID, "", buffer)
 			if err != nil {
 				return err
 			}
@@ -670,7 +692,7 @@ func writeRichText(client *notion.Client, buffer *bufio.Writer, richTextBlock []
 			if link != nil && !strings.Contains(annotation, "`") {
 				if strings.HasPrefix(link.URL, "/") {
 					// Link to internal Notion page
-					err := findOrFetchPage(client, strings.TrimPrefix(link.URL, "/"), richTextBuffer)
+					err := fetchPage(client, strings.TrimPrefix(link.URL, "/"), text.PlainText, richTextBuffer)
 					if err != nil {
 						return err
 					}
@@ -683,7 +705,7 @@ func writeRichText(client *notion.Client, buffer *bufio.Writer, richTextBlock []
 		case notion.RichTextTypeMention:
 			switch text.Mention.Type {
 			case notion.MentionTypePage:
-				err := findOrFetchPage(client, text.Mention.Page.ID, richTextBuffer)
+				err := fetchPage(client, text.Mention.Page.ID, text.PlainText, richTextBuffer)
 				if err != nil {
 					return err
 				}
@@ -746,40 +768,58 @@ func writeRichText(client *notion.Client, buffer *bufio.Writer, richTextBlock []
 	return nil
 }
 
-func findOrFetchPage(client *notion.Client, pageID string, buffer *bufio.Writer) error {
+const Untitled = "Untitled"
+
+// fetchPage check if the page has been extracted before avoiding doing to many queries to notion.so
+// If the page is not stored in cached will download the page.
+// If the page title has been provided it will use it, if is an empty string it will try to extracted from the page information.
+// The logic to extract the title varies depending on the page parent's type.
+func fetchPage(client *notion.Client, pageID, title string, buffer *bufio.Writer) error {
 	val, ok := mentionCache.Get(pageID)
 	if ok {
 		buffer.WriteString(val)
 	} else {
+		if title != "" && title == Untitled {
+			// Notion pages with Untitled would return a 404 when fetching them``
+			// We do not process those
+			mentionCache.Set(pageID, Untitled)
+			return nil
+		}
+
 		// There could be pages that self reference them
 		// We need a way to mark that a page is being work on
 		// to avoid endless loop
 		if mentionCache.IsWorking(pageID) {
 			return nil
 		}
+
 		mentionCache.Mark(pageID)
-		var pageMention string
-		defer mentionCache.Set(pageID, pageMention)
+		var result string
+		defer mentionCache.Set(pageID, result)
 
 		mentionPage, err := client.FindPageByID(context.Background(), pageID)
 		if err != nil {
-			// TODO: figure out why we hit this error
-			fmt.Printf("failed to find page %s. error %s\n", pageID, err.Error())
-			return nil
+			return fmt.Errorf("failed to find page %s. error %s", pageID, err.Error())
 		}
 
 		emptyList := map[string]bool{}
-		var childTitle string
+		extractTitle := false
+		childTitle := title
+		if childTitle == "" {
+			extractTitle = true
+		}
 		switch mentionPage.Parent.Type {
 		case notion.ParentTypeDatabase:
-			props := mentionPage.Properties.(notion.DatabasePageProperties)
-			childTitle = extractPlainTextFromRichText(props["Name"].Title)
+			if extractTitle {
+				props := mentionPage.Properties.(notion.DatabasePageProperties)
+				childTitle = extractPlainTextFromRichText(props["Name"].Title)
+			}
 
 			var childPath string
 			// Since we are migrating from the same DB we do need to create a subfolder
 			// within the Obsidian vault. So we can skip fetching the database to gather
 			// the name to create the subfolder
-			if *databaseID != mentionPage.Parent.DatabaseID {
+			if !empty(databaseID) && *databaseID != mentionPage.Parent.DatabaseID {
 				dbPage, err := client.FindDatabaseByID(context.Background(), mentionPage.Parent.DatabaseID)
 				if err != nil {
 					return fmt.Errorf("failed to find parent db %s.  error: %w", mentionPage.Parent.DatabaseID, err)
@@ -800,22 +840,24 @@ func findOrFetchPage(client *notion.Client, pageID string, buffer *bufio.Writer)
 			if err != nil {
 				return fmt.Errorf("failed to find parent block %s.  error: %w", mentionPage.Parent.BlockID, err)
 			}
-			var title []notion.RichText
+			if extractTitle {
+				var title []notion.RichText
 
-			if parentPage.Parent.Type == notion.ParentTypeDatabase {
-				props := parentPage.Properties.(notion.DatabasePageProperties)
-				for _, val := range props {
-					if val.Type == notion.DBPropTypeTitle {
-						title = val.Title
-						break
+				if parentPage.Parent.Type == notion.ParentTypeDatabase {
+					props := parentPage.Properties.(notion.DatabasePageProperties)
+					for _, val := range props {
+						if val.Type == notion.DBPropTypeTitle {
+							title = val.Title
+							break
+						}
 					}
+				} else {
+					props := parentPage.Properties.(notion.PageProperties)
+					title = props.Title.Title
 				}
-			} else {
-				props := parentPage.Properties.(notion.PageProperties)
-				title = props.Title.Title
-			}
 
-			childTitle = extractPlainTextFromRichText(title)
+				childTitle = extractPlainTextFromRichText(title)
+			}
 
 			if err = fetchAndSaveToObsidianVault(client, mentionPage, emptyList, emptyList, path.Join(vaultDestination(), childTitle), false); err != nil {
 				return fmt.Errorf("failed to fetch and save mention page %s content with block parent %s. error: %w", childTitle, mentionPage.Parent.BlockID, err)
@@ -826,22 +868,25 @@ func findOrFetchPage(client *notion.Client, pageID string, buffer *bufio.Writer)
 				return fmt.Errorf("failed to find parent mention page %s.  error: %w", mentionPage.Parent.PageID, err)
 			}
 
-			var title []notion.RichText
+			if extractTitle {
+				var title []notion.RichText
 
-			if parentPage.Parent.Type == notion.ParentTypeDatabase {
-				props := parentPage.Properties.(notion.DatabasePageProperties)
-				for _, val := range props {
-					if val.Type == notion.DBPropTypeTitle {
-						title = val.Title
-						break
+				if parentPage.Parent.Type == notion.ParentTypeDatabase {
+					props := parentPage.Properties.(notion.DatabasePageProperties)
+					for _, val := range props {
+						if val.Type == notion.DBPropTypeTitle {
+							title = val.Title
+							break
+						}
 					}
+				} else {
+					props := parentPage.Properties.(notion.PageProperties)
+					title = props.Title.Title
 				}
-			} else {
-				props := parentPage.Properties.(notion.PageProperties)
-				title = props.Title.Title
+
+				childTitle = extractPlainTextFromRichText(title)
 			}
 
-			childTitle = extractPlainTextFromRichText(title)
 			if err = fetchAndSaveToObsidianVault(client, mentionPage, emptyList, emptyList, path.Join(vaultDestination(), childTitle), false); err != nil {
 				fmt.Printf("failed to fetch mention page content with page parent: %s\n", childTitle)
 			}
@@ -850,9 +895,9 @@ func findOrFetchPage(client *notion.Client, pageID string, buffer *bufio.Writer)
 		}
 
 		if childTitle != "" {
-			pageMention = "[[" + childTitle + "]]"
+			result = "[[" + childTitle + "]]"
 
-			buffer.WriteString(pageMention)
+			buffer.WriteString(result)
 		}
 	}
 
