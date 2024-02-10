@@ -1,14 +1,23 @@
-package main
+package migrator
 
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"testing"
 
+	"github.com/GustavoCaso/n2o/internal/config"
 	"github.com/dstotijn/go-notion"
 )
 
 func TestWriteRichText_Annotations(t *testing.T) {
+	migrator := Migrator{
+		Client: nil,
+		Config: config.Config{},
+		Cache:  nil,
+	}
+	ctx := context.Background()
+
 	b := &bytes.Buffer{}
 	buffer := bufio.NewWriter(b)
 
@@ -205,7 +214,7 @@ func TestWriteRichText_Annotations(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(*testing.T) {
-			err := writeRichText(nil, buffer, test.notionRichText)
+			err := migrator.writeRichText(ctx, buffer, test.notionRichText)
 
 			if err != nil {
 				t.Error("expected nil")
