@@ -32,6 +32,7 @@ If you rather want to provide a skip list separate the ID and the skip list usin
 var token = flag.String("token", os.Getenv("NOTION_TOKEN"), "notion token")
 var databaseID = flag.String("db", os.Getenv("NOTION_DATABASE_ID"), databaseIDUsage)
 var pageID = flag.String("pageID", os.Getenv("NOTION_PAGE_ID"), "page to downwload")
+var pagePropertiesList = flag.String("page-properties", "", "the page propeties to convert to frontmater")
 var obsidianVault = flag.String("vault", os.Getenv("OBSIDIAN_VAULT_PATH"), "Obsidian vault location")
 var destination = flag.String("d", "", "Destination to store pages within Obsidian Vault")
 var pagePath = flag.String("path", "", "Page path in which to store the pages. Support selecting different page attribute and formatting")
@@ -63,32 +64,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	dbPropertiesSet := map[string]bool{}
-	dbPropertiesSkipSet := map[string]bool{}
-	if !empty(databaseID) {
-		databaseIDCopy := *databaseID
+	pageProperties := map[string]bool{}
 
-		results := strings.Split(databaseIDCopy, ":")
-		if len(results) > 1 {
-			dbProperties := strings.Split(results[1], ",")
-			for _, dbProp := range dbProperties {
-				dbPropertiesSet[strings.ToLower(dbProp)] = true
-			}
-		}
-
-		results = strings.Split(databaseIDCopy, ">")
-		if len(results) > 1 {
-			dbPropertiesToSkip := strings.Split(results[1], ",")
-			for _, dbProp := range dbPropertiesToSkip {
-				dbPropertiesSkipSet[strings.ToLower(dbProp)] = true
-			}
-		}
-
-		*databaseID = results[0]
-
-		if len(dbPropertiesSet) > 0 && len(dbPropertiesSkipSet) > 0 {
-			fmt.Println("You can not provide both skip list and include list for DB properties")
-			os.Exit(1)
+	if !empty(pagePropertiesList) {
+		results := strings.Split(*pagePropertiesList, ",")
+		for _, prop := range results {
+			pageProperties[prop] = true
 		}
 	}
 
@@ -157,7 +138,7 @@ func main() {
 		job := queue.Job{
 			Path: path,
 			Run: func() error {
-				return fetchAndSaveToObsidianVault(client, newPage, dbPropertiesSet, dbPropertiesSkipSet, path, true)
+				return fetchAndSaveToObsidianVault(client, newPage, pageProperties, path, true)
 			},
 		}
 
@@ -232,7 +213,7 @@ func fetchNotionDBPages(client *notion.Client, id string) ([]notion.Page, error)
 	return result, nil
 }
 
-func fetchAndSaveToObsidianVault(client *notion.Client, page notion.Page, pagePropertiesToInclude, pagePropertiesToSkip map[string]bool, obsidianPath string, dbPage bool) error {
+func fetchAndSaveToObsidianVault(client *notion.Client, page notion.Page, pageProperties map[string]bool, obsidianPath string, dbPage bool) error {
 	pageBlocks, err := client.FindBlockChildrenByID(context.Background(), page.ID, nil)
 	if err != nil {
 		return fmt.Errorf("failed to extract children blocks for block ID %s. error: %w", page.ID, err)
@@ -255,26 +236,16 @@ func fetchAndSaveToObsidianVault(client *notion.Client, page notion.Page, pagePr
 	if dbPage {
 		props := page.Properties.(notion.DatabasePageProperties)
 
-		selectedProps := make(notion.DatabasePageProperties)
+		frotmatterProps := make(notion.DatabasePageProperties)
 
-		if len(pagePropertiesToInclude) > 0 {
-			for propName, propValue := range props {
-				if pagePropertiesToInclude[strings.ToLower(propName)] {
-					selectedProps[propName] = propValue
-				}
+		for propName, propValue := range props {
+			if pageProperties[strings.ToLower(propName)] {
+				frotmatterProps[propName] = propValue
 			}
 		}
 
-		if len(pagePropertiesToSkip) > 0 {
-			for propName, propValue := range props {
-				if !pagePropertiesToSkip[strings.ToLower(propName)] {
-					selectedProps[propName] = propValue
-				}
-			}
-		}
-
-		if len(selectedProps) > 0 {
-			propertiesToFrontMatter(selectedProps, buffer)
+		if len(frotmatterProps) > 0 {
+			propertiesToFrontMatter(frotmatterProps, buffer)
 		}
 	}
 
@@ -832,7 +803,7 @@ func fetchPage(client *notion.Client, pageID, title string, buffer *bufio.Writer
 				childPath = fmt.Sprintf("%s.md", childTitle)
 			}
 
-			if err = fetchAndSaveToObsidianVault(client, mentionPage, emptyList, emptyList, path.Join(vaultDestination(), childPath), true); err != nil {
+			if err = fetchAndSaveToObsidianVault(client, mentionPage, emptyList, path.Join(vaultDestination(), childPath), true); err != nil {
 				return fmt.Errorf("failed to fetch and save mention page %s content with DB %s. error: %w", childTitle, mentionPage.Parent.DatabaseID, err)
 			}
 		case notion.ParentTypeBlock:
@@ -859,7 +830,7 @@ func fetchPage(client *notion.Client, pageID, title string, buffer *bufio.Writer
 				childTitle = extractPlainTextFromRichText(title)
 			}
 
-			if err = fetchAndSaveToObsidianVault(client, mentionPage, emptyList, emptyList, path.Join(vaultDestination(), childTitle), false); err != nil {
+			if err = fetchAndSaveToObsidianVault(client, mentionPage, emptyList, path.Join(vaultDestination(), childTitle), false); err != nil {
 				return fmt.Errorf("failed to fetch and save mention page %s content with block parent %s. error: %w", childTitle, mentionPage.Parent.BlockID, err)
 			}
 		case notion.ParentTypePage:
@@ -887,7 +858,7 @@ func fetchPage(client *notion.Client, pageID, title string, buffer *bufio.Writer
 				childTitle = extractPlainTextFromRichText(title)
 			}
 
-			if err = fetchAndSaveToObsidianVault(client, mentionPage, emptyList, emptyList, path.Join(vaultDestination(), childTitle), false); err != nil {
+			if err = fetchAndSaveToObsidianVault(client, mentionPage, emptyList, path.Join(vaultDestination(), childTitle), false); err != nil {
 				fmt.Printf("failed to fetch mention page content with page parent: %s\n", childTitle)
 			}
 		default:
