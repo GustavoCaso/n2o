@@ -12,7 +12,6 @@ import (
 	"github.com/GustavoCaso/n2o/internal/config"
 	"github.com/GustavoCaso/n2o/internal/migrator"
 	"github.com/GustavoCaso/n2o/internal/queue"
-	"github.com/dstotijn/go-notion"
 )
 
 var token = flag.String("token", os.Getenv("NOTION_TOKEN"), "notion token")
@@ -80,6 +79,7 @@ func main() {
 	}
 
 	config := config.Config{
+		Token:                   *token,
 		DatabaseID:              *databaseID,
 		PageID:                  *pageID,
 		StoreImages:             *storeImages,
@@ -90,23 +90,18 @@ func main() {
 	}
 
 	ctx := context.Background()
-	client := notion.NewClient(*token)
 
-	migrator := migrator.Migrator{
-		Client: client,
-		Config: config,
-		Cache:  cache.NewCache(),
-	}
+	migrator := migrator.NewMigrator(config, cache.NewCache())
 
 	err := migrator.Setup()
 	if err != nil {
-		fmt.Printf(err.Error())
+		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
 	pages, err := migrator.FetchPages(ctx)
 	if err != nil {
-		fmt.Printf(err.Error())
+		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 

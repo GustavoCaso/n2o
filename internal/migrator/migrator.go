@@ -24,6 +24,16 @@ type Migrator struct {
 	Cache  *cache.Cache
 }
 
+func NewMigrator(config config.Config, cache *cache.Cache) Migrator {
+	client := notion.NewClient(config.Token)
+
+	return Migrator{
+		Client: client,
+		Config: config,
+		Cache:  cache,
+	}
+}
+
 func (m Migrator) Setup() error {
 	if m.Config.StoreImages {
 		err := os.MkdirAll(m.Config.VaultFilepath(), 0770)

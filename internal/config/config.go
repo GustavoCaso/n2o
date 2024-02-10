@@ -3,6 +3,7 @@ package config
 import "path/filepath"
 
 type Config struct {
+	Token                   string
 	DatabaseID              string
 	PageID                  string
 	PagePropertiesToMigrate map[string]bool
