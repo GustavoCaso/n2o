@@ -7,3 +7,4 @@ TODOS:
 - [ ] Improve flags
 - [x] Internal files need to be downloaded stored in the Obsidian vault and referenced them.
 - [ ] Better error handling
+- [x] Add support for relation properties in frontmatter

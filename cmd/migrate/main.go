@@ -24,14 +24,9 @@ var mentionCache = cache.NewCache()
 
 type pathAttributes map[string]string
 
-var databaseIDUsage = `notion database ID to migrate.
-If you want to specify the propeties to convert to frontmater use a colon and provide a comma separated list. Ex ID:name,date
-If you rather want to provide a skip list separate the ID and the skip list using >. Ex ID>day of the week,date
-`
-
 var token = flag.String("token", os.Getenv("NOTION_TOKEN"), "notion token")
-var databaseID = flag.String("db", os.Getenv("NOTION_DATABASE_ID"), databaseIDUsage)
-var pageID = flag.String("pageID", os.Getenv("NOTION_PAGE_ID"), "page to downwload")
+var databaseID = flag.String("db", os.Getenv("NOTION_DATABASE_ID"), "database to migrate")
+var pageID = flag.String("pageID", os.Getenv("NOTION_PAGE_ID"), "page to migrate")
 var pagePropertiesList = flag.String("page-properties", "", "the page propeties to convert to frontmater")
 var obsidianVault = flag.String("vault", os.Getenv("OBSIDIAN_VAULT_PATH"), "Obsidian vault location")
 var destination = flag.String("d", "", "Destination to store pages within Obsidian Vault")
@@ -238,14 +233,19 @@ func fetchAndSaveToObsidianVault(client *notion.Client, page notion.Page, pagePr
 
 		frotmatterProps := make(notion.DatabasePageProperties)
 
+		allProps := false
+		if pageProperties["all"] {
+			allProps = true
+		}
+
 		for propName, propValue := range props {
-			if pageProperties[strings.ToLower(propName)] {
+			if pageProperties[strings.ToLower(propName)] || allProps {
 				frotmatterProps[propName] = propValue
 			}
 		}
 
 		if len(frotmatterProps) > 0 {
-			propertiesToFrontMatter(frotmatterProps, buffer)
+			propertiesToFrontMatter(client, frotmatterProps, buffer)
 		}
 	}
 
@@ -430,7 +430,7 @@ func pageToMarkdown(client *notion.Client, blocks []notion.Block, buffer *bufio.
 			}
 			buffer.WriteString("\n")
 		case *notion.LinkToPageBlock:
-			err := fetchPage(client, block.PageID, "", buffer)
+			err := fetchPage(client, block.PageID, "", buffer, false)
 			if err != nil {
 				return err
 			}
@@ -551,8 +551,12 @@ func downloadImage(name, url string) error {
 	return nil
 }
 
-func propertiesToFrontMatter(propertites notion.DatabasePageProperties, buffer *bufio.Writer) {
+func propertiesToFrontMatter(client *notion.Client, propertites notion.DatabasePageProperties, buffer *bufio.Writer) {
 	buffer.WriteString("---\n")
+	// There is a limitation between Notions and Obsidian.
+	// If the property is named tags in Notion it has ramifications in Obsidian
+	// For example Notion relation property name tags would break in Obsidian
+	// Workaround rename the Notion property to "Related to tags"
 	for key, value := range propertites {
 		switch value.Type {
 		case notion.DBPropTypeTitle:
@@ -594,6 +598,27 @@ func propertiesToFrontMatter(propertites notion.DatabasePageProperties, buffer *
 			buffer.WriteString(fmt.Sprintf("%s: %s\n", key, value.Status.Name))
 		case notion.DBPropTypeFormula:
 		case notion.DBPropTypeRelation:
+			// TODO: Needs to handle relations bigger then 25
+			// https://developers.notion.com/reference/retrieve-a-page-property
+			b := &bytes.Buffer{}
+			relationBuffer := bufio.NewWriter(b)
+			for i, relation := range value.Relation {
+				if i == 0 {
+					relationBuffer.WriteString("\n  - ")
+				} else {
+					relationBuffer.WriteString("  - ")
+				}
+
+				err := fetchPage(client, relation.ID, "", relationBuffer, true)
+				if err != nil {
+					// We do not want to break the migration proccess for this case
+					fmt.Println("failed to get page relation for frontmatter")
+					continue
+				}
+				relationBuffer.WriteString("\n")
+			}
+			relationBuffer.Flush()
+			buffer.WriteString(fmt.Sprintf("%s: %s\n", key, b.String()))
 		case notion.DBPropTypeRollup:
 			switch value.Rollup.Type {
 			case notion.RollupResultTypeNumber:
@@ -663,7 +688,7 @@ func writeRichText(client *notion.Client, buffer *bufio.Writer, richTextBlock []
 			if link != nil && !strings.Contains(annotation, "`") {
 				if strings.HasPrefix(link.URL, "/") {
 					// Link to internal Notion page
-					err := fetchPage(client, strings.TrimPrefix(link.URL, "/"), text.PlainText, richTextBuffer)
+					err := fetchPage(client, strings.TrimPrefix(link.URL, "/"), text.PlainText, richTextBuffer, false)
 					if err != nil {
 						return err
 					}
@@ -676,7 +701,7 @@ func writeRichText(client *notion.Client, buffer *bufio.Writer, richTextBlock []
 		case notion.RichTextTypeMention:
 			switch text.Mention.Type {
 			case notion.MentionTypePage:
-				err := fetchPage(client, text.Mention.Page.ID, text.PlainText, richTextBuffer)
+				err := fetchPage(client, text.Mention.Page.ID, text.PlainText, richTextBuffer, false)
 				if err != nil {
 					return err
 				}
@@ -745,7 +770,8 @@ const Untitled = "Untitled"
 // If the page is not stored in cached will download the page.
 // If the page title has been provided it will use it, if is an empty string it will try to extracted from the page information.
 // The logic to extract the title varies depending on the page parent's type.
-func fetchPage(client *notion.Client, pageID, title string, buffer *bufio.Writer) error {
+// TODO: handle better the quote logic
+func fetchPage(client *notion.Client, pageID, title string, buffer *bufio.Writer, quotes bool) error {
 	val, ok := mentionCache.Get(pageID)
 	if ok {
 		buffer.WriteString(val)
@@ -790,7 +816,7 @@ func fetchPage(client *notion.Client, pageID, title string, buffer *bufio.Writer
 			// Since we are migrating from the same DB we do need to create a subfolder
 			// within the Obsidian vault. So we can skip fetching the database to gather
 			// the name to create the subfolder
-			if !empty(databaseID) && *databaseID != mentionPage.Parent.DatabaseID {
+			if empty(databaseID) || *databaseID != mentionPage.Parent.DatabaseID {
 				dbPage, err := client.FindDatabaseByID(context.Background(), mentionPage.Parent.DatabaseID)
 				if err != nil {
 					return fmt.Errorf("failed to find parent db %s.  error: %w", mentionPage.Parent.DatabaseID, err)
@@ -866,7 +892,12 @@ func fetchPage(client *notion.Client, pageID, title string, buffer *bufio.Writer
 		}
 
 		if childTitle != "" {
-			result = "[[" + childTitle + "]]"
+			var result string
+			if quotes {
+				result = fmt.Sprintf("\"[[%s]]\"", childTitle)
+			} else {
+				result = fmt.Sprintf("[[%s]]", childTitle)
+			}
 
 			buffer.WriteString(result)
 		}
