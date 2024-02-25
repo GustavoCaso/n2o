@@ -65,24 +65,29 @@ func (m Migrator) FetchPages(ctx context.Context) ([]notion.Page, error) {
 }
 
 func (m Migrator) ExtractPageTitle(page notion.Page) string {
-	properties := page.Properties.(notion.DatabasePageProperties)
 	var str string
 
-	for key, value := range properties {
-		val, ok := m.Config.PageNameFilters[strings.ToLower(key)]
-		if ok {
-			switch value.Type {
-			case notion.DBPropTypeDate:
-				date := value.Date.Start
-				if val != "" {
-					str += timefmt.Format(date.Time, val)
+	if m.Config.DatabaseID != "" {
+		properties := page.Properties.(notion.DatabasePageProperties)
+		for key, value := range properties {
+			val, ok := m.Config.PageNameFilters[strings.ToLower(key)]
+			if ok {
+				switch value.Type {
+				case notion.DBPropTypeDate:
+					date := value.Date.Start
+					if val != "" {
+						str += timefmt.Format(date.Time, val)
+					}
+				case notion.DBPropTypeTitle:
+					str += extractPlainTextFromRichText(value.Title)
+				default:
+					panic("not suported")
 				}
-			case notion.DBPropTypeTitle:
-				str += extractPlainTextFromRichText(value.Title)
-			default:
-				panic("not suported")
 			}
 		}
+	} else {
+		properties := page.Properties.(notion.PageProperties)
+		str = extractPlainTextFromRichText(properties.Title.Title)
 	}
 
 	fileName := fmt.Sprintf("%s.md", str)
@@ -109,7 +114,7 @@ func (m Migrator) FetchParseAndSavePage(ctx context.Context, page notion.Page, p
 	// create new buffer
 	buffer := bufio.NewWriter(f)
 
-	if dbPage {
+	if page.Parent.Type == notion.ParentTypeDatabase {
 		props := page.Properties.(notion.DatabasePageProperties)
 
 		frotmatterProps := make(notion.DatabasePageProperties)

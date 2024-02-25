@@ -17,7 +17,7 @@ import (
 var token = flag.String("token", os.Getenv("NOTION_TOKEN"), "notion token")
 var databaseID = flag.String("db", os.Getenv("NOTION_DATABASE_ID"), "database to migrate")
 var pageID = flag.String("pageID", os.Getenv("NOTION_PAGE_ID"), "page to migrate")
-var pagePropertiesList = flag.String("page-properties", "", "the page propeties to convert to frontmater")
+var pagePropertiesList = flag.String("page-properties", "", "the page properties to convert to frontmater")
 var obsidianVault = flag.String("vault", os.Getenv("OBSIDIAN_VAULT_PATH"), "Obsidian vault location")
 var destination = flag.String("d", "", "Destination to store pages within Obsidian Vault")
 var filenameFromPage = flag.String("name", "Name", "Page attribute to extract the file name. Support selecting different page attribute and formatting. By default we use the page name")
