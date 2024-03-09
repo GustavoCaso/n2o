@@ -119,7 +119,7 @@ func main() {
 		job := queue.Job{
 			Path: path,
 			Run: func() error {
-				return migrator.FetchParseAndSavePage(ctx, page, config.PagePropertiesToMigrate, path, true)
+				return migrator.FetchParseAndSavePage(ctx, page, config.PagePropertiesToMigrate, path)
 			},
 		}
 

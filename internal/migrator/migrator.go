@@ -92,7 +92,7 @@ func (m Migrator) ExtractPageTitle(page notion.Page) string {
 	return path.Join(m.Config.VaultFilepath(), fileName)
 }
 
-func (m Migrator) FetchParseAndSavePage(ctx context.Context, page notion.Page, pageProperties map[string]bool, storePath string, dbPage bool) error {
+func (m Migrator) FetchParseAndSavePage(ctx context.Context, page notion.Page, pageProperties map[string]bool, storePath string) error {
 	pageBlocks, err := m.Client.FindBlockChildrenByID(ctx, page.ID, nil)
 	if err != nil {
 		return fmt.Errorf("failed to extract children blocks for block ID %s. error: %w", page.ID, err)
@@ -305,7 +305,7 @@ func (m Migrator) fetchPage(ctx context.Context, pageID, title string, buffer *b
 				childPath = fmt.Sprintf("%s.md", childTitle)
 			}
 
-			if err = m.FetchParseAndSavePage(ctx, mentionPage, emptyList, path.Join(m.Config.VaultFilepath(), childPath), true); err != nil {
+			if err = m.FetchParseAndSavePage(ctx, mentionPage, emptyList, path.Join(m.Config.VaultFilepath(), childPath)); err != nil {
 				return fmt.Errorf("failed to fetch and save mention page %s content with DB %s. error: %w", childTitle, mentionPage.Parent.DatabaseID, err)
 			}
 		case notion.ParentTypeBlock:
@@ -332,7 +332,7 @@ func (m Migrator) fetchPage(ctx context.Context, pageID, title string, buffer *b
 				childTitle = extractPlainTextFromRichText(title)
 			}
 
-			if err = m.FetchParseAndSavePage(ctx, mentionPage, emptyList, path.Join(m.Config.VaultFilepath(), childTitle), false); err != nil {
+			if err = m.FetchParseAndSavePage(ctx, mentionPage, emptyList, path.Join(m.Config.VaultFilepath(), childTitle)); err != nil {
 				return fmt.Errorf("failed to fetch and save mention page %s content with block parent %s. error: %w", childTitle, mentionPage.Parent.BlockID, err)
 			}
 		case notion.ParentTypePage:
@@ -360,7 +360,7 @@ func (m Migrator) fetchPage(ctx context.Context, pageID, title string, buffer *b
 				childTitle = extractPlainTextFromRichText(title)
 			}
 
-			if err = m.FetchParseAndSavePage(ctx, mentionPage, emptyList, path.Join(m.Config.VaultFilepath(), childTitle), false); err != nil {
+			if err = m.FetchParseAndSavePage(ctx, mentionPage, emptyList, path.Join(m.Config.VaultFilepath(), childTitle)); err != nil {
 				fmt.Printf("failed to fetch mention page content with page parent: %s\n", childTitle)
 			}
 		default:
