@@ -112,7 +112,7 @@ func (m Migrator) FetchParseAndSavePage(ctx context.Context, page notion.Page, p
 	// create new buffer
 	buffer := bufio.NewWriter(f)
 
-	if page.Parent.Type == notion.ParentTypeDatabase {
+	if page.Parent.Type == notion.ParentTypeDatabase && len(pageProperties) > 0 {
 		props := page.Properties.(notion.DatabasePageProperties)
 
 		frotmatterProps := make(notion.DatabasePageProperties)
