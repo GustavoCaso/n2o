@@ -45,23 +45,21 @@ func (m Migrator) Setup() error {
 }
 
 func (m Migrator) FetchPages(ctx context.Context) ([]notion.Page, error) {
-	var pages []notion.Page
 	if m.Config.DatabaseID != "" {
 		pages, err := m.fetchNotionDBPages(ctx)
 		if err != nil {
-			return pages, fmt.Errorf("failed to gets all pages from DB %s. error: %s\n", m.Config.DatabaseID, err.Error())
+			return []notion.Page{}, fmt.Errorf("failed to gets all pages from DB %s. error: %s\n", m.Config.DatabaseID, err.Error())
 		}
+
+		return pages, nil
 	} else {
 		page, err := m.Client.FindPageByID(context.Background(), m.Config.PageID)
 		if err != nil {
-			return pages, fmt.Errorf("failed to find the page %s make sure the page exists in your Notioin workspace. error: %s\n", m.Config.PageID, err.Error())
+			return []notion.Page{}, fmt.Errorf("failed to find the page %s make sure the page exists in your Notioin workspace. error: %s\n", m.Config.PageID, err.Error())
 		}
-		pages = []notion.Page{
-			page,
-		}
-	}
 
-	return pages, nil
+		return []notion.Page{page}, nil
+	}
 }
 
 func (m Migrator) ExtractPageTitle(page notion.Page) string {
