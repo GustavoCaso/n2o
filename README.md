@@ -1,9 +1,65 @@
-Notion To Obsidian (n2o)
+## Notion To Obsidian (n2o)
 
-Migration tool to run to import data from Notion to Obsidian
+Migration tool for your Notion data to Obsidian
+
+### Install
+
+To install the binary you could:
+- Use homebrew `brew install n2o`
+- Download the `n2o` tool from releases page.
+
+
+### Usage
+
+```
+$ n20
+Usage of n20:
+  -d string
+    	Destination to store pages within Obsidian Vault
+  -db string
+    	database to migrate
+  -i	download external images to Obsidan vault and link in the resulting page
+  -name string
+    	Page attribute to extract the file name. Support selecting different page attribute and formatting. By default we use the page name (default "Name")
+  -page-properties string
+    	the page properties to convert to frontmater
+  -pageID string
+    	page to migrate
+  -token string
+    	notion token
+  -vault string
+    	Obsidian vault location
+```
+
+#### Notion token
+
+To get your Notion token you either have to create an integration or use an existing integration that has access to the workspace you want to migrate. There are a lot of resources in the Notion website.
+
+- [What is an Integration](https://developers.notion.com/docs/getting-started#what-is-a-notion-integration)
+- [Build your first integration Guide](https://developers.notion.com/docs/create-a-notion-integration)
+
+Once you have your integration installed in your workspace, we can start migrating single pages or full databases to our Obsidian vault.
+
+**How to get the database ID?**
+
+Copied from the Notion website: [Retrieve a database](https://developers.notion.com/reference/retrieve-a-database)
+
+> To find a database ID, navigate to the database URL in your Notion workspace. The ID is the string of characters in the URL that is between the slash following the workspace name (if applicable) and the question mark. The ID is a 32 characters alphanumeric string.
+
+![databaseID](img/databaseID.png)
+
+**How to retrieve the Page ID?**
+
+Copied from the Notion website: [Working with page content](https://developers.notion.com/docs/working-with-page-content)
+> Here's a quick procedure to find the page ID for a specific page in Notion: 
+Open the page in Notion. Use the Share menu to Copy link. Now paste the link in your text editor so you can take a closer look. The URL ends in a page ID.
+It should be a 32 character long string. Format this value by inserting hyphens (-) in the following pattern: 8-4-4-4-12 (each number is the length of characters between the hyphens).
+Example: 1429989fe8ac4effbc8f57f56486db54 becomes 1429989f-e8ac-4eff-bc8f-57f56486db54.
+This value is your page ID.
+
+
 
 TODOS:
-- [ ] Figure out how to parse self-referential links. Transform links like `/   <Notion_PAGE_ID>#<BLOCK_ID>` to [[Page^Block_ID]] or [[Page#Block_ID]]
-- [x] Internal files need to be downloaded stored in the Obsidian vault and referenced them.
+- [ ] Figure out how to parse self-referential links. Transform links like `/<Notion_PAGE_ID>#<BLOCK_ID>` to `[[Page^Block_ID]]` or `[[Page#Block_ID]]`
 - [ ] Better error handling
-- [x] Add support for relation properties in frontmatter
+- [ ] Use better logging
