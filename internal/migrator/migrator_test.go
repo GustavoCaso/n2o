@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/GustavoCaso/n2o/internal/cache"
 	"github.com/GustavoCaso/n2o/internal/config"
@@ -205,27 +206,218 @@ func TestExtractPageTitle(t *testing.T) {
 	}
 }
 
+// TODO: Fix Realation test
+// Select type
+// Multi Select
 func TestFetchParseAndSavePage(t *testing.T) {
 	tests := []struct {
-		name       string
-		page       notion.Page
-		statusCode int
-		respBody   func(*http.Request) io.Reader
-		expected   string
-		config     config.Config
+		name           string
+		page           notion.Page
+		statusCode     int
+		respBody       func(*http.Request) io.Reader
+		pageProperties map[string]bool
+		expected       string
+		config         config.Config
 	}{
 		{
 			name:       "store page in the correct path and format markdown correctly",
 			page:       notion.Page{ID: "1"},
 			statusCode: 200,
 			respBody: func(_ *http.Request) io.Reader {
-				f, err := fixtures.ReadFile("fixtures/blocks.json")
+				f, err := fixtures.ReadFile("fixtures/page_blocks.json")
 				if err != nil {
 					panic(err)
 				}
 				return bytes.NewReader(f)
 			},
+			pageProperties: map[string]bool{},
 			expected: `## Lacinato kale
+[Lacinato kale is a variety of kale with a long tradition in Italian cuisine, especially that of Tuscany. It is also known as Tuscan kale, Italian kale, dinosaur kale, kale, flat back kale, palm tree kale, or black Tuscan palm.](https://en.wikipedia.org/wiki/Lacinato_kale)
+`,
+			config: config.Config{},
+		},
+		{
+			name: "store page with frontmatter",
+			page: notion.Page{
+				ID: "1",
+				Parent: notion.Parent{
+					Type: notion.ParentTypeDatabase,
+				},
+				Properties: notion.DatabasePageProperties{
+					"Title": notion.DatabasePageProperty{
+						Type: notion.DBPropTypeTitle,
+						Title: []notion.RichText{
+							{
+								PlainText: "Hello",
+							},
+						},
+					},
+					"Age": notion.DatabasePageProperty{
+						Type:   notion.DBPropTypeNumber,
+						Number: notion.Float64Ptr(34),
+					},
+					"People": notion.DatabasePageProperty{
+						Type: notion.DBPropTypePeople,
+						Name: "People",
+						People: []notion.User{
+							{
+								BaseUser: notion.BaseUser{
+									ID: "be32e790-8292-46df-a248-b784fdf483cf",
+								},
+								Name:      "Jane Doe",
+								AvatarURL: "https://example.com/image.png",
+								Type:      notion.UserTypePerson,
+								Person: &notion.Person{
+									Email: "jane@example.com",
+								},
+							},
+						},
+					},
+					"Files": notion.DatabasePageProperty{
+						Type: notion.DBPropTypeFiles,
+						Name: "Files",
+						Files: []notion.File{
+							{
+								Name: "foobar.pdf",
+							},
+						},
+					},
+					"Checkbox": notion.DatabasePageProperty{
+						ID:       "49S@",
+						Type:     notion.DBPropTypeCheckbox,
+						Name:     "Checkbox",
+						Checkbox: notion.BoolPtr(true),
+					},
+					"Calculation": notion.DatabasePageProperty{
+						Type: notion.DBPropTypeFormula,
+						Name: "Calculation",
+						Formula: &notion.FormulaResult{
+							Type:   notion.FormulaResultTypeNumber,
+							Number: notion.Float64Ptr(float64(42)),
+						},
+					},
+					"URL": notion.DatabasePageProperty{
+						Type: notion.DBPropTypeURL,
+						Name: "URL",
+						URL:  notion.StringPtr("https://example.com"),
+					},
+					"Email": notion.DatabasePageProperty{
+						Type:  notion.DBPropTypeEmail,
+						Name:  "Email",
+						Email: notion.StringPtr("jane@example.com"),
+					},
+					"PhoneNumber": notion.DatabasePageProperty{
+						Type:        notion.DBPropTypePhoneNumber,
+						Name:        "PhoneNumber",
+						PhoneNumber: notion.StringPtr("867-5309"),
+					},
+					"CreatedTime": notion.DatabasePageProperty{
+						Type:        notion.DBPropTypeCreatedTime,
+						Name:        "Created time",
+						CreatedTime: notion.TimePtr(parseTime(time.RFC3339Nano, "2021-05-24T15:44:09.123Z")),
+					},
+					"CreatedBy": notion.DatabasePageProperty{
+						Type: notion.DBPropTypeCreatedBy,
+						Name: "Created by",
+						CreatedBy: &notion.User{
+							BaseUser: notion.BaseUser{
+								ID: "be32e790-8292-46df-a248-b784fdf483cf",
+							},
+							Name:      "Jane Doe",
+							AvatarURL: "https://example.com/image.png",
+							Type:      notion.UserTypePerson,
+							Person: &notion.Person{
+								Email: "jane@example.com",
+							},
+						},
+					},
+					"LastEditedTime": notion.DatabasePageProperty{
+						Type:           notion.DBPropTypeLastEditedTime,
+						Name:           "Last edited time",
+						LastEditedTime: notion.TimePtr(parseTime(time.RFC3339Nano, "2021-05-24T15:44:09.123Z")),
+					},
+					"LastEditedBy": notion.DatabasePageProperty{
+						Type: notion.DBPropTypeLastEditedBy,
+						Name: "Last edited by",
+						LastEditedBy: &notion.User{
+							BaseUser: notion.BaseUser{
+								ID: "be32e790-8292-46df-a248-b784fdf483cf",
+							},
+							Name:      "Jane Doe",
+							AvatarURL: "https://example.com/image.png",
+							Type:      notion.UserTypePerson,
+							Person: &notion.Person{
+								Email: "jane@example.com",
+							},
+						},
+					},
+					"Relation": notion.DatabasePageProperty{
+						Type: notion.DBPropTypeRelation,
+						Name: "Relation",
+						Relation: []notion.Relation{
+							{
+								ID: "2be9597f-693f-4b87-baf9-efc545d38ebe",
+							},
+						},
+					},
+					"Rollup": notion.DatabasePageProperty{
+						Type: notion.DBPropTypeRollup,
+						Name: "Rollup",
+						Rollup: &notion.RollupResult{
+							Type: notion.RollupResultTypeArray,
+							Array: []notion.DatabasePageProperty{
+								{
+									Type:   notion.DBPropTypeNumber,
+									Number: notion.Float64Ptr(42),
+								},
+								{
+									Type:   notion.DBPropTypeNumber,
+									Number: notion.Float64Ptr(10),
+								},
+							},
+						},
+					},
+				},
+			},
+			statusCode: 200,
+			respBody: func(_ *http.Request) io.Reader {
+				f, err := fixtures.ReadFile("fixtures/page_blocks.json")
+				if err != nil {
+					panic(err)
+				}
+				return bytes.NewReader(f)
+			},
+			pageProperties: map[string]bool{
+				"title":          true,
+				"age":            true,
+				"checkbox":       true,
+				"calculation":    true,
+				"url":            true,
+				"email":          true,
+				"phonenumber":    true,
+				"createdby":      true,
+				"createdtime":    true,
+				"lasteditedtime": true,
+				"lasteditedby":   true,
+				"relation":       true,
+				"rollup":         true,
+			},
+			expected: `---
+Age: 34.000000
+Checkbox: true
+CreatedBy: Jane Doe
+CreatedTime: 2021-05-24 15:44:09.123 +0000 UTC
+Email: jane@example.com
+LastEditedBy: Jane Doe
+LastEditedTime: 2021-05-24 15:44:09.123 +0000 UTC
+PhoneNumber: 867-5309
+Relation: 
+  - 
+Rollup: [42.000000 10.000000]
+Title: Hello
+URL: https://example.com
+---
+## Lacinato kale
 [Lacinato kale is a variety of kale with a long tradition in Italian cuisine, especially that of Tuscany. It is also known as Tuscan kale, Italian kale, dinosaur kale, kale, flat back kale, palm tree kale, or black Tuscan palm.](https://en.wikipedia.org/wiki/Lacinato_kale)
 `,
 			config: config.Config{},
@@ -256,7 +448,7 @@ func TestFetchParseAndSavePage(t *testing.T) {
 
 			destination := filepath.Join(tempDir, "example.md")
 
-			err := migrator.FetchParseAndSavePage(context.TODO(), test.page, map[string]bool{}, destination)
+			err := migrator.FetchParseAndSavePage(context.TODO(), test.page, test.pageProperties, destination)
 			assert.NoError(t, err)
 
 			content, err := os.ReadFile(destination)
@@ -501,4 +693,12 @@ func parseDateTime(value string) notion.DateTime {
 		panic(err)
 	}
 	return dt
+}
+
+func parseTime(layout, value string) time.Time {
+	t, err := time.Parse(layout, value)
+	if err != nil {
+		panic(err)
+	}
+	return t
 }

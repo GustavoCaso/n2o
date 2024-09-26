@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/GustavoCaso/n2o/internal/cache"
@@ -123,14 +124,23 @@ func (m Migrator) FetchParseAndSavePage(ctx context.Context, page notion.Page, p
 			allProps = true
 		}
 
-		for propName, propValue := range props {
-			if pageProperties[strings.ToLower(propName)] || allProps {
-				frotmatterProps[propName] = propValue
+		sortedPropkeys := make([]string, 0, len(props))
+
+		for k := range props {
+			sortedPropkeys = append(sortedPropkeys, k)
+		}
+
+		sort.Strings(sortedPropkeys)
+
+		for _, propKey := range sortedPropkeys {
+			propValue := props[propKey]
+			if pageProperties[strings.ToLower(propKey)] || allProps {
+				frotmatterProps[propKey] = propValue
 			}
 		}
 
 		if len(frotmatterProps) > 0 {
-			m.propertiesToFrontMatter(ctx, frotmatterProps, buffer)
+			m.propertiesToFrontMatter(ctx, sortedPropkeys, frotmatterProps, buffer)
 		}
 	}
 
@@ -147,13 +157,14 @@ func (m Migrator) FetchParseAndSavePage(ctx context.Context, page notion.Page, p
 	return nil
 }
 
-func (m Migrator) propertiesToFrontMatter(ctx context.Context, propertites notion.DatabasePageProperties, buffer *bufio.Writer) {
+func (m Migrator) propertiesToFrontMatter(ctx context.Context, sortedKeys []string, propertites notion.DatabasePageProperties, buffer *bufio.Writer) {
 	buffer.WriteString("---\n")
 	// There is a limitation between Notions and Obsidian.
 	// If the property is named tags in Notion it has ramifications in Obsidian
 	// For example Notion relation property name tags would break in Obsidian
 	// Workaround rename the Notion property to "Related to tags"
-	for key, value := range propertites {
+	for _, key := range sortedKeys {
+		value := propertites[key]
 		switch value.Type {
 		case notion.DBPropTypeTitle:
 			buffer.WriteString(fmt.Sprintf("%s: %s\n", key, extractPlainTextFromRichText(value.Title)))
@@ -225,6 +236,21 @@ func (m Migrator) propertiesToFrontMatter(ctx context.Context, propertites notio
 				} else {
 					buffer.WriteString(fmt.Sprintf("%s: %s\n", key, value.Rollup.Date.Start.Format("2006-01-02")))
 				}
+			case notion.RollupResultTypeArray:
+				b := &bytes.Buffer{}
+				rollupBuffer := bufio.NewWriter(b)
+				rollupBuffer.WriteString(fmt.Sprintf("%s: ", key))
+
+				numbers := []float64{}
+				for _, prop := range value.Rollup.Array {
+					if prop.Type == notion.DBPropTypeNumber {
+						numbers = append(numbers, *prop.Number)
+					}
+				}
+
+				rollupBuffer.WriteString(fmt.Sprintf("%f\n", numbers))
+				rollupBuffer.Flush()
+				buffer.WriteString(b.String())
 			}
 		case notion.DBPropTypeCreatedTime:
 			buffer.WriteString(fmt.Sprintf("%s: %s\n", key, value.CreatedTime.String()))
