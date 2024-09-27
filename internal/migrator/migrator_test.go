@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"embed"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -211,13 +212,14 @@ func TestExtractPageTitle(t *testing.T) {
 // Multi Select
 func TestFetchParseAndSavePage(t *testing.T) {
 	tests := []struct {
-		name           string
-		page           notion.Page
-		statusCode     int
-		respBody       func(*http.Request) io.Reader
-		pageProperties map[string]bool
-		expected       string
-		config         config.Config
+		name             string
+		page             notion.Page
+		statusCode       int
+		respBody         func(*http.Request) io.Reader
+		pageProperties   map[string]bool
+		expected         string
+		config           config.Config
+		customAssertions func(t *testing.T, path string)
 	}{
 		{
 			name:       "store page in the correct path and format markdown correctly",
@@ -422,6 +424,47 @@ URL: https://example.com
 `,
 			config: config.Config{},
 		},
+		{
+			name: "store nested pages and creates subfolder in correct location",
+			page: notion.Page{
+				ID: "1",
+			},
+			statusCode: 200,
+			respBody: func(r *http.Request) io.Reader {
+				readFixture := func(path string) io.Reader {
+					f := mustReadFixture(path)
+					return bytes.NewReader(f)
+				}
+
+				switch r.URL.String() {
+				case "https://api.notion.com/v1/blocks/1/children":
+					// The nested page that we will fetch is called `ANSI Codes for the terminal`
+					return readFixture("fixtures/page_blocks_nested_pages.json")
+				case "https://api.notion.com/v1/pages/a8401073-0e1a-481f-bc9b-8093c7edadca":
+					return readFixture("fixtures/nested_page.json")
+				case "https://api.notion.com/v1/databases/50780e7e-09d3-4ca6-9045-86263009c971":
+					// The title of the DB is Personal Notes
+					// It will create a new folder and file on that location
+					return readFixture("fixtures/get_database.json")
+				case "https://api.notion.com/v1/blocks/17dc62b4-0331-4842-b886-af07bd576af2/children":
+					return readFixture("fixtures/page_blocks.json")
+				default:
+					panic(fmt.Sprintf("unhandled URL: %s", r.URL.String()))
+				}
+			},
+			customAssertions: func(t *testing.T, path string) {
+				nestedPage := filepath.Join(path, "Personal Notes", "ANSI Codes for the terminal.md")
+				content, err := os.ReadFile(nestedPage)
+				assert.NoError(t, err)
+				expectedNestedContent := `## Lacinato kale
+[Lacinato kale is a variety of kale with a long tradition in Italian cuisine, especially that of Tuscany. It is also known as Tuscan kale, Italian kale, dinosaur kale, kale, flat back kale, palm tree kale, or black Tuscan palm.](https://en.wikipedia.org/wiki/Lacinato_kale)
+`
+				assert.Equal(t, expectedNestedContent, string(content))
+			},
+			pageProperties: map[string]bool{},
+			expected:       string(mustReadFixture("fixtures/expected_nested_page")),
+			config:         config.Config{},
+		},
 	}
 
 	for _, test := range tests {
@@ -438,13 +481,15 @@ URL: https://example.com
 
 			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
 
+			tempDir := t.TempDir()
+
+			test.config.VaultPath = tempDir
+
 			migrator := Migrator{
 				Client: client,
 				Config: test.config,
 				Cache:  cache.NewCache(),
 			}
-
-			tempDir := t.TempDir()
 
 			destination := filepath.Join(tempDir, "example.md")
 
@@ -454,6 +499,9 @@ URL: https://example.com
 			content, err := os.ReadFile(destination)
 			assert.NoError(t, err)
 			assert.Equal(t, test.expected, string(content))
+			if test.customAssertions != nil {
+				test.customAssertions(t, tempDir)
+			}
 		})
 
 	}
@@ -701,4 +749,13 @@ func parseTime(layout, value string) time.Time {
 		panic(err)
 	}
 	return t
+}
+
+func mustReadFixture(path string) []byte {
+	f, err := fixtures.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+
+	return f
 }

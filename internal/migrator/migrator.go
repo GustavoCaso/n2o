@@ -279,7 +279,7 @@ func (m Migrator) fetchPage(ctx context.Context, pageID, title string, buffer *b
 		buffer.WriteString(val)
 	} else {
 		if title != "" && title == Untitled {
-			// Notion pages with Untitled would return a 404 when fetching them``
+			// Notion pages with Untitled would return a 404 when fetching them
 			// We do not process those
 			m.Cache.Set(pageID, Untitled)
 			return nil
@@ -327,6 +327,7 @@ func (m Migrator) fetchPage(ctx context.Context, pageID, title string, buffer *b
 				dbTitle := extractPlainTextFromRichText(dbPage.Title)
 
 				childPath = path.Join(dbTitle, fmt.Sprintf("%s.md", childTitle))
+				childTitle = path.Join(dbTitle, childTitle)
 			} else {
 				childPath = fmt.Sprintf("%s.md", childTitle)
 			}

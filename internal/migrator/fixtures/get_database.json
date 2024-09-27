@@ -1,0 +1,97 @@
+{
+  "object": "database",
+  "id": "50780e7e-09d3-4ca6-9045-86263009c971",
+  "cover": null,
+  "icon": {
+    "type": "external",
+    "external": {
+      "url": "https://www.notion.so/icons/drafts_gray.svg"
+    }
+  },
+  "created_time": "2020-08-28T20:07:00.000Z",
+  "created_by": {
+    "object": "user",
+    "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+  },
+  "last_edited_by": {
+    "object": "user",
+    "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+  },
+  "last_edited_time": "2023-09-16T18:49:00.000Z",
+  "title": [
+    {
+      "type": "text",
+      "text": {
+        "content": "Personal Notes",
+        "link": null
+      },
+      "annotations": {
+        "bold": false,
+        "italic": false,
+        "strikethrough": false,
+        "underline": false,
+        "code": false,
+        "color": "default"
+      },
+      "plain_text": "Personal Notes",
+      "href": null
+    }
+  ],
+  "description": [],
+  "is_inline": false,
+  "properties": {
+    "Tags": {
+      "id": "Gaji",
+      "name": "Tags",
+      "type": "relation",
+      "relation": {
+        "database_id": "a34b8134-0a16-445b-8011-6252a9128480",
+        "type": "dual_property",
+        "dual_property": {
+          "synced_property_name": "Related to Notes (Tags)",
+          "synced_property_id": "~jqD"
+        }
+      }
+    },
+    "Related to Library": {
+      "id": "JOES",
+      "name": "Related to Library",
+      "type": "relation",
+      "relation": {
+        "database_id": "85eeaea8-6246-4e50-a24a-df931ea47e6d",
+        "type": "dual_property",
+        "dual_property": {
+          "synced_property_name": "Personal Notes",
+          "synced_property_id": "qTu%7D"
+        }
+      }
+    },
+    "Related to Articles": {
+      "id": "OFG%5D",
+      "name": "Related to Articles",
+      "type": "relation",
+      "relation": {
+        "database_id": "fc39b474-dbf9-4294-8393-f48f023d6b7c",
+        "type": "dual_property",
+        "dual_property": {
+          "synced_property_name": "Note",
+          "synced_property_id": "%3F%5C25"
+        }
+      }
+    },
+    "Name": {
+      "id": "title",
+      "name": "Name",
+      "type": "title",
+      "title": {}
+    }
+  },
+  "parent": {
+    "type": "block_id",
+    "block_id": "127b1160-ed9a-4f38-ad7e-39f1068c34d1"
+  },
+  "url": "https://www.notion.so/50780e7e09d34ca6904586263009c971",
+  "public_url": null,
+  "archived": false,
+  "request_id": "e0d1aed0-16b9-440a-8d47-e0d91bd1f9c0"
+}
