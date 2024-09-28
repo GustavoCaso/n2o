@@ -1,0 +1,2654 @@
+{
+  "object": "list",
+  "results": [
+    {
+      "object": "block",
+      "id": "183f5d50-e878-46b3-8778-af09e3db1e2f",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-16T18:50:00.000Z",
+      "last_edited_time": "2023-09-16T18:50:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "mention",
+            "mention": {
+              "type": "link_preview",
+              "link_preview": {
+                "url": "https://github.com/Shopify/cli-ui"
+              }
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "https://github.com/Shopify/cli-ui",
+            "href": "https://github.com/Shopify/cli-ui"
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "def10b6f-1584-4167-8904-7fc466266f63",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-16T18:50:00.000Z",
+      "last_edited_time": "2023-09-16T18:50:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "eb61c1e8-4b73-4d9e-a6aa-1204dbc6f8e1",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-16T18:50:00.000Z",
+      "last_edited_time": "2024-02-03T21:26:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "The cli-ui gem provides utility functions to create dynamic, beautiful CLI prompts quickly. Is used extensible ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "The cli-ui gem provides utility functions to create dynamic, beautiful CLI prompts quickly. Is used extensible ",
+            "href": null
+          },
+          {
+            "type": "mention",
+            "mention": {
+              "type": "page",
+              "page": {
+                "id": "a8401073-0e1a-481f-bc9b-8093c7edadca"
+              }
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "ANSI Codes for the terminal",
+            "href": "https://www.notion.so/a84010730e1a481fbc9b8093c7edadca"
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " codes to format the text, as well as other advanced techniques",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " codes to format the text, as well as other advanced techniques",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "f38026a7-4666-4e3b-9d61-b74abc1ed5ad",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-16T18:52:00.000Z",
+      "last_edited_time": "2023-09-16T18:55:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "The gem is thread-safe and uses extensible the ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "The gem is thread-safe and uses extensible the ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "Thread.current",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "Thread.current",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " API to store thread local information. The gem has some very interesting code snippets. ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " API to store thread local information. The gem has some very interesting code snippets. ",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "b604ebf8-d1c4-4869-b84f-983c248f2266",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T18:53:00.000Z",
+      "last_edited_time": "2023-09-17T18:53:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "96401fb1-31f7-4bb0-b8cc-ce98d6284e9c",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T18:53:00.000Z",
+      "last_edited_time": "2023-09-17T18:53:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Capturing terminal information",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Capturing terminal information",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "eb45088f-5081-45fc-b4c9-a2ef3ab07aae",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-16T18:55:00.000Z",
+      "last_edited_time": "2023-09-17T19:35:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "For example, for capturing the terminal width, it uses the ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "For example, for capturing the terminal width, it uses the ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "IO.console.winsize",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "IO.console.winsize",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " function. Since the terminal window could be resized and we would need to reset the terminal width, it traps the  ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " function. Since the terminal window could be resized and we would need to reset the terminal width, it traps the  ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "SIGWINCH",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "SIGWINCH",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " signal and restores its internal state.",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " signal and restores its internal state.",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1961ba36-b128-43b9-9c0a-9c9ef6ba782f",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-16T18:58:00.000Z",
+      "last_edited_time": "2023-09-16T18:59:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "code",
+      "code": {
+        "caption": [],
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "def winsize\n  @winsize ||= begin\n    winsize = IO.console.winsize\n    setup_winsize_trap\n\n    if winsize.any?(&:zero?)\n      [DEFAULT_HEIGHT, DEFAULT_WIDTH]\n    else\n      winsize\n    end\n  rescue\n    [DEFAULT_HEIGHT, DEFAULT_WIDTH]\n  end\nend\n\ndef setup_winsize_trap\n  @winsize_trap ||= Signal.trap('WINCH') do\n    @winsize = nil\n  end\nend",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "def winsize\n  @winsize ||= begin\n    winsize = IO.console.winsize\n    setup_winsize_trap\n\n    if winsize.any?(&:zero?)\n      [DEFAULT_HEIGHT, DEFAULT_WIDTH]\n    else\n      winsize\n    end\n  rescue\n    [DEFAULT_HEIGHT, DEFAULT_WIDTH]\n  end\nend\n\ndef setup_winsize_trap\n  @winsize_trap ||= Signal.trap('WINCH') do\n    @winsize = nil\n  end\nend",
+            "href": null
+          }
+        ],
+        "language": "ruby"
+      }
+    },
+    {
+      "object": "block",
+      "id": "9ec61ecc-f19b-4fb4-9664-6fe7b69b9c48",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-16T18:52:00.000Z",
+      "last_edited_time": "2023-09-17T18:53:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "3b1072af-5277-4e8d-a972-7ee4608d1ee4",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-16T18:52:00.000Z",
+      "last_edited_time": "2023-09-17T18:54:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Frames",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Frames",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "8447a703-7ecc-4a9d-b075-9df76e68bd72",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-16T18:52:00.000Z",
+      "last_edited_time": "2023-09-17T18:53:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "The Gem has the concept of frames. A frame is a way to group information and display it on the terminal. ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "The Gem has the concept of frames. A frame is a way to group information and display it on the terminal. ",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "d7328bcd-ac76-4d96-b220-7677fb36a498",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-16T19:00:00.000Z",
+      "last_edited_time": "2023-09-16T19:01:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "code",
+      "code": {
+        "caption": [],
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "#   ┏━━ Open ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n#   ┃ hi\n#   ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ (0.0s) ━━",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "#   ┏━━ Open ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n#   ┃ hi\n#   ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ (0.0s) ━━",
+            "href": null
+          }
+        ],
+        "language": "ruby"
+      }
+    },
+    {
+      "object": "block",
+      "id": "b1a63ff6-9119-446c-8304-42f2e0299210",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-16T19:01:00.000Z",
+      "last_edited_time": "2023-09-16T19:09:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "The function that handles the printing supports a block version and a non-block version. Analyzing the code taught me an interesting way to handle lazy code evaluation without keeping the state in an instance or class variables. ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "The function that handles the printing supports a block version and a non-block version. Analyzing the code taught me an interesting way to handle lazy code evaluation without keeping the state in an instance or class variables. ",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "483c00af-e528-4e53-b7fe-eb0232d1be2e",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-16T19:03:00.000Z",
+      "last_edited_time": "2023-09-16T19:09:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "It uses a stack to keep track of the current open frame. That way, we can call a frame method within a block.",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "It uses a stack to keep track of the current open frame. That way, we can call a frame method within a block.",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "0ae292f7-ad24-473a-9db8-6384a5ce5582",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-16T19:03:00.000Z",
+      "last_edited_time": "2023-09-17T18:50:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Every time we call the frame API, we create a stack and push it to the stack array. Any subsequent frame command we pop from the stack; if there is no stack, it means that something is wrong and an error is raised. ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Every time we call the frame API, we create a stack and push it to the stack array. Any subsequent frame command we pop from the stack; if there is no stack, it means that something is wrong and an error is raised. ",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "35d242e9-e396-4e69-8497-1d4056c6cebb",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T18:50:00.000Z",
+      "last_edited_time": "2023-09-17T18:50:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "I find this pattern very useful because it allows us to have code that looks like this ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "I find this pattern very useful because it allows us to have code that looks like this ",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "d7ad766e-211a-46f8-b350-fba9e84b570d",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-16T19:05:00.000Z",
+      "last_edited_time": "2023-09-16T19:07:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "code",
+      "code": {
+        "caption": [],
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "CLI::UI::Frame.open('Open') do # Here the open stack is created and pushed to the stack array\n # The divider method pops the open stack operates on it and returns the open stack to the stack array\n CLI::UI::Frame.divider('Divider')\nend",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "CLI::UI::Frame.open('Open') do # Here the open stack is created and pushed to the stack array\n # The divider method pops the open stack operates on it and returns the open stack to the stack array\n CLI::UI::Frame.divider('Divider')\nend",
+            "href": null
+          }
+        ],
+        "language": "ruby"
+      }
+    },
+    {
+      "object": "block",
+      "id": "d449bb11-fc28-4595-9e4b-e57f63faa205",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-16T19:07:00.000Z",
+      "last_edited_time": "2023-09-17T18:53:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "4ca24e85-ecc9-4717-8403-ccf8aafc6d18",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-16T19:07:00.000Z",
+      "last_edited_time": "2023-09-17T18:53:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "StdoutRouter",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "StdoutRouter",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1a47650c-4b91-45a0-94c4-0f92222c9b31",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T18:38:00.000Z",
+      "last_edited_time": "2023-09-17T18:50:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "The class ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "The class ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "StdoutRouter",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "StdoutRouter",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " has some very interesting patterns to learn from. First, they wrap ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " has some very interesting patterns to learn from. First, they wrap ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "$stdout",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "$stdout",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " and ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " and ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "$stderr",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "$stderr",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " in their own class.  And they overwrite the ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " in their own class.  And they overwrite the ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "write",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "write",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " method using the alias method technique. ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " method using the alias method technique. ",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "76489ddf-f583-4cd5-a39b-f2b0a92246b2",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T18:38:00.000Z",
+      "last_edited_time": "2023-09-17T18:42:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "code",
+      "code": {
+        "caption": [],
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "def activate(stream, streamname)\n  writer = StdoutRouter::Writer.new(stream, streamname)\n\n  raise if stream.respond_to?(WRITE_WITHOUT_CLI_UI)\n\n  stream.singleton_class.send(:alias_method, WRITE_WITHOUT_CLI_UI, :write)\n  stream.define_singleton_method(:write) do |*args|\n    writer.write(*args)\n  end\nend",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "def activate(stream, streamname)\n  writer = StdoutRouter::Writer.new(stream, streamname)\n\n  raise if stream.respond_to?(WRITE_WITHOUT_CLI_UI)\n\n  stream.singleton_class.send(:alias_method, WRITE_WITHOUT_CLI_UI, :write)\n  stream.define_singleton_method(:write) do |*args|\n    writer.write(*args)\n  end\nend",
+            "href": null
+          }
+        ],
+        "language": "ruby"
+      }
+    },
+    {
+      "object": "block",
+      "id": "fabd1373-d53f-4d63-8e65-fc6b029ddef8",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T18:42:00.000Z",
+      "last_edited_time": "2023-09-17T18:54:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "We can see in the code above that we overwrite the ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "We can see in the code above that we overwrite the ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "write",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "write",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " method by setting the ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " method by setting the ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "WRITE_WITHOUT_CLI_UI",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "WRITE_WITHOUT_CLI_UI",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " method to act as ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " method to act as ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "write",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "write",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": ", and on the last two lines, we define the new ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": ", and on the last two lines, we define the new ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "write",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "write",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " method to execute the custom write method from  ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " method to execute the custom write method from  ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "StdoutRouter::Writer",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "StdoutRouter::Writer",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "39bddba4-87af-419f-8336-53b657f77250",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T18:43:00.000Z",
+      "last_edited_time": "2023-09-17T18:45:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "It allows ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "It allows ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "$stdout",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "$stdout",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " and ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " and ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "$stderr",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "$stderr",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " to behave in a custom way during the duration of the program. ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " to behave in a custom way during the duration of the program. ",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "950c5d64-bbf1-496b-bbdc-7a4fb707d677",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T18:44:00.000Z",
+      "last_edited_time": "2023-09-17T18:52:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1b029c9d-7aca-416b-a9da-b0c8b14f7b23",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T18:44:00.000Z",
+      "last_edited_time": "2023-09-17T18:52:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Terminal Alternative Screen",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Terminal Alternative Screen",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "7de1ed55-90b2-4ed8-81b1-bb902ab693ad",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T18:44:00.000Z",
+      "last_edited_time": "2023-09-17T18:54:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "I also learned about the ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "I also learned about the ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "Terminal Alternate Screen",
+              "link": {
+                "url": "https://albertnetymk.github.io/2013/11/25/alternate_screen/"
+              }
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Terminal Alternate Screen",
+            "href": "https://albertnetymk.github.io/2013/11/25/alternate_screen/"
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": ". It seems that the terminal GUI has two buffers and that we can change from buffers using the ANSI escape code:",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": ". It seems that the terminal GUI has two buffers and that we can change from buffers using the ANSI escape code:",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "4cad503d-faea-4e40-afd5-917595934436",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T18:46:00.000Z",
+      "last_edited_time": "2023-09-17T18:49:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Enter alternative screen  ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Enter alternative screen  ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "\\x1b[?1049h",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "\\x1b[?1049h",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " ",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "42ac8b7c-d30f-4b9a-9199-8adde0859694",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T18:46:00.000Z",
+      "last_edited_time": "2023-09-17T18:49:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Exit alternative screen ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Exit alternative screen ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "\\x1b[?1049l",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "\\x1b[?1049l",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "05072f7c-9442-411b-8364-ee904f985bec",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T18:47:00.000Z",
+      "last_edited_time": "2023-09-17T19:00:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "With that technique, we can capture and output information on the terminal screen without affecting the current user’s screen. ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "yellow"
+            },
+            "plain_text": "With that technique, we can capture and output information on the terminal screen without affecting the current user’s screen. ",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "255234a1-b78a-4713-bf44-39a1cc20b205",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T18:47:00.000Z",
+      "last_edited_time": "2023-09-17T18:52:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "I also learned that we could use the CLI program ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "I also learned that we could use the CLI program ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "tput",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "tput",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " to enter and exit the alternative screen. ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " to enter and exit the alternative screen. ",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "216be4eb-0884-40c3-91fd-f3b880f0fbb7",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T18:48:00.000Z",
+      "last_edited_time": "2023-09-17T18:48:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Enter ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Enter ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "tput smcup",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "tput smcup",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "fc600b94-4b37-4bef-a5c8-17b7c0a7f64a",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T18:48:00.000Z",
+      "last_edited_time": "2023-09-17T18:49:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": " Exit  ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " Exit  ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "tput rmcup",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "tput rmcup",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "1e59b482-a752-4040-b074-55a0f7e877ca",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T18:52:00.000Z",
+      "last_edited_time": "2023-09-17T19:00:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "28bd2259-b98a-4081-84c8-331c650f5eae",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T18:52:00.000Z",
+      "last_edited_time": "2023-09-17T19:00:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "InteractiveOptions",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "InteractiveOptions",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "ef6f5309-c9e9-49b3-a752-9cf1fbdec2ee",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T19:00:00.000Z",
+      "last_edited_time": "2023-09-17T19:08:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Encapsulate the logic for displaying multiple option prompts and refreshing the terminal when there are any keystrokes",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Encapsulate the logic for displaying multiple option prompts and refreshing the terminal when there are any keystrokes",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "fa51705d-b14c-4aff-a8aa-a75b223c8796",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T19:08:00.000Z",
+      "last_edited_time": "2023-09-17T19:08:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "code",
+      "code": {
+        "caption": [],
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "? What language/framework do you use? (Choose with ↑ ↓ ⏎, filter with 'f')\n> 1. rails\n  2. go\n  3. ruby\n  4. python",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "? What language/framework do you use? (Choose with ↑ ↓ ⏎, filter with 'f')\n> 1. rails\n  2. go\n  3. ruby\n  4. python",
+            "href": null
+          }
+        ],
+        "language": "ruby"
+      }
+    },
+    {
+      "object": "block",
+      "id": "2077a229-7cca-4004-bc2c-1db799537249",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T19:08:00.000Z",
+      "last_edited_time": "2023-09-17T19:09:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "They handle the refresh logic as part of a while loop until an answer is selected",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "They handle the refresh logic as part of a while loop until an answer is selected",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "2f10f742-e19c-4f45-a2d2-dc083f1979ea",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T19:09:00.000Z",
+      "last_edited_time": "2023-09-17T19:13:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "code",
+      "code": {
+        "caption": [],
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "def call\n  calculate_option_line_lengths\n  CLI::UI.raw { print(ANSI.hide_cursor) }\n  while @answer.nil?\n    render_options\n    process_input_until_redraw_required\n    reset_position\n  end\n  clear_output\n\n  @answer\nensure\n  CLI::UI.raw do\n    print(ANSI.show_cursor)\n  end\nend",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "def call\n  calculate_option_line_lengths\n  CLI::UI.raw { print(ANSI.hide_cursor) }\n  while @answer.nil?\n    render_options\n    process_input_until_redraw_required\n    reset_position\n  end\n  clear_output\n\n  @answer\nensure\n  CLI::UI.raw do\n    print(ANSI.show_cursor)\n  end\nend",
+            "href": null
+          }
+        ],
+        "language": "ruby"
+      }
+    },
+    {
+      "object": "block",
+      "id": "d0d20f1f-6d6d-48ca-9cf5-5353057b2830",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T19:14:00.000Z",
+      "last_edited_time": "2023-09-17T19:15:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Interesting bits that I found from that function. We can hide the cursor using ANSI escape codes. Redrawing the information in the terminal gives the illusion of the cursor moving up and down. ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Interesting bits that I found from that function. We can hide the cursor using ANSI escape codes. Redrawing the information in the terminal gives the illusion of the cursor moving up and down. ",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "599cca7b-f6fc-43f0-abdf-81fdc16cb047",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T19:19:00.000Z",
+      "last_edited_time": "2023-09-17T19:36:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "The render option displays all the options and any metadata associated with the prompt. Process input acts as a state machine that handles one character from the keyboard input at a time.  Internally, it uses ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "The render option displays all the options and any metadata associated with the prompt. Process input acts as a state machine that handles one character from the keyboard input at a time.  Internally, it uses ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "$stdin.getch",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "$stdin.getch",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " or ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " or ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "$stdin.getc",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "$stdin.getc",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": ", blocking methods until the users press a key.  After it process the information in a case statement",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": ", blocking methods until the users press a key.  After it process the information in a case statement",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "e75b8acc-5c1b-4fa4-9ebf-76d2bd63cd3a",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T19:26:00.000Z",
+      "last_edited_time": "2023-09-17T19:26:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "code",
+      "code": {
+        "caption": [],
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "def wait_for_user_input\n  char = Prompt.read_char\n  @last_char = char\n\n  case char\n  when CTRL_C, nil ; raise Interrupt\n  end\n\n  max_digit = [@options.size, 9].min.to_s\n  case @state\n  when :root\n    case char\n    when ESC              ; @state = :esc\n    when 'k'              ; up\n    when 'j'              ; down\n    when 'e', ':', 'G'    ; start_line_select\n    when 'f', '/'         ; start_filter\n    when ('0'..max_digit) ; select_n(char.to_i)\n    when 'y', 'n'         ; select_bool(char)\n    when ' ', \"\\r\", \"\\n\"  ; select_current # <enter>\n    end\n  when :filter\n    case char\n    when ESC        ; @state = :esc\n    when \"\\r\", \"\\n\" ; select_current\n    when \"\\b\"       ; update_search(BACKSPACE) # Happens on Windows\n    else            ; update_search(char)\n    end\n  when :line_select\n    case char\n    when ESC             ; @state = :esc\n    when 'k'             ; up   ; @state = :root\n    when 'j'             ; down ; @state = :root\n    when 'e', ':', 'G', 'q' ; stop_line_select\n    when '0'..'9'        ; build_selection(char)\n    when BACKSPACE       ; chop_selection # Pop last input on backspace\n    when ' ', \"\\r\", \"\\n\" ; select_current\n    end\n  when :esc\n    case char\n    when '['      ; @state = :esc_bracket\n    else          ; raise Interrupt # unhandled escape sequence.\n    end\n  when :esc_bracket\n    @state = has_filter? ? :filter : :root\n    case char\n    when 'A'      ; up\n    when 'B'      ; down\n    when 'C'      ; # Ignore right key\n    when 'D'      ; # Ignore left key\n    else          ; raise Interrupt # unhandled escape sequence.\n    end\n  end\nend",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "def wait_for_user_input\n  char = Prompt.read_char\n  @last_char = char\n\n  case char\n  when CTRL_C, nil ; raise Interrupt\n  end\n\n  max_digit = [@options.size, 9].min.to_s\n  case @state\n  when :root\n    case char\n    when ESC              ; @state = :esc\n    when 'k'              ; up\n    when 'j'              ; down\n    when 'e', ':', 'G'    ; start_line_select\n    when 'f', '/'         ; start_filter\n    when ('0'..max_digit) ; select_n(char.to_i)\n    when 'y', 'n'         ; select_bool(char)\n    when ' ', \"\\r\", \"\\n\"  ; select_current # <enter>\n    end\n  when :filter\n    case char\n    when ESC        ; @state = :esc\n    when \"\\r\", \"\\n\" ; select_current\n    when \"\\b\"       ; update_search(BACKSPACE) # Happens on Windows\n    else            ; update_search(char)\n    end\n  when :line_select\n    case char\n    when ESC             ; @state = :esc\n    when 'k'             ; up   ; @state = :root\n    when 'j'             ; down ; @state = :root\n    when 'e', ':', 'G', 'q' ; stop_line_select\n    when '0'..'9'        ; build_selection(char)\n    when BACKSPACE       ; chop_selection # Pop last input on backspace\n    when ' ', \"\\r\", \"\\n\" ; select_current\n    end\n  when :esc\n    case char\n    when '['      ; @state = :esc_bracket\n    else          ; raise Interrupt # unhandled escape sequence.\n    end\n  when :esc_bracket\n    @state = has_filter? ? :filter : :root\n    case char\n    when 'A'      ; up\n    when 'B'      ; down\n    when 'C'      ; # Ignore right key\n    when 'D'      ; # Ignore left key\n    else          ; raise Interrupt # unhandled escape sequence.\n    end\n  end\nend",
+            "href": null
+          }
+        ],
+        "language": "ruby"
+      }
+    },
+    {
+      "object": "block",
+      "id": "a4836fc5-5b1c-4249-9e66-57bcb0726ae6",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T19:26:00.000Z",
+      "last_edited_time": "2023-09-17T19:57:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "  The way they clear the screen is by using the ANSI escape code. Move the cursor up and horizontal absolute ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "  The way they clear the screen is by using the ANSI escape code. Move the cursor up and horizontal absolute ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "\\e[1A\\e[1G",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "\\e[1A\\e[1G",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " the same number of times as options are for the prompt.",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " the same number of times as options are for the prompt.",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "fc67540c-bee5-436c-9592-9d1bce0fae58",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T19:35:00.000Z",
+      "last_edited_time": "2023-09-17T19:35:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "69621c07-d806-4e7d-a656-2a2a0e6eaa43",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T19:35:00.000Z",
+      "last_edited_time": "2023-09-17T19:35:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Spinners",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Spinners",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "bd3d80af-1b01-4737-9aa5-2dab0853c56f",
+      "parent": {
+        "type": "page_id",
+        "page_id": "17dc62b4-0331-4842-b886-af07bd576af2"
+      },
+      "created_time": "2023-09-17T19:54:00.000Z",
+      "last_edited_time": "2023-09-17T19:57:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "99a801ff-099a-497d-b7a9-a34dcf4bd4f2"
+      },
+      "has_children": false,
+      "archived": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "By using the spinner API, we can display a spinner animation and add tasks to the spinner instance. The API allow to to wait for all the tasks to be completed. Each task is run in a separate Thread. The way a task is considered if it is complete is if the thread is not ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "By using the spinner API, we can display a spinner animation and add tasks to the spinner instance. The API allow to to wait for all the tasks to be completed. Each task is run in a separate Thread. The way a task is considered if it is complete is if the thread is not ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "alive",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "alive",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": ".  Also, it uses the ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": ".  Also, it uses the ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "status",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "default"
+            },
+            "plain_text": "status",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " method to extract information from the thread.   ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": " method to extract information from the thread.   ",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    }
+  ],
+  "next_cursor": null,
+  "has_more": false,
+  "type": "block",
+  "block": {},
+  "request_id": "d68dbbb9-1378-480e-a64d-b8d3a7f4c90c"
+}

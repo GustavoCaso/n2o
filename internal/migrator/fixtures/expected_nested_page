@@ -1,0 +1,164 @@
+https://github.com/Shopify/cli-ui
+
+The cli-ui gem provides utility functions to create dynamic, beautiful CLI prompts quickly. Is used extensible [[Personal Notes/ANSI Codes for the terminal]] codes to format the text, as well as other advanced techniques
+The gem is thread-safe and uses extensible the `Thread.current` API to store thread local information. The gem has some very interesting code snippets. 
+
+### Capturing terminal information
+For example, for capturing the terminal width, it uses the `IO.console.winsize` function. Since the terminal window could be resized and we would need to reset the terminal width, it traps the  `SIGWINCH` signal and restores its internal state.
+```ruby
+def winsize
+  @winsize ||= begin
+    winsize = IO.console.winsize
+    setup_winsize_trap
+
+    if winsize.any?(&:zero?)
+      [DEFAULT_HEIGHT, DEFAULT_WIDTH]
+    else
+      winsize
+    end
+  rescue
+    [DEFAULT_HEIGHT, DEFAULT_WIDTH]
+  end
+end
+
+def setup_winsize_trap
+  @winsize_trap ||= Signal.trap('WINCH') do
+    @winsize = nil
+  end
+end
+```
+
+### Frames
+The Gem has the concept of frames. A frame is a way to group information and display it on the terminal. 
+```ruby
+#   ┏━━ Open ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#   ┃ hi
+#   ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ (0.0s) ━━
+```
+The function that handles the printing supports a block version and a non-block version. Analyzing the code taught me an interesting way to handle lazy code evaluation without keeping the state in an instance or class variables. 
+It uses a stack to keep track of the current open frame. That way, we can call a frame method within a block.
+Every time we call the frame API, we create a stack and push it to the stack array. Any subsequent frame command we pop from the stack; if there is no stack, it means that something is wrong and an error is raised. 
+I find this pattern very useful because it allows us to have code that looks like this 
+```ruby
+CLI::UI::Frame.open('Open') do # Here the open stack is created and pushed to the stack array
+ # The divider method pops the open stack operates on it and returns the open stack to the stack array
+ CLI::UI::Frame.divider('Divider')
+end
+```
+
+### StdoutRouter
+The class `StdoutRouter` has some very interesting patterns to learn from. First, they wrap `$stdout` and `$stderr` in their own class.  And they overwrite the `write` method using the alias method technique. 
+```ruby
+def activate(stream, streamname)
+  writer = StdoutRouter::Writer.new(stream, streamname)
+
+  raise if stream.respond_to?(WRITE_WITHOUT_CLI_UI)
+
+  stream.singleton_class.send(:alias_method, WRITE_WITHOUT_CLI_UI, :write)
+  stream.define_singleton_method(:write) do |*args|
+    writer.write(*args)
+  end
+end
+```
+We can see in the code above that we overwrite the `write` method by setting the `WRITE_WITHOUT_CLI_UI` method to act as `write`, and on the last two lines, we define the new `write` method to execute the custom write method from  `StdoutRouter::Writer`
+It allows `$stdout` and `$stderr` to behave in a custom way during the duration of the program. 
+
+### Terminal Alternative Screen
+I also learned about the [Terminal Alternate Screen](https://albertnetymk.github.io/2013/11/25/alternate_screen/). It seems that the terminal GUI has two buffers and that we can change from buffers using the ANSI escape code:
+- Enter alternative screen  `\x1b[?1049h` 
+- Exit alternative screen `\x1b[?1049l`
+==With that technique, we can capture and output information on the terminal screen without affecting the current user’s screen. ==
+I also learned that we could use the CLI program `tput` to enter and exit the alternative screen. 
+- Enter `tput smcup`
+-  Exit  `tput rmcup`
+
+### InteractiveOptions
+Encapsulate the logic for displaying multiple option prompts and refreshing the terminal when there are any keystrokes
+```ruby
+? What language/framework do you use? (Choose with ↑ ↓ ⏎, filter with 'f')
+> 1. rails
+  2. go
+  3. ruby
+  4. python
+```
+They handle the refresh logic as part of a while loop until an answer is selected
+```ruby
+def call
+  calculate_option_line_lengths
+  CLI::UI.raw { print(ANSI.hide_cursor) }
+  while @answer.nil?
+    render_options
+    process_input_until_redraw_required
+    reset_position
+  end
+  clear_output
+
+  @answer
+ensure
+  CLI::UI.raw do
+    print(ANSI.show_cursor)
+  end
+end
+```
+Interesting bits that I found from that function. We can hide the cursor using ANSI escape codes. Redrawing the information in the terminal gives the illusion of the cursor moving up and down. 
+The render option displays all the options and any metadata associated with the prompt. Process input acts as a state machine that handles one character from the keyboard input at a time.  Internally, it uses `$stdin.getch` or `$stdin.getc`, blocking methods until the users press a key.  After it process the information in a case statement
+```ruby
+def wait_for_user_input
+  char = Prompt.read_char
+  @last_char = char
+
+  case char
+  when CTRL_C, nil ; raise Interrupt
+  end
+
+  max_digit = [@options.size, 9].min.to_s
+  case @state
+  when :root
+    case char
+    when ESC              ; @state = :esc
+    when 'k'              ; up
+    when 'j'              ; down
+    when 'e', ':', 'G'    ; start_line_select
+    when 'f', '/'         ; start_filter
+    when ('0'..max_digit) ; select_n(char.to_i)
+    when 'y', 'n'         ; select_bool(char)
+    when ' ', "\r", "\n"  ; select_current # <enter>
+    end
+  when :filter
+    case char
+    when ESC        ; @state = :esc
+    when "\r", "\n" ; select_current
+    when "\b"       ; update_search(BACKSPACE) # Happens on Windows
+    else            ; update_search(char)
+    end
+  when :line_select
+    case char
+    when ESC             ; @state = :esc
+    when 'k'             ; up   ; @state = :root
+    when 'j'             ; down ; @state = :root
+    when 'e', ':', 'G', 'q' ; stop_line_select
+    when '0'..'9'        ; build_selection(char)
+    when BACKSPACE       ; chop_selection # Pop last input on backspace
+    when ' ', "\r", "\n" ; select_current
+    end
+  when :esc
+    case char
+    when '['      ; @state = :esc_bracket
+    else          ; raise Interrupt # unhandled escape sequence.
+    end
+  when :esc_bracket
+    @state = has_filter? ? :filter : :root
+    case char
+    when 'A'      ; up
+    when 'B'      ; down
+    when 'C'      ; # Ignore right key
+    when 'D'      ; # Ignore left key
+    else          ; raise Interrupt # unhandled escape sequence.
+    end
+  end
+end
+```
+  The way they clear the screen is by using the ANSI escape code. Move the cursor up and horizontal absolute `\e[1A\e[1G` the same number of times as options are for the prompt.
+
+### Spinners
+By using the spinner API, we can display a spinner animation and add tasks to the spinner instance. The API allow to to wait for all the tasks to be completed. Each task is run in a separate Thread. The way a task is considered if it is complete is if the thread is not `alive`.  Also, it uses the `status` method to extract information from the thread.   
