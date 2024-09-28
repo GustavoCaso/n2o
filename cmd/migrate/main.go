@@ -107,7 +107,7 @@ func main() {
 
 	var jobs []*queue.Job
 
-	q := queue.NewQueue("migrating notion pages")
+	q := queue.NewQueue("migrating notion pages", queue.WithProgressBar())
 
 	for _, page := range pages {
 		// We need to do this, because variables declared in for loops are passed by reference.
