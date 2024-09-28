@@ -46,10 +46,7 @@ func TestFetchPages(t *testing.T) {
 			},
 			statusCode: 200,
 			respBody: func(_ *http.Request) io.Reader {
-				f, err := fixtures.ReadFile("fixtures/database_query.json")
-				if err != nil {
-					panic(err)
-				}
+				f := mustReadFixture("fixtures/database_query.json")
 				return bytes.NewReader(f)
 			},
 		},
@@ -71,10 +68,7 @@ func TestFetchPages(t *testing.T) {
 			},
 			statusCode: 200,
 			respBody: func(_ *http.Request) io.Reader {
-				f, err := fixtures.ReadFile("fixtures/page_query.json")
-				if err != nil {
-					panic(err)
-				}
+				f := mustReadFixture("fixtures/page_query.json")
 				return bytes.NewReader(f)
 			},
 		},
