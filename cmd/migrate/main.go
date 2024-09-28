@@ -105,7 +105,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	var jobs []queue.Job
+	var jobs []*queue.Job
 
 	q := queue.NewQueue("migrating notion pages")
 
@@ -116,7 +116,7 @@ func main() {
 
 		path := migrator.ExtractPageTitle(newPage)
 
-		job := queue.Job{
+		job := &queue.Job{
 			Path: path,
 			Run: func() error {
 				return migrator.FetchParseAndSavePage(ctx, page, config.PagePropertiesToMigrate, path)
