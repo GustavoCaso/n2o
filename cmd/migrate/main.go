@@ -105,9 +105,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	var jobs []queue.Job
+	var jobs []*queue.Job
 
-	q := queue.NewQueue("migrating notion pages")
+	q := queue.NewQueue("migrating notion pages", queue.WithProgressBar())
 
 	for _, page := range pages {
 		// We need to do this, because variables declared in for loops are passed by reference.
@@ -116,7 +116,7 @@ func main() {
 
 		path := migrator.ExtractPageTitle(newPage)
 
-		job := queue.Job{
+		job := &queue.Job{
 			Path: path,
 			Run: func() error {
 				return migrator.FetchParseAndSavePage(ctx, page, config.PagePropertiesToMigrate, path)

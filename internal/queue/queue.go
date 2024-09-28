@@ -16,21 +16,29 @@ type Job struct {
 }
 
 type ErrJob struct {
-	Job Job
+	Job *Job
 	Err error
 }
 
-type Queue struct {
-	jobs        chan Job
-	progressBar *progressbar.ProgressBar
-	wg          sync.WaitGroup
-	cancel      context.CancelFunc
-	ctx         context.Context
+type Option interface {
+	OnCreate(description string)
+	OnAdd(total int)
+	OnDone()
 }
 
-func NewQueue(description string) *Queue {
-	ctx, cancel := context.WithCancel(context.Background())
+type Queue struct {
+	jobs    chan *Job
+	options []Option
+	wg      sync.WaitGroup
+	cancel  context.CancelFunc
+	ctx     context.Context
+}
 
+type progressBarOption struct {
+	progressBar *progressbar.ProgressBar
+}
+
+func (p *progressBarOption) OnCreate(description string) {
 	progressbar := progressbar.NewOptions(
 		0,
 		progressbar.OptionSetDescription(description),
@@ -47,26 +55,47 @@ func NewQueue(description string) *Queue {
 		progressbar.OptionSetRenderBlankState(false),
 	)
 
+	p.progressBar = progressbar
+}
+
+func (p *progressBarOption) OnAdd(total int) {
+	max := p.progressBar.GetMax()
+	p.progressBar.ChangeMax(max + total)
+}
+
+func (p *progressBarOption) OnDone() {
+	p.progressBar.Add(1)
+}
+
+func WithProgressBar() Option {
+	return &progressBarOption{}
+}
+
+func NewQueue(description string, opts ...Option) *Queue {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	for _, opt := range opts {
+		opt.OnCreate(description)
+	}
+
 	return &Queue{
-		jobs:        make(chan Job),
-		ctx:         ctx,
-		cancel:      cancel,
-		progressBar: progressbar,
+		jobs:    make(chan *Job),
+		ctx:     ctx,
+		cancel:  cancel,
+		options: opts,
 	}
 }
 
-func (q *Queue) AddJobs(jobs []Job) {
+func (q *Queue) AddJobs(jobs []*Job) {
 	total := len(jobs)
 	q.wg.Add(total)
-	max := q.progressBar.GetMax()
-	q.progressBar.ChangeMax(max + total)
+	for _, opt := range q.options {
+		opt.OnAdd(total)
+	}
 
 	for _, pageJob := range jobs {
-		go func(job Job) {
+		go func(job *Job) {
 			q.jobs <- job
-			if q.progressBar != nil {
-				q.progressBar.Add(1)
-			}
 			q.wg.Done()
 		}(pageJob)
 	}
@@ -75,6 +104,12 @@ func (q *Queue) AddJobs(jobs []Job) {
 		q.wg.Wait()
 		q.cancel()
 	}()
+}
+
+func (q *Queue) Done() {
+	for _, opt := range q.options {
+		opt.OnDone()
+	}
 }
 
 type Worker struct {
@@ -96,8 +131,8 @@ func (w *Worker) DoWork() bool {
 					Err: err,
 				}
 				w.ErrorJobs = append(w.ErrorJobs, errJob)
-				continue
 			}
+			w.Queue.Done()
 		}
 	}
 }
