@@ -76,11 +76,13 @@ func (m Migrator) ExtractPageTitle(page notion.Page) string {
 					date := value.Date.Start
 					if val != "" {
 						str += timefmt.Format(date.Time, val)
+					} else {
+						str += date.Time.String()
 					}
 				case notion.DBPropTypeTitle:
 					str += extractPlainTextFromRichText(value.Title)
 				default:
-					panic("not suported")
+					fmt.Printf("type: `%s` for extracting page title not supported\n", value.Type)
 				}
 			}
 		}
