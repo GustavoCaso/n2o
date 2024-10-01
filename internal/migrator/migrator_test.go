@@ -271,14 +271,16 @@ func TestExtractPageTitle(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		migrator := Migrator{
-			Client: nil,
-			Config: test.config,
-			Cache:  nil,
-		}
+		t.Run(test.name, func(t *testing.T) {
+			migrator := Migrator{
+				Client: nil,
+				Config: test.config,
+				Cache:  nil,
+			}
 
-		value := migrator.ExtractPageTitle(test.page)
-		assert.Equal(t, test.expected, value)
+			value := migrator.ExtractPageTitle(test.page)
+			assert.Equal(t, test.expected, value)
+		})
 	}
 }
 
