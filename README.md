@@ -38,7 +38,7 @@ Usage of n2o:
     	Obsidian vault location
 ```
 
-#### Notion token
+#### How to get your Notion token?
 
 To get your Notion token you either have to create an integration or use an existing integration that has access to the workspace you want to migrate. There are a lot of resources in the Notion website.
 
@@ -47,7 +47,7 @@ To get your Notion token you either have to create an integration or use an exis
 
 Once you have your integration installed in your workspace, we can start migrating single pages or full databases to our Obsidian vault.
 
-**How to get the database ID?**
+#### How to get the database ID?
 
 Copied from the Notion website: [Retrieve a database](https://developers.notion.com/reference/retrieve-a-database)
 
@@ -55,7 +55,7 @@ Copied from the Notion website: [Retrieve a database](https://developers.notion.
 
 ![databaseID](img/databaseID.png)
 
-**How to retrieve the Page ID?**
+#### How to retrieve the Page ID?
 
 Copied from the Notion website: [Working with page content](https://developers.notion.com/docs/working-with-page-content)
 > Here's a quick procedure to find the page ID for a specific page in Notion: 
