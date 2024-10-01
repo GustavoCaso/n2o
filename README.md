@@ -1,6 +1,6 @@
-## Notion To Obsidian (n2o)
+## Notion To Obsidian migrator (n2o)
 
-Migration tool for your Notion data to Obsidian
+Migration tool for your Notion workspace to Obsidian
 
 ### Install
 
@@ -8,26 +8,33 @@ To install the binary you could:
 - Use homebrew `brew install n2o`
 - Download the `n2o` tool from releases page.
 
-
 ### Usage
 
 ```
-$ n20
-Usage of n20:
-  -d string
-    	Destination to store pages within Obsidian Vault
-  -db string
-    	database to migrate
-  -i	download external images to Obsidan vault and link in the resulting page
-  -name string
-    	Page attribute to extract the file name. Support selecting different page attribute and formatting. By default we use the page name (default "Name")
+$ n2o
+Usage of n2o:
+   -download-images
+    	download external images to Obsidan vault
+  -notion-db-ID string
+    	Notion database to migrate
+  -notion-page-ID string
+    	Notion page to migrate
+  -notion-token string
+    	Notion token
+  -page-name string
+    	Notion page properties to extract the Obsidian page title.
+    	Support selecting different page attribute and formatting. To select multiple properties, use a comma separate list.
+    	The attribute that support custom formatting are Notion date attributes.
+    	Example of how to use a Notion date property with custom format as the title for the Obsidian page:
+    	-name=date:%Y/%B/%d-%A
+    	 (default "Name")
   -page-properties string
-    	the page properties to convert to frontmater
-  -pageID string
-    	page to migrate
-  -token string
-    	notion token
-  -vault string
+    	Notion page properties to convert to Obsidian frontmater.
+    	You can use select multiple properties, use a comma separate list.
+
+  -vault-folder string
+    	folder to store pages inside Obsidian Vault
+  -vault-path string
     	Obsidian vault location
 ```
 
@@ -63,3 +70,5 @@ TODOS:
 - [ ] Figure out how to parse self-referential links. Transform links like `/<Notion_PAGE_ID>#<BLOCK_ID>` to `[[Page^Block_ID]]` or `[[Page#Block_ID]]`
 - [ ] Better error handling
 - [ ] Use better logging
+- [ ] Create Brew formula
+- [ ] Create Github Action to create a release
