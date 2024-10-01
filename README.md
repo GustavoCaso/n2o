@@ -1,14 +1,14 @@
-## Notion To Obsidian migrator (n2o)
+# Notion To Obsidian migrator (n2o)
 
 Migration tool for your Notion workspace to Obsidian
 
-### Install
+## Install
 
 To install the binary you could:
 - Use homebrew `brew install n2o`
 - Download the `n2o` tool from releases page.
 
-### Usage
+## Usage
 
 ```
 $ n2o
@@ -38,7 +38,7 @@ Usage of n2o:
     	Obsidian vault location
 ```
 
-#### How to get your Notion token?
+## How to get your Notion token?
 
 To get your Notion token you either have to create an integration or use an existing integration that has access to the workspace you want to migrate. There are a lot of resources in the Notion website.
 
@@ -47,7 +47,7 @@ To get your Notion token you either have to create an integration or use an exis
 
 Once you have your integration installed in your workspace, we can start migrating single pages or full databases to our Obsidian vault.
 
-#### How to get the database ID?
+## How to get the database ID?
 
 Copied from the Notion website: [Retrieve a database](https://developers.notion.com/reference/retrieve-a-database)
 
@@ -55,7 +55,7 @@ Copied from the Notion website: [Retrieve a database](https://developers.notion.
 
 ![databaseID](img/databaseID.png)
 
-#### How to retrieve the Page ID?
+## How to retrieve the Page ID?
 
 Copied from the Notion website: [Working with page content](https://developers.notion.com/docs/working-with-page-content)
 > Here's a quick procedure to find the page ID for a specific page in Notion: 
@@ -64,6 +64,20 @@ It should be a 32 character long string. Format this value by inserting hyphens 
 Example: 1429989fe8ac4effbc8f57f56486db54 becomes 1429989f-e8ac-4eff-bc8f-57f56486db54.
 This value is your page ID.
 
+## Examples
+
+### Downaload a single page and convert all page properties to frontmatter
+`n2o -notion-token="NOTION_TOKEN" -notion-page-ID="1429989f-e8ac-4eff-bc8f-57f56486db54" -page-properties="all" -vault-path="/Users/johndoe/Obsidian\ Vault/Testing" -vault-folder="Migrated"`
+
+### Downaload a full database, images, and convert some page properties to frontmatter
+`n2o -notion-token="NOTION_TOKEN" -notion-page-ID="668d797c-76fa-4934-9b05-ad288df2d136" -page-properties="location" -vault-path="/Users/johndoe/Obsidian\ Vault/Testing" -vault-folder="Migrated"` -download-images
+
+### Downaload a full database, and customize the resulting Obsidan page name
+`n2o -notion-token="NOTION_TOKEN" -notion-page-ID="668d797c-76fa-4934-9b05-ad288df2d136" -page-name="date:%Y/%B/%d-%A" -vault-path="/Users/johndoe/Obsidian\ Vault/Testing" -vault-folder="Migrated" -download-images`
+
+For this examples the location of the different pages would be based dynamically from the `date` value in the Notion page property, and the custom format `%Y/%B/%d-%A`. For a list of avalibale formatting options for dates refer to [man 3 strftime](https://linux.die.net/man/3/strftime)
+
+A notion page with the date value `2024-09-30` would be stored in: `/Users/johndoe/Obsidian\ Vault/Testing/Migrated/2024/September/09-Monday`
 
 
 TODOS:
