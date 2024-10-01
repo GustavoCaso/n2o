@@ -149,7 +149,7 @@ func TestExtractPageTitle(t *testing.T) {
 			expected: "scr/vault/notes/Hello.md",
 		},
 		{
-			name: "with database and date title",
+			name: "with database and date title and custom format",
 			config: config.Config{
 				DatabaseID: "0000",
 				PageNameFilters: map[string]string{
@@ -170,6 +170,27 @@ func TestExtractPageTitle(t *testing.T) {
 			expected: "2021/05/18 12:49:00.md",
 		},
 		{
+			name: "with database and date title and no custom format",
+			config: config.Config{
+				DatabaseID: "0000",
+				PageNameFilters: map[string]string{
+					"date": "",
+				},
+			},
+			page: notion.Page{
+				Properties: notion.DatabasePageProperties{
+					"Date": notion.DatabasePageProperty{
+						Type: notion.DBPropTypeDate,
+						Name: "Date",
+						Date: &notion.Date{
+							Start: parseDateTime("2021-05-18T12:49:00.000-05:00"),
+						},
+					},
+				},
+			},
+			expected: "2021-05-18 12:49:00 -0500 -0500.md",
+		},
+		{
 			name: "with page",
 			config: config.Config{
 				PageID: "0000",
@@ -187,17 +208,79 @@ func TestExtractPageTitle(t *testing.T) {
 			},
 			expected: "Hello.md",
 		},
+		{
+			name: "with database and multiple page name filters",
+			config: config.Config{
+				DatabaseID: "0000",
+				PageNameFilters: map[string]string{
+					"title": "",
+					"date":  "%Y/%m/%d",
+				},
+				VaultPath:        "scr/vault",
+				VaultDestination: "notes",
+			},
+			page: notion.Page{
+				Properties: notion.DatabasePageProperties{
+					"Title": notion.DatabasePageProperty{
+						Type: notion.DBPropTypeTitle,
+						Title: []notion.RichText{
+							{
+								PlainText: "Hello",
+							},
+						},
+					},
+					"Date": notion.DatabasePageProperty{
+						Type: notion.DBPropTypeDate,
+						Name: "Date",
+						Date: &notion.Date{
+							Start: parseDateTime("2021-05-18T12:49:00.000-05:00"),
+						},
+					},
+				},
+			},
+			expected: "scr/vault/notes/2021/05/18Hello.md",
+		},
+		{
+			name: "with database and unsupported page name filter",
+			config: config.Config{
+				DatabaseID: "0000",
+				PageNameFilters: map[string]string{
+					"title":    "",
+					"location": "",
+				},
+				VaultPath:        "scr/vault",
+				VaultDestination: "notes",
+			},
+			page: notion.Page{
+				Properties: notion.DatabasePageProperties{
+					"Title": notion.DatabasePageProperty{
+						Type: notion.DBPropTypeTitle,
+						Title: []notion.RichText{
+							{
+								PlainText: "Hello",
+							},
+						},
+					},
+					"Location": notion.DatabasePageProperty{
+						Type: notion.DBPropTypeFiles,
+					},
+				},
+			},
+			expected: "scr/vault/notes/Hello.md",
+		},
 	}
 
 	for _, test := range tests {
-		migrator := Migrator{
-			Client: nil,
-			Config: test.config,
-			Cache:  nil,
-		}
+		t.Run(test.name, func(t *testing.T) {
+			migrator := Migrator{
+				Client: nil,
+				Config: test.config,
+				Cache:  nil,
+			}
 
-		value := migrator.ExtractPageTitle(test.page)
-		assert.Equal(t, test.expected, value)
+			value := migrator.ExtractPageTitle(test.page)
+			assert.Equal(t, test.expected, value)
+		})
 	}
 }
 

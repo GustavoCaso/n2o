@@ -68,19 +68,31 @@ func (m Migrator) ExtractPageTitle(page notion.Page) string {
 
 	if m.Config.DatabaseID != "" {
 		properties := page.Properties.(notion.DatabasePageProperties)
-		for key, value := range properties {
+		sortedPropkeys := make([]string, 0, len(properties))
+
+		for k := range properties {
+			sortedPropkeys = append(sortedPropkeys, k)
+		}
+
+		sort.Strings(sortedPropkeys)
+
+		for _, key := range sortedPropkeys {
+			value := properties[key]
 			val, ok := m.Config.PageNameFilters[strings.ToLower(key)]
+
 			if ok {
 				switch value.Type {
 				case notion.DBPropTypeDate:
 					date := value.Date.Start
 					if val != "" {
 						str += timefmt.Format(date.Time, val)
+					} else {
+						str += date.Time.String()
 					}
 				case notion.DBPropTypeTitle:
 					str += extractPlainTextFromRichText(value.Title)
 				default:
-					panic("not suported")
+					fmt.Printf("type: `%s` for extracting page title not supported\n", value.Type)
 				}
 			}
 		}

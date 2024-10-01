@@ -14,33 +14,44 @@ import (
 	"github.com/GustavoCaso/n2o/internal/queue"
 )
 
-var token = flag.String("token", os.Getenv("NOTION_TOKEN"), "notion token")
-var databaseID = flag.String("db", os.Getenv("NOTION_DATABASE_ID"), "database to migrate")
-var pageID = flag.String("pageID", os.Getenv("NOTION_PAGE_ID"), "page to migrate")
-var pagePropertiesList = flag.String("page-properties", "", "the page properties to convert to frontmater")
-var obsidianVault = flag.String("vault", os.Getenv("OBSIDIAN_VAULT_PATH"), "Obsidian vault location")
-var destination = flag.String("d", "", "Destination to store pages within Obsidian Vault")
-var filenameFromPage = flag.String("name", "Name", "Page attribute to extract the file name. Support selecting different page attribute and formatting. By default we use the page name")
-var storeImages = flag.Bool("i", false, "download external images to Obsidan vault and link in the resulting page")
+var filenameFromPageExplanation = `Notion page properties to extract the Obsidian page title. 
+Support selecting different page attribute and formatting. To select multiple properties, use a comma separate list.
+The attribute that support custom formatting are Notion date attributes.
+Example of how to use a Notion date property with custom format as the title for the Obsidian page:
+-name=date:%Y/%B/%d-%A
+`
+
+var pagePropertiesExplanation = `Notion page properties to convert to Obsidian frontmater.
+You can use select multiple properties, use a comma separate list.
+`
+
+var notionToken = flag.String("notion-token", os.Getenv("N2O_NOTION_TOKEN"), "Notion token")
+var notionDatabaseID = flag.String("notion-db-ID", os.Getenv("N2O_NOTION_DATABASE_ID"), "Notion database to migrate")
+var notionPageID = flag.String("notion-page-ID", os.Getenv("N2O_NOTION_PAGE_ID"), "Notion page to migrate")
+var pagePropertiesList = flag.String("page-properties", "", pagePropertiesExplanation)
+var filenameFromPage = flag.String("page-name", "Name", filenameFromPageExplanation)
+var obsidianVault = flag.String("vault-path", os.Getenv("N2O_OBSIDIAN_VAULT_PATH"), "Obsidian vault location")
+var vaultDestination = flag.String("vault-folder", "", "folder to store pages inside Obsidian Vault")
+var storeImages = flag.Bool("download-images", false, "download external images to Obsidan vault")
 
 func main() {
 	flag.Parse()
 
-	if empty(token) {
+	if empty(notionToken) {
 		flag.Usage()
-		fmt.Println("You must provide the notion token to run the script")
+		fmt.Println("You must provide the notion token")
 		os.Exit(1)
 	}
 
-	if empty(databaseID) && empty(pageID) {
+	if empty(notionDatabaseID) && empty(notionPageID) {
 		flag.Usage()
-		fmt.Println("You must provide a notion database ID or a page ID to run the script")
+		fmt.Println("You must provide a notion database ID or a page ID")
 		os.Exit(1)
 	}
 
-	if !empty(databaseID) && !empty(pageID) {
+	if !empty(notionDatabaseID) && !empty(notionPageID) {
 		flag.Usage()
-		fmt.Println("You must provide a notion database ID or a page ID not both to run the script")
+		fmt.Println("You must provide a notion database ID or a page ID not both")
 		os.Exit(1)
 	}
 
@@ -55,13 +66,13 @@ func main() {
 
 	if empty(obsidianVault) {
 		flag.Usage()
-		fmt.Println("You must provide the obisidian vault path to run the script")
+		fmt.Println("You must provide the Obisidian vault path")
 		os.Exit(1)
 	}
 
-	if empty(destination) {
+	if empty(vaultDestination) {
 		flag.Usage()
-		fmt.Println("You must provide the destination path to run the script")
+		fmt.Println("You must provide the Obsidian vault folder")
 		os.Exit(1)
 	}
 
@@ -79,14 +90,14 @@ func main() {
 	}
 
 	config := config.Config{
-		Token:                   *token,
-		DatabaseID:              *databaseID,
-		PageID:                  *pageID,
+		Token:                   *notionToken,
+		DatabaseID:              *notionDatabaseID,
+		PageID:                  *notionPageID,
 		StoreImages:             *storeImages,
 		PageNameFilters:         pageNameFilters,
 		PagePropertiesToMigrate: pageProperties,
 		VaultPath:               *obsidianVault,
-		VaultDestination:        *destination,
+		VaultDestination:        *vaultDestination,
 	}
 
 	ctx := context.Background()
@@ -110,7 +121,7 @@ func main() {
 	q := queue.NewQueue("migrating notion pages", queue.WithProgressBar())
 
 	for _, page := range pages {
-		// We need to do this, because variables declared in for loops are passed by reference.
+		// We need to do this, because variables declared inside for loops are passed by reference.
 		// Otherwise, our closure will always receive the last item from the page.
 		newPage := page
 
