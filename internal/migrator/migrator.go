@@ -68,8 +68,18 @@ func (m Migrator) ExtractPageTitle(page notion.Page) string {
 
 	if m.Config.DatabaseID != "" {
 		properties := page.Properties.(notion.DatabasePageProperties)
-		for key, value := range properties {
+		sortedPropkeys := make([]string, 0, len(properties))
+
+		for k := range properties {
+			sortedPropkeys = append(sortedPropkeys, k)
+		}
+
+		sort.Strings(sortedPropkeys)
+
+		for _, key := range sortedPropkeys {
+			value := properties[key]
 			val, ok := m.Config.PageNameFilters[strings.ToLower(key)]
+
 			if ok {
 				switch value.Type {
 				case notion.DBPropTypeDate:

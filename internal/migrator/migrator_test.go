@@ -238,7 +238,7 @@ func TestExtractPageTitle(t *testing.T) {
 					},
 				},
 			},
-			expected: "scr/vault/notes/Hello2021/05/18.md",
+			expected: "scr/vault/notes/2021/05/18Hello.md",
 		},
 		{
 			name: "with database and unsupported page name filter",
