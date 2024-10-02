@@ -15,14 +15,14 @@ import (
 )
 
 var filenameFromPageExplanation = `Notion page properties to extract the Obsidian page title. 
-Support selecting different page attribute and formatting. To select multiple properties, use a comma separate list.
-The attribute that support custom formatting are Notion date attributes.
+Support selecting different page attributes and formatting. To select multiple properties, use a comma-separated list.
+The attributes that support custom formatting are Notion date attributes.
 Example of how to use a Notion date property with custom format as the title for the Obsidian page:
 -name=date:%Y/%B/%d-%A
 `
 
 var pagePropertiesExplanation = `Notion page properties to convert to Obsidian frontmater.
-You can use select multiple properties, use a comma separate list.
+You can select multiple properties using a comma-separated list.
 `
 
 var notionToken = flag.String("notion-token", os.Getenv("N2O_NOTION_TOKEN"), "Notion token")
@@ -31,8 +31,8 @@ var notionPageID = flag.String("notion-page-ID", os.Getenv("N2O_NOTION_PAGE_ID")
 var pagePropertiesList = flag.String("page-properties", "", pagePropertiesExplanation)
 var filenameFromPage = flag.String("page-name", "Name", filenameFromPageExplanation)
 var obsidianVault = flag.String("vault-path", os.Getenv("N2O_OBSIDIAN_VAULT_PATH"), "Obsidian vault location")
-var vaultDestination = flag.String("vault-folder", "", "folder to store pages inside Obsidian Vault")
-var storeImages = flag.Bool("download-images", false, "download external images to Obsidan vault")
+var vaultDestination = flag.String("vault-folder", "", "folder to store pages inside the Obsidian Vault")
+var storeImages = flag.Bool("download-images", false, "download external images to the Obsidian vault")
 
 func main() {
 	flag.Parse()
