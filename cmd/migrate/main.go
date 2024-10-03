@@ -33,6 +33,7 @@ var filenameFromPage = flag.String("page-name", "Name", filenameFromPageExplanat
 var obsidianVault = flag.String("vault-path", os.Getenv("N2O_OBSIDIAN_VAULT_PATH"), "Obsidian vault location")
 var vaultDestination = flag.String("vault-folder", "", "folder to store pages inside the Obsidian Vault")
 var storeImages = flag.Bool("download-images", false, "download external images to the Obsidian vault")
+var dryRun = flag.Bool("dry-run", false, "do not write the pages in the Obsidian vault. Output to stdout what pages would be created and their links")
 
 func main() {
 	flag.Parse()
@@ -98,6 +99,7 @@ func main() {
 		PagePropertiesToMigrate: pageProperties,
 		VaultPath:               *obsidianVault,
 		VaultDestination:        *vaultDestination,
+		DryRun:                  *dryRun,
 	}
 
 	ctx := context.Background()
@@ -130,7 +132,11 @@ func main() {
 		job := &queue.Job{
 			Path: path,
 			Run: func() error {
-				return migrator.FetchParseAndSavePage(ctx, page, config.PagePropertiesToMigrate, path)
+				if config.DryRun {
+					return migrator.FetchAndDisplayInformation(ctx, page, path)
+				} else {
+					return migrator.FetchParseAndSavePage(ctx, page, config.PagePropertiesToMigrate, path)
+				}
 			},
 		}
 

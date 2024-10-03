@@ -169,6 +169,27 @@ func (m Migrator) FetchParseAndSavePage(ctx context.Context, page notion.Page, p
 	return nil
 }
 
+func (m Migrator) FetchAndDisplayInformation(ctx context.Context, page notion.Page, storePath string) error {
+	pageBlocks, err := m.Client.FindBlockChildrenByID(ctx, page.ID, nil)
+	if err != nil {
+		return fmt.Errorf("failed to extract children blocks for block ID %s. error: %w", page.ID, err)
+	}
+
+	buffer := bufio.NewWriter(&strings.Builder{})
+
+	// err = m.pageToMarkdown(ctx, pageBlocks.Results, buffer, false)
+
+	// if err != nil {
+	// 	return fmt.Errorf("failed to convert page to markdown. error: %w", err)
+	// }
+
+	// if err = buffer.Flush(); err != nil {
+	// 	return fmt.Errorf("failed to write into the markdown file %s. error: %w", path.Base(m.Config.VaultPath), err)
+	// }
+
+	return nil
+}
+
 func (m Migrator) propertiesToFrontMatter(ctx context.Context, sortedKeys []string, propertites notion.DatabasePageProperties, buffer *bufio.Writer) {
 	buffer.WriteString("---\n")
 	// There is a limitation between Notions and Obsidian.
@@ -628,7 +649,6 @@ func (m Migrator) pageToMarkdown(ctx context.Context, blocks []notion.Block, buf
 				}
 				buffer.WriteString("\n")
 			}
-
 		case *notion.VideoBlock:
 			if block.Type == notion.FileTypeExternal {
 				if indent {
