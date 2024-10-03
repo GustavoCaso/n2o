@@ -52,7 +52,7 @@ To get your Notion token, you either have to create an integration or use an exi
 
 Once your integration is installed in your workspace, we can migrate single pages or complete databases to our Obsidian vault.
 
-## How to get the database ID?
+## How do I get the database ID?
 
 Copied from the Notion website: [Retrieve a database](https://developers.notion.com/reference/retrieve-a-database)
 
@@ -60,7 +60,7 @@ Copied from the Notion website: [Retrieve a database](https://developers.notion.
 
 ![databaseID](img/databaseID.png)
 
-## How to retrieve the Page ID?
+## How do I retrieve the Page ID?
 
 Copied from the Notion website: [Working with page content](https://developers.notion.com/docs/working-with-page-content)
 > Here's a quick procedure to find the page ID for a specific page in Notion: 
