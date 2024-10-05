@@ -112,7 +112,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	pages, err := migrator.FetchPages(ctx)
+	err = migrator.FetchPages(ctx)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
@@ -122,21 +122,15 @@ func main() {
 
 	q := queue.NewQueue("migrating notion pages", queue.WithProgressBar())
 
-	for _, page := range pages {
+	for _, page := range migrator.Pages {
 		// We need to do this, because variables declared inside for loops are passed by reference.
 		// Otherwise, our closure will always receive the last item from the page.
 		newPage := page
 
-		path := migrator.ExtractPageTitle(newPage)
-
 		job := &queue.Job{
-			Path: path,
+			Path: newPage.Path,
 			Run: func() error {
-				if config.DryRun {
-					return migrator.FetchAndDisplayInformation(ctx, page, path)
-				} else {
-					return migrator.FetchParseAndSavePage(ctx, page, config.PagePropertiesToMigrate, path)
-				}
+				return migrator.FetchParseAndSavePage(ctx, newPage, config.PagePropertiesToMigrate)
 			},
 		}
 

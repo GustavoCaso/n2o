@@ -1,7 +1,6 @@
 package migrator
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"embed"
@@ -10,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -38,16 +38,25 @@ func TestFetchPages(t *testing.T) {
 		respStatusCode int
 		config         config.Config
 		hasError       bool
+		assertions     func(t *testing.T, pages []*page)
 	}{
 		{
 			name: "with database ID",
 			config: config.Config{
-				DatabaseID: "000000",
+				DatabaseID:      "000000",
+				PageNameFilters: map[string]string{"name": ""},
 			},
 			statusCode: 200,
 			respBody: func(_ *http.Request) io.Reader {
 				f := mustReadFixture("fixtures/database_query.json")
 				return bytes.NewReader(f)
+			},
+			assertions: func(t *testing.T, pages []*page) {
+				assert.Equal(t, 1, len(pages))
+				p := pages[0]
+				assert.IsType(t, &page{}, p)
+				assert.Equal(t, "Foobar.md", p.Path)
+				assert.Nil(t, p.parent)
 			},
 		},
 		{
@@ -70,6 +79,13 @@ func TestFetchPages(t *testing.T) {
 			respBody: func(_ *http.Request) io.Reader {
 				f := mustReadFixture("fixtures/page_query.json")
 				return bytes.NewReader(f)
+			},
+			assertions: func(t *testing.T, pages []*page) {
+				assert.Equal(t, 1, len(pages))
+				p := pages[0]
+				assert.IsType(t, &page{}, p)
+				assert.Equal(t, "Lorem ipsum.md", p.Path)
+				assert.Nil(t, p.parent)
 			},
 		},
 		{
@@ -105,13 +121,12 @@ func TestFetchPages(t *testing.T) {
 				Cache:  nil,
 			}
 
-			pages, err := migrator.FetchPages(context.TODO())
+			err := migrator.FetchPages(context.TODO())
 			if test.hasError {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, 1, len(pages))
-				assert.IsType(t, notion.Page{}, pages[0])
+				test.assertions(t, migrator.Pages)
 			}
 		})
 	}
@@ -290,17 +305,16 @@ func TestExtractPageTitle(t *testing.T) {
 func TestFetchParseAndSavePage(t *testing.T) {
 	tests := []struct {
 		name             string
-		page             notion.Page
 		statusCode       int
 		respBody         func(*http.Request) io.Reader
 		pageProperties   map[string]bool
 		expected         string
 		config           config.Config
 		customAssertions func(t *testing.T, path string)
+		buildPages       func(path string) []*page
 	}{
 		{
 			name:       "store page in the correct path and format markdown correctly",
-			page:       notion.Page{ID: "1"},
 			statusCode: 200,
 			respBody: func(_ *http.Request) io.Reader {
 				f, err := fixtures.ReadFile("fixtures/page_blocks.json")
@@ -314,150 +328,20 @@ func TestFetchParseAndSavePage(t *testing.T) {
 [Lacinato kale is a variety of kale with a long tradition in Italian cuisine, especially that of Tuscany. It is also known as Tuscan kale, Italian kale, dinosaur kale, kale, flat back kale, palm tree kale, or black Tuscan palm.](https://en.wikipedia.org/wiki/Lacinato_kale)
 `,
 			config: config.Config{},
+			buildPages: func(path string) []*page {
+				return []*page{
+					{
+						id:         "1",
+						buffer:     &strings.Builder{},
+						notionPage: notion.Page{ID: "1"},
+						parent:     nil,
+						Path:       filepath.Join(path, "example.md"),
+					},
+				}
+			},
 		},
 		{
-			name: "store page with frontmatter",
-			page: notion.Page{
-				ID: "1",
-				Parent: notion.Parent{
-					Type: notion.ParentTypeDatabase,
-				},
-				Properties: notion.DatabasePageProperties{
-					"Title": notion.DatabasePageProperty{
-						Type: notion.DBPropTypeTitle,
-						Title: []notion.RichText{
-							{
-								PlainText: "Hello",
-							},
-						},
-					},
-					"Age": notion.DatabasePageProperty{
-						Type:   notion.DBPropTypeNumber,
-						Number: notion.Float64Ptr(34),
-					},
-					"People": notion.DatabasePageProperty{
-						Type: notion.DBPropTypePeople,
-						Name: "People",
-						People: []notion.User{
-							{
-								BaseUser: notion.BaseUser{
-									ID: "be32e790-8292-46df-a248-b784fdf483cf",
-								},
-								Name:      "Jane Doe",
-								AvatarURL: "https://example.com/image.png",
-								Type:      notion.UserTypePerson,
-								Person: &notion.Person{
-									Email: "jane@example.com",
-								},
-							},
-						},
-					},
-					"Files": notion.DatabasePageProperty{
-						Type: notion.DBPropTypeFiles,
-						Name: "Files",
-						Files: []notion.File{
-							{
-								Name: "foobar.pdf",
-							},
-						},
-					},
-					"Checkbox": notion.DatabasePageProperty{
-						ID:       "49S@",
-						Type:     notion.DBPropTypeCheckbox,
-						Name:     "Checkbox",
-						Checkbox: notion.BoolPtr(true),
-					},
-					"Calculation": notion.DatabasePageProperty{
-						Type: notion.DBPropTypeFormula,
-						Name: "Calculation",
-						Formula: &notion.FormulaResult{
-							Type:   notion.FormulaResultTypeNumber,
-							Number: notion.Float64Ptr(float64(42)),
-						},
-					},
-					"URL": notion.DatabasePageProperty{
-						Type: notion.DBPropTypeURL,
-						Name: "URL",
-						URL:  notion.StringPtr("https://example.com"),
-					},
-					"Email": notion.DatabasePageProperty{
-						Type:  notion.DBPropTypeEmail,
-						Name:  "Email",
-						Email: notion.StringPtr("jane@example.com"),
-					},
-					"PhoneNumber": notion.DatabasePageProperty{
-						Type:        notion.DBPropTypePhoneNumber,
-						Name:        "PhoneNumber",
-						PhoneNumber: notion.StringPtr("867-5309"),
-					},
-					"CreatedTime": notion.DatabasePageProperty{
-						Type:        notion.DBPropTypeCreatedTime,
-						Name:        "Created time",
-						CreatedTime: notion.TimePtr(parseTime(time.RFC3339Nano, "2021-05-24T15:44:09.123Z")),
-					},
-					"CreatedBy": notion.DatabasePageProperty{
-						Type: notion.DBPropTypeCreatedBy,
-						Name: "Created by",
-						CreatedBy: &notion.User{
-							BaseUser: notion.BaseUser{
-								ID: "be32e790-8292-46df-a248-b784fdf483cf",
-							},
-							Name:      "Jane Doe",
-							AvatarURL: "https://example.com/image.png",
-							Type:      notion.UserTypePerson,
-							Person: &notion.Person{
-								Email: "jane@example.com",
-							},
-						},
-					},
-					"LastEditedTime": notion.DatabasePageProperty{
-						Type:           notion.DBPropTypeLastEditedTime,
-						Name:           "Last edited time",
-						LastEditedTime: notion.TimePtr(parseTime(time.RFC3339Nano, "2021-05-24T15:44:09.123Z")),
-					},
-					"LastEditedBy": notion.DatabasePageProperty{
-						Type: notion.DBPropTypeLastEditedBy,
-						Name: "Last edited by",
-						LastEditedBy: &notion.User{
-							BaseUser: notion.BaseUser{
-								ID: "be32e790-8292-46df-a248-b784fdf483cf",
-							},
-							Name:      "Jane Doe",
-							AvatarURL: "https://example.com/image.png",
-							Type:      notion.UserTypePerson,
-							Person: &notion.Person{
-								Email: "jane@example.com",
-							},
-						},
-					},
-					"Relation": notion.DatabasePageProperty{
-						Type: notion.DBPropTypeRelation,
-						Name: "Relation",
-						Relation: []notion.Relation{
-							{
-								ID: "2be9597f-693f-4b87-baf9-efc545d38ebe",
-							},
-						},
-					},
-					"Rollup": notion.DatabasePageProperty{
-						Type: notion.DBPropTypeRollup,
-						Name: "Rollup",
-						Rollup: &notion.RollupResult{
-							Type: notion.RollupResultTypeArray,
-							Array: []notion.DatabasePageProperty{
-								{
-									Type:   notion.DBPropTypeNumber,
-									Number: notion.Float64Ptr(42),
-								},
-								{
-									Type:   notion.DBPropTypeNumber,
-									Number: notion.Float64Ptr(10),
-								},
-							},
-						},
-					},
-				},
-			},
+			name:       "store page with frontmatter",
 			statusCode: 200,
 			respBody: func(_ *http.Request) io.Reader {
 				f, err := fixtures.ReadFile("fixtures/page_blocks.json")
@@ -500,12 +384,160 @@ URL: https://example.com
 [Lacinato kale is a variety of kale with a long tradition in Italian cuisine, especially that of Tuscany. It is also known as Tuscan kale, Italian kale, dinosaur kale, kale, flat back kale, palm tree kale, or black Tuscan palm.](https://en.wikipedia.org/wiki/Lacinato_kale)
 `,
 			config: config.Config{},
+			buildPages: func(path string) []*page {
+				return []*page{
+					{
+						id:     "1",
+						buffer: &strings.Builder{},
+						notionPage: notion.Page{
+							ID: "1",
+							Parent: notion.Parent{
+								Type: notion.ParentTypeDatabase,
+							},
+							Properties: notion.DatabasePageProperties{
+								"Title": notion.DatabasePageProperty{
+									Type: notion.DBPropTypeTitle,
+									Title: []notion.RichText{
+										{
+											PlainText: "Hello",
+										},
+									},
+								},
+								"Age": notion.DatabasePageProperty{
+									Type:   notion.DBPropTypeNumber,
+									Number: notion.Float64Ptr(34),
+								},
+								"People": notion.DatabasePageProperty{
+									Type: notion.DBPropTypePeople,
+									Name: "People",
+									People: []notion.User{
+										{
+											BaseUser: notion.BaseUser{
+												ID: "be32e790-8292-46df-a248-b784fdf483cf",
+											},
+											Name:      "Jane Doe",
+											AvatarURL: "https://example.com/image.png",
+											Type:      notion.UserTypePerson,
+											Person: &notion.Person{
+												Email: "jane@example.com",
+											},
+										},
+									},
+								},
+								"Files": notion.DatabasePageProperty{
+									Type: notion.DBPropTypeFiles,
+									Name: "Files",
+									Files: []notion.File{
+										{
+											Name: "foobar.pdf",
+										},
+									},
+								},
+								"Checkbox": notion.DatabasePageProperty{
+									ID:       "49S@",
+									Type:     notion.DBPropTypeCheckbox,
+									Name:     "Checkbox",
+									Checkbox: notion.BoolPtr(true),
+								},
+								"Calculation": notion.DatabasePageProperty{
+									Type: notion.DBPropTypeFormula,
+									Name: "Calculation",
+									Formula: &notion.FormulaResult{
+										Type:   notion.FormulaResultTypeNumber,
+										Number: notion.Float64Ptr(float64(42)),
+									},
+								},
+								"URL": notion.DatabasePageProperty{
+									Type: notion.DBPropTypeURL,
+									Name: "URL",
+									URL:  notion.StringPtr("https://example.com"),
+								},
+								"Email": notion.DatabasePageProperty{
+									Type:  notion.DBPropTypeEmail,
+									Name:  "Email",
+									Email: notion.StringPtr("jane@example.com"),
+								},
+								"PhoneNumber": notion.DatabasePageProperty{
+									Type:        notion.DBPropTypePhoneNumber,
+									Name:        "PhoneNumber",
+									PhoneNumber: notion.StringPtr("867-5309"),
+								},
+								"CreatedTime": notion.DatabasePageProperty{
+									Type:        notion.DBPropTypeCreatedTime,
+									Name:        "Created time",
+									CreatedTime: notion.TimePtr(parseTime(time.RFC3339Nano, "2021-05-24T15:44:09.123Z")),
+								},
+								"CreatedBy": notion.DatabasePageProperty{
+									Type: notion.DBPropTypeCreatedBy,
+									Name: "Created by",
+									CreatedBy: &notion.User{
+										BaseUser: notion.BaseUser{
+											ID: "be32e790-8292-46df-a248-b784fdf483cf",
+										},
+										Name:      "Jane Doe",
+										AvatarURL: "https://example.com/image.png",
+										Type:      notion.UserTypePerson,
+										Person: &notion.Person{
+											Email: "jane@example.com",
+										},
+									},
+								},
+								"LastEditedTime": notion.DatabasePageProperty{
+									Type:           notion.DBPropTypeLastEditedTime,
+									Name:           "Last edited time",
+									LastEditedTime: notion.TimePtr(parseTime(time.RFC3339Nano, "2021-05-24T15:44:09.123Z")),
+								},
+								"LastEditedBy": notion.DatabasePageProperty{
+									Type: notion.DBPropTypeLastEditedBy,
+									Name: "Last edited by",
+									LastEditedBy: &notion.User{
+										BaseUser: notion.BaseUser{
+											ID: "be32e790-8292-46df-a248-b784fdf483cf",
+										},
+										Name:      "Jane Doe",
+										AvatarURL: "https://example.com/image.png",
+										Type:      notion.UserTypePerson,
+										Person: &notion.Person{
+											Email: "jane@example.com",
+										},
+									},
+								},
+								"Relation": notion.DatabasePageProperty{
+									Type: notion.DBPropTypeRelation,
+									Name: "Relation",
+									Relation: []notion.Relation{
+										{
+											ID: "2be9597f-693f-4b87-baf9-efc545d38ebe",
+										},
+									},
+								},
+								"Rollup": notion.DatabasePageProperty{
+									Type: notion.DBPropTypeRollup,
+									Name: "Rollup",
+									Rollup: &notion.RollupResult{
+										Type: notion.RollupResultTypeArray,
+										Array: []notion.DatabasePageProperty{
+											{
+												Type:   notion.DBPropTypeNumber,
+												Number: notion.Float64Ptr(42),
+											},
+											{
+												Type:   notion.DBPropTypeNumber,
+												Number: notion.Float64Ptr(10),
+											},
+										},
+									},
+								},
+							},
+						},
+						parent: nil,
+						Path:   filepath.Join(path, "example.md"),
+					},
+				}
+			},
 		},
 		{
-			name: "store nested pages and creates subfolder in correct location",
-			page: notion.Page{
-				ID: "1",
-			},
+			name:       "store nested pages and creates subfolder in correct location",
 			statusCode: 200,
 			respBody: func(r *http.Request) io.Reader {
 				readFixture := func(path string) io.Reader {
@@ -527,6 +559,17 @@ URL: https://example.com
 					return readFixture("fixtures/page_blocks.json")
 				default:
 					panic(fmt.Sprintf("unhandled URL: %s", r.URL.String()))
+				}
+			},
+			buildPages: func(path string) []*page {
+				return []*page{
+					{
+						id:         "1",
+						buffer:     &strings.Builder{},
+						notionPage: notion.Page{ID: "1"},
+						parent:     nil,
+						Path:       filepath.Join(path, "example.md"),
+					},
 				}
 			},
 			customAssertions: func(t *testing.T, path string) {
@@ -566,21 +609,122 @@ URL: https://example.com
 				Client: client,
 				Config: test.config,
 				Cache:  cache.NewCache(),
+				Pages:  test.buildPages(tempDir),
 			}
 
-			destination := filepath.Join(tempDir, "example.md")
+			ctx := context.TODO()
 
-			err := migrator.FetchParseAndSavePage(context.TODO(), test.page, test.pageProperties, destination)
-			assert.NoError(t, err)
+			for _, page := range migrator.Pages {
+				err := migrator.FetchParseAndSavePage(ctx, page, test.pageProperties)
+				assert.NoError(t, err)
+			}
 
-			content, err := os.ReadFile(destination)
-			assert.NoError(t, err)
-			assert.Equal(t, test.expected, string(content))
+			for _, page := range migrator.Pages {
+				content, err := os.ReadFile(page.Path)
+				assert.NoError(t, err)
+				assert.Equal(t, test.expected, string(content))
+			}
+
 			if test.customAssertions != nil {
 				test.customAssertions(t, tempDir)
 			}
 		})
+	}
+}
 
+func TestFetchParseAndSavePageDryRun(t *testing.T) {
+	tests := []struct {
+		name           string
+		statusCode     int
+		respBody       func(*http.Request) io.Reader
+		buildPages     func(path string) []*page
+		pageProperties map[string]bool
+		config         config.Config
+	}{
+		{
+			name:       "dry-run nested pages",
+			statusCode: 200,
+			respBody: func(r *http.Request) io.Reader {
+				readFixture := func(path string) io.Reader {
+					f := mustReadFixture(path)
+					return bytes.NewReader(f)
+				}
+
+				switch r.URL.String() {
+				case "https://api.notion.com/v1/blocks/1/children":
+					// The nested page that we will fetch is called `ANSI Codes for the terminal`
+					return readFixture("fixtures/page_blocks_nested_pages.json")
+				case "https://api.notion.com/v1/pages/a8401073-0e1a-481f-bc9b-8093c7edadca":
+					return readFixture("fixtures/nested_page.json")
+				case "https://api.notion.com/v1/databases/50780e7e-09d3-4ca6-9045-86263009c971":
+					// The title of the DB is Personal Notes
+					// It will create a new folder and file on that location
+					return readFixture("fixtures/get_database.json")
+				case "https://api.notion.com/v1/blocks/17dc62b4-0331-4842-b886-af07bd576af2/children":
+					return readFixture("fixtures/page_blocks.json")
+				default:
+					panic(fmt.Sprintf("unhandled URL: %s", r.URL.String()))
+				}
+			},
+			buildPages: func(path string) []*page {
+				return []*page{
+					{
+						id:         "1",
+						buffer:     &strings.Builder{},
+						notionPage: notion.Page{ID: "1"},
+						parent:     nil,
+						Path:       filepath.Join(path, "example.md"),
+					},
+				}
+			},
+			pageProperties: map[string]bool{},
+			config: config.Config{
+				DryRun: true,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: test.statusCode,
+						Status:     http.StatusText(test.statusCode),
+						Body:       io.NopCloser(test.respBody(r)),
+					}, nil
+				}},
+			}
+
+			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+
+			tempDir := t.TempDir()
+
+			test.config.VaultPath = tempDir
+
+			migrator := Migrator{
+				Client: client,
+				Config: test.config,
+				Cache:  cache.NewCache(),
+				Pages:  test.buildPages(tempDir),
+			}
+
+			ctx := context.TODO()
+
+			assert.Equal(t, 1, len(migrator.Pages))
+
+			output, err := captureStdout(func() error {
+				return migrator.FetchParseAndSavePage(ctx, migrator.Pages[0], test.pageProperties)
+			})
+			assert.NoError(t, err)
+
+			expectedFormat := `%s/example.md
+  |-> %s/Personal Notes/ANSI Codes for the terminal.md
+`
+			expected := fmt.Sprintf(expectedFormat, tempDir, tempDir)
+
+			assert.Equal(t, expected, output)
+		})
 	}
 }
 
@@ -591,9 +735,6 @@ func TestWriteRichText_Annotations(t *testing.T) {
 		Cache:  nil,
 	}
 	ctx := context.Background()
-
-	b := &bytes.Buffer{}
-	buffer := bufio.NewWriter(b)
 
 	tests := []struct {
 		name           string
@@ -788,26 +929,14 @@ func TestWriteRichText_Annotations(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(*testing.T) {
-			err := migrator.writeRichText(ctx, buffer, test.notionRichText)
-
-			if err != nil {
-				t.Error("expected nil")
+			buffer := &strings.Builder{}
+			parentPage := &page{
+				buffer: &strings.Builder{},
 			}
+			err := migrator.writeRichText(ctx, parentPage, buffer, test.notionRichText)
+			assert.NoError(t, err)
 
-			err = buffer.Flush()
-			if err != nil {
-				t.Error("expected nil")
-			}
-
-			result := b.String()
-
-			if result != test.name {
-				t.Errorf("incorrect result expected '%s' got: %s", test.name, result)
-			}
-
-			// Reset
-			b = &bytes.Buffer{}
-			buffer = bufio.NewWriter(b)
+			assert.Equal(t, test.name, parentPage.buffer.String())
 		})
 	}
 }
@@ -835,4 +964,17 @@ func mustReadFixture(path string) []byte {
 	}
 
 	return f
+}
+
+func captureStdout(f func() error) (string, error) {
+	rescueStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	err := f()
+
+	os.Stdout = rescueStdout
+	w.Close()
+	out, _ := io.ReadAll(r)
+	return string(out), err
 }

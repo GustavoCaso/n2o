@@ -19,23 +19,33 @@ import (
 	"github.com/itchyny/timefmt-go"
 )
 
+type page struct {
+	Path       string
+	id         string
+	buffer     *strings.Builder
+	notionPage notion.Page
+	parent     *page
+	children   []*page
+}
+
 type Migrator struct {
 	Client *notion.Client
 	Config config.Config
 	Cache  *cache.Cache
+	Pages  []*page
 }
 
-func NewMigrator(config config.Config, cache *cache.Cache) Migrator {
+func NewMigrator(config config.Config, cache *cache.Cache) *Migrator {
 	client := notion.NewClient(config.Token)
 
-	return Migrator{
+	return &Migrator{
 		Client: client,
 		Config: config,
 		Cache:  cache,
 	}
 }
 
-func (m Migrator) Setup() error {
+func (m *Migrator) Setup() error {
 	if m.Config.StoreImages {
 		err := os.MkdirAll(m.Config.VaultFilepath(), 0770)
 		if err != nil {
@@ -45,25 +55,48 @@ func (m Migrator) Setup() error {
 	return nil
 }
 
-func (m Migrator) FetchPages(ctx context.Context) ([]notion.Page, error) {
+func (m *Migrator) FetchPages(ctx context.Context) error {
 	if m.Config.DatabaseID != "" {
-		pages, err := m.fetchNotionDBPages(ctx)
+		notionPages, err := m.fetchNotionDBPages(ctx)
 		if err != nil {
-			return []notion.Page{}, fmt.Errorf("failed to gets all pages from DB %s. error: %s\n", m.Config.DatabaseID, err.Error())
+			return fmt.Errorf("failed to gets all pages from DB %s. error: %s\n", m.Config.DatabaseID, err.Error())
+		}
+		pages := make([]*page, len(notionPages))
+
+		for i, notionPage := range notionPages {
+			pages[i] = &page{
+				id:         notionPage.ID,
+				buffer:     &strings.Builder{},
+				Path:       m.ExtractPageTitle(notionPage),
+				notionPage: notionPage,
+				parent:     nil,
+			}
 		}
 
-		return pages, nil
+		m.Pages = pages
+
+		return nil
 	} else {
-		page, err := m.Client.FindPageByID(context.Background(), m.Config.PageID)
+		notionPage, err := m.Client.FindPageByID(context.Background(), m.Config.PageID)
 		if err != nil {
-			return []notion.Page{}, fmt.Errorf("failed to find the page %s make sure the page exists in your Notioin workspace. error: %s\n", m.Config.PageID, err.Error())
+			return fmt.Errorf("failed to find the page %s make sure the page exists in your Notioin workspace. error: %s\n", m.Config.PageID, err.Error())
 		}
 
-		return []notion.Page{page}, nil
+		m.Pages = []*page{
+			{
+				id:         notionPage.ID,
+				buffer:     &strings.Builder{},
+				Path:       m.ExtractPageTitle(notionPage),
+				notionPage: notionPage,
+				parent:     nil,
+			},
+		}
+
+		return nil
 	}
 }
 
-func (m Migrator) ExtractPageTitle(page notion.Page) string {
+func (m *Migrator) ExtractPageTitle(page notion.Page) string {
 	var str string
 
 	if m.Config.DatabaseID != "" {
@@ -105,28 +138,28 @@ func (m Migrator) ExtractPageTitle(page notion.Page) string {
 	return path.Join(m.Config.VaultFilepath(), fileName)
 }
 
-func (m Migrator) FetchParseAndSavePage(ctx context.Context, page notion.Page, pageProperties map[string]bool, storePath string) error {
-	pageBlocks, err := m.Client.FindBlockChildrenByID(ctx, page.ID, nil)
+func (m *Migrator) FetchParseAndSavePage(ctx context.Context, page *page, pageProperties map[string]bool) error {
+	err := m.fetchParseAndSavePage(ctx, page, pageProperties)
+
 	if err != nil {
-		return fmt.Errorf("failed to extract children blocks for block ID %s. error: %w", page.ID, err)
+		return err
 	}
 
-	if err := os.MkdirAll(filepath.Dir(storePath), 0770); err != nil {
-		return fmt.Errorf("failed to create the necessary directories in for the Obsidian vault.  error: %w", err)
+	if m.Config.DryRun {
+		return m.displayInformation(ctx)
+	} else {
+		return m.writePagesToDisk(ctx)
 	}
+}
 
-	f, err := os.Create(storePath)
+func (m *Migrator) fetchParseAndSavePage(ctx context.Context, page *page, pageProperties map[string]bool) error {
+	pageBlocks, err := m.Client.FindBlockChildrenByID(ctx, page.notionPage.ID, nil)
 	if err != nil {
-		return fmt.Errorf("failed to create the markdown file %s. error: %w", path.Base(storePath), err)
+		return fmt.Errorf("failed to extract children blocks for block ID %s. error: %w", page.notionPage.ID, err)
 	}
 
-	defer f.Close()
-
-	// create new buffer
-	buffer := bufio.NewWriter(f)
-
-	if page.Parent.Type == notion.ParentTypeDatabase && len(pageProperties) > 0 {
-		props := page.Properties.(notion.DatabasePageProperties)
+	if page.notionPage.Parent.Type == notion.ParentTypeDatabase && len(pageProperties) > 0 {
+		props := page.notionPage.Properties.(notion.DatabasePageProperties)
 
 		frotmatterProps := make(notion.DatabasePageProperties)
 
@@ -152,45 +185,80 @@ func (m Migrator) FetchParseAndSavePage(ctx context.Context, page notion.Page, p
 		}
 
 		if len(frotmatterProps) > 0 {
-			m.propertiesToFrontMatter(ctx, sortedPropkeys, frotmatterProps, buffer)
+			m.propertiesToFrontMatter(ctx, page, sortedPropkeys, frotmatterProps, page.buffer)
 		}
 	}
 
-	err = m.pageToMarkdown(ctx, pageBlocks.Results, buffer, false)
+	err = m.pageToMarkdown(ctx, page, pageBlocks.Results, false)
 
 	if err != nil {
 		return fmt.Errorf("failed to convert page to markdown. error: %w", err)
 	}
 
-	if err = buffer.Flush(); err != nil {
-		return fmt.Errorf("failed to write into the markdown file %s. error: %w", path.Base(m.Config.VaultPath), err)
+	return nil
+}
+
+func (m *Migrator) displayInformation(ctx context.Context) error {
+	buffer := bufio.NewWriter(os.Stdout)
+	for _, page := range m.Pages {
+		buffer.WriteString(fmt.Sprintf("%s\n", page.Path))
+		displayPageInfo(page, buffer)
+	}
+
+	if err := buffer.Flush(); err != nil {
+		return fmt.Errorf("failed to write into stdout. error: %w", err)
 	}
 
 	return nil
 }
 
-func (m Migrator) FetchAndDisplayInformation(ctx context.Context, page notion.Page, storePath string) error {
-	pageBlocks, err := m.Client.FindBlockChildrenByID(ctx, page.ID, nil)
+func displayPageInfo(page *page, buffer *bufio.Writer) {
+	for i, childPage := range page.children {
+		spaces := (i + 1) * 5
+		buffer.WriteString(fmt.Sprintf("%*s %s\n", spaces, "|->", childPage.Path))
+		displayPageInfo(childPage, buffer)
+	}
+}
+
+func (m *Migrator) writePagesToDisk(ctx context.Context) error {
+	for _, page := range m.Pages {
+		err := writePage(page)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func writePage(page *page) error {
+	if err := os.MkdirAll(filepath.Dir(page.Path), 0770); err != nil {
+		return fmt.Errorf("failed to create the necessary directories in for the Obsidian vault.  error: %w", err)
+	}
+
+	f, err := os.Create(page.Path)
 	if err != nil {
-		return fmt.Errorf("failed to extract children blocks for block ID %s. error: %w", page.ID, err)
+		return fmt.Errorf("failed to create the markdown file %s. error: %w", path.Base(page.Path), err)
 	}
 
-	buffer := bufio.NewWriter(&strings.Builder{})
+	defer f.Close()
 
-	// err = m.pageToMarkdown(ctx, pageBlocks.Results, buffer, false)
+	_, err = f.WriteString(page.buffer.String())
+	if err != nil {
+		return err
+	}
 
-	// if err != nil {
-	// 	return fmt.Errorf("failed to convert page to markdown. error: %w", err)
-	// }
-
-	// if err = buffer.Flush(); err != nil {
-	// 	return fmt.Errorf("failed to write into the markdown file %s. error: %w", path.Base(m.Config.VaultPath), err)
-	// }
+	for _, childPage := range page.children {
+		childErr := writePage(childPage)
+		if childErr != nil {
+			return childErr
+		}
+	}
 
 	return nil
 }
 
-func (m Migrator) propertiesToFrontMatter(ctx context.Context, sortedKeys []string, propertites notion.DatabasePageProperties, buffer *bufio.Writer) {
+func (m *Migrator) propertiesToFrontMatter(ctx context.Context, parentPage *page, sortedKeys []string, propertites notion.DatabasePageProperties, buffer *strings.Builder) {
 	buffer.WriteString("---\n")
 	// There is a limitation between Notions and Obsidian.
 	// If the property is named tags in Notion it has ramifications in Obsidian
@@ -240,24 +308,22 @@ func (m Migrator) propertiesToFrontMatter(ctx context.Context, sortedKeys []stri
 		case notion.DBPropTypeRelation:
 			// TODO: Needs to handle relations bigger then 25
 			// https://developers.notion.com/reference/retrieve-a-page-property
-			b := &bytes.Buffer{}
-			relationBuffer := bufio.NewWriter(b)
+			b := &strings.Builder{}
 			for i, relation := range value.Relation {
 				if i == 0 {
-					relationBuffer.WriteString("\n  - ")
+					b.WriteString("\n  - ")
 				} else {
-					relationBuffer.WriteString("  - ")
+					b.WriteString("  - ")
 				}
 
-				err := m.fetchPage(ctx, relation.ID, "", relationBuffer, true)
+				err := m.fetchPage(ctx, parentPage, relation.ID, "", b, true)
 				if err != nil {
 					// We do not want to break the migration proccess for this case
 					fmt.Println("failed to get page relation for frontmatter")
 					continue
 				}
-				relationBuffer.WriteString("\n")
+				b.WriteString("\n")
 			}
-			relationBuffer.Flush()
 			buffer.WriteString(fmt.Sprintf("%s: %s\n", key, b.String()))
 		case notion.DBPropTypeRollup:
 			switch value.Rollup.Type {
@@ -306,7 +372,7 @@ const Untitled = "Untitled"
 // If the page title has been provided it will use it, if is an empty string it will try to extracted from the page information.
 // The logic to extract the title varies depending on the page parent's type.
 // TODO: handle better the quote logic
-func (m Migrator) fetchPage(ctx context.Context, pageID, title string, buffer *bufio.Writer, quotes bool) error {
+func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, title string, buffer *strings.Builder, quotes bool) error {
 	val, ok := m.Cache.Get(pageID)
 	if ok {
 		buffer.WriteString(val)
@@ -365,19 +431,29 @@ func (m Migrator) fetchPage(ctx context.Context, pageID, title string, buffer *b
 				childPath = fmt.Sprintf("%s.md", childTitle)
 			}
 
-			if err = m.FetchParseAndSavePage(ctx, mentionPage, emptyList, path.Join(m.Config.VaultFilepath(), childPath)); err != nil {
+			newPage := &page{
+				id:         mentionPage.ID,
+				notionPage: mentionPage,
+				buffer:     &strings.Builder{},
+				parent:     parentPage,
+				Path:       path.Join(m.Config.VaultFilepath(), childPath),
+			}
+
+			parentPage.children = append(parentPage.children, newPage)
+
+			if err = m.fetchParseAndSavePage(ctx, newPage, emptyList); err != nil {
 				return fmt.Errorf("failed to fetch and save mention page %s content with DB %s. error: %w", childTitle, mentionPage.Parent.DatabaseID, err)
 			}
 		case notion.ParentTypeBlock:
-			parentPage, err := m.Client.FindPageByID(ctx, mentionPage.Parent.BlockID)
+			notionParentPage, err := m.Client.FindPageByID(ctx, mentionPage.Parent.BlockID)
 			if err != nil {
 				return fmt.Errorf("failed to find parent block %s.  error: %w", mentionPage.Parent.BlockID, err)
 			}
 			if extractTitle {
 				var title []notion.RichText
 
-				if parentPage.Parent.Type == notion.ParentTypeDatabase {
-					props := parentPage.Properties.(notion.DatabasePageProperties)
+				if notionParentPage.Parent.Type == notion.ParentTypeDatabase {
+					props := notionParentPage.Properties.(notion.DatabasePageProperties)
 					for _, val := range props {
 						if val.Type == notion.DBPropTypeTitle {
 							title = val.Title
@@ -385,18 +461,28 @@ func (m Migrator) fetchPage(ctx context.Context, pageID, title string, buffer *b
 						}
 					}
 				} else {
-					props := parentPage.Properties.(notion.PageProperties)
+					props := notionParentPage.Properties.(notion.PageProperties)
 					title = props.Title.Title
 				}
 
 				childTitle = extractPlainTextFromRichText(title)
 			}
 
-			if err = m.FetchParseAndSavePage(ctx, mentionPage, emptyList, path.Join(m.Config.VaultFilepath(), childTitle)); err != nil {
+			newPage := &page{
+				id:         mentionPage.ID,
+				notionPage: mentionPage,
+				buffer:     &strings.Builder{},
+				parent:     parentPage,
+				Path:       path.Join(m.Config.VaultFilepath(), childTitle),
+			}
+
+			parentPage.children = append(parentPage.children, newPage)
+
+			if err = m.fetchParseAndSavePage(ctx, newPage, emptyList); err != nil {
 				return fmt.Errorf("failed to fetch and save mention page %s content with block parent %s. error: %w", childTitle, mentionPage.Parent.BlockID, err)
 			}
 		case notion.ParentTypePage:
-			parentPage, err := m.Client.FindPageByID(ctx, mentionPage.Parent.PageID)
+			notionParentPage, err := m.Client.FindPageByID(ctx, mentionPage.Parent.PageID)
 			if err != nil {
 				return fmt.Errorf("failed to find parent mention page %s.  error: %w", mentionPage.Parent.PageID, err)
 			}
@@ -404,8 +490,8 @@ func (m Migrator) fetchPage(ctx context.Context, pageID, title string, buffer *b
 			if extractTitle {
 				var title []notion.RichText
 
-				if parentPage.Parent.Type == notion.ParentTypeDatabase {
-					props := parentPage.Properties.(notion.DatabasePageProperties)
+				if notionParentPage.Parent.Type == notion.ParentTypeDatabase {
+					props := notionParentPage.Properties.(notion.DatabasePageProperties)
 					for _, val := range props {
 						if val.Type == notion.DBPropTypeTitle {
 							title = val.Title
@@ -413,14 +499,24 @@ func (m Migrator) fetchPage(ctx context.Context, pageID, title string, buffer *b
 						}
 					}
 				} else {
-					props := parentPage.Properties.(notion.PageProperties)
+					props := notionParentPage.Properties.(notion.PageProperties)
 					title = props.Title.Title
 				}
 
 				childTitle = extractPlainTextFromRichText(title)
 			}
 
-			if err = m.FetchParseAndSavePage(ctx, mentionPage, emptyList, path.Join(m.Config.VaultFilepath(), childTitle)); err != nil {
+			newPage := &page{
+				id:         mentionPage.ID,
+				notionPage: mentionPage,
+				buffer:     &strings.Builder{},
+				parent:     parentPage,
+				Path:       path.Join(m.Config.VaultFilepath(), childTitle),
+			}
+
+			parentPage.children = append(parentPage.children, newPage)
+
+			if err = m.fetchParseAndSavePage(ctx, newPage, emptyList); err != nil {
 				fmt.Printf("failed to fetch mention page content with page parent: %s\n", childTitle)
 			}
 		default:
@@ -442,8 +538,9 @@ func (m Migrator) fetchPage(ctx context.Context, pageID, title string, buffer *b
 	return nil
 }
 
-func (m Migrator) pageToMarkdown(ctx context.Context, blocks []notion.Block, buffer *bufio.Writer, indent bool) error {
+func (m *Migrator) pageToMarkdown(ctx context.Context, parentPage *page, blocks []notion.Block, indent bool) error {
 	var err error
+	buffer := parentPage.buffer
 
 	for _, object := range blocks {
 		switch block := object.(type) {
@@ -453,11 +550,11 @@ func (m Migrator) pageToMarkdown(ctx context.Context, blocks []notion.Block, buf
 			} else {
 				buffer.WriteString("# ")
 			}
-			if err = m.writeRichText(ctx, buffer, block.RichText); err != nil {
+			if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
 				return err
 			}
 			buffer.WriteString("\n")
-			if err = m.writeChrildren(ctx, object, buffer); err != nil {
+			if err = m.writeChrildren(ctx, parentPage, object); err != nil {
 				return err
 			}
 		case *notion.Heading2Block:
@@ -466,11 +563,11 @@ func (m Migrator) pageToMarkdown(ctx context.Context, blocks []notion.Block, buf
 			} else {
 				buffer.WriteString("## ")
 			}
-			if err = m.writeRichText(ctx, buffer, block.RichText); err != nil {
+			if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
 				return err
 			}
 			buffer.WriteString("\n")
-			if err = m.writeChrildren(ctx, object, buffer); err != nil {
+			if err = m.writeChrildren(ctx, parentPage, object); err != nil {
 				return err
 			}
 		case *notion.Heading3Block:
@@ -479,11 +576,11 @@ func (m Migrator) pageToMarkdown(ctx context.Context, blocks []notion.Block, buf
 			} else {
 				buffer.WriteString("### ")
 			}
-			if err = m.writeRichText(ctx, buffer, block.RichText); err != nil {
+			if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
 				return err
 			}
 			buffer.WriteString("\n")
-			if err = m.writeChrildren(ctx, object, buffer); err != nil {
+			if err = m.writeChrildren(ctx, parentPage, object); err != nil {
 				return err
 			}
 		case *notion.ToDoBlock:
@@ -500,28 +597,28 @@ func (m Migrator) pageToMarkdown(ctx context.Context, blocks []notion.Block, buf
 					buffer.WriteString("- [ ] ")
 				}
 			}
-			if err = m.writeRichText(ctx, buffer, block.RichText); err != nil {
+			if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
 				return err
 			}
 			buffer.WriteString("\n")
-			if err = m.writeChrildren(ctx, object, buffer); err != nil {
+			if err = m.writeChrildren(ctx, parentPage, object); err != nil {
 				return err
 			}
 		case *notion.ParagraphBlock:
 			if len(block.RichText) > 0 {
 				if indent {
 					buffer.WriteString("	")
-					if err = m.writeRichText(ctx, buffer, block.RichText); err != nil {
+					if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
 						return err
 					}
 				} else {
-					if err = m.writeRichText(ctx, buffer, block.RichText); err != nil {
+					if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
 						return err
 					}
 				}
 			}
 			buffer.WriteString("\n")
-			if err = m.writeChrildren(ctx, object, buffer); err != nil {
+			if err = m.writeChrildren(ctx, parentPage, object); err != nil {
 				return err
 			}
 		case *notion.BulletedListItemBlock:
@@ -530,11 +627,11 @@ func (m Migrator) pageToMarkdown(ctx context.Context, blocks []notion.Block, buf
 			} else {
 				buffer.WriteString("- ")
 			}
-			if err = m.writeRichText(ctx, buffer, block.RichText); err != nil {
+			if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
 				return err
 			}
 			buffer.WriteString("\n")
-			if err = m.writeChrildren(ctx, object, buffer); err != nil {
+			if err = m.writeChrildren(ctx, parentPage, object); err != nil {
 				return err
 			}
 		case *notion.NumberedListItemBlock:
@@ -543,11 +640,11 @@ func (m Migrator) pageToMarkdown(ctx context.Context, blocks []notion.Block, buf
 			} else {
 				buffer.WriteString("- ")
 			}
-			if err = m.writeRichText(ctx, buffer, block.RichText); err != nil {
+			if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
 				return err
 			}
 			buffer.WriteString("\n")
-			if err = m.writeChrildren(ctx, object, buffer); err != nil {
+			if err = m.writeChrildren(ctx, parentPage, object); err != nil {
 				return err
 			}
 		case *notion.CalloutBlock:
@@ -559,7 +656,7 @@ func (m Migrator) pageToMarkdown(ctx context.Context, blocks []notion.Block, buf
 			if len(*block.Icon.Emoji) > 0 {
 				buffer.WriteString(*block.Icon.Emoji)
 			}
-			if err = m.writeRichText(ctx, buffer, block.RichText); err != nil {
+			if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
 				return err
 			}
 			buffer.WriteString("]")
@@ -570,11 +667,11 @@ func (m Migrator) pageToMarkdown(ctx context.Context, blocks []notion.Block, buf
 			} else {
 				buffer.WriteString("- ")
 			}
-			if err = m.writeRichText(ctx, buffer, block.RichText); err != nil {
+			if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
 				return err
 			}
 			buffer.WriteString("\n")
-			if err = m.writeChrildren(ctx, object, buffer); err != nil {
+			if err = m.writeChrildren(ctx, parentPage, object); err != nil {
 				return err
 			}
 		case *notion.QuoteBlock:
@@ -583,11 +680,11 @@ func (m Migrator) pageToMarkdown(ctx context.Context, blocks []notion.Block, buf
 			} else {
 				buffer.WriteString("> ")
 			}
-			if err = m.writeRichText(ctx, buffer, block.RichText); err != nil {
+			if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
 				return err
 			}
 			buffer.WriteString("\n")
-			if err = m.writeChrildren(ctx, object, buffer); err != nil {
+			if err = m.writeChrildren(ctx, parentPage, object); err != nil {
 				return err
 			}
 		case *notion.FileBlock:
@@ -610,7 +707,7 @@ func (m Migrator) pageToMarkdown(ctx context.Context, blocks []notion.Block, buf
 			}
 			buffer.WriteString("\n")
 		case *notion.LinkToPageBlock:
-			err := m.fetchPage(ctx, block.PageID, "", buffer, false)
+			err := m.fetchPage(ctx, parentPage, block.PageID, "", buffer, false)
 			if err != nil {
 				return err
 			}
@@ -619,7 +716,7 @@ func (m Migrator) pageToMarkdown(ctx context.Context, blocks []notion.Block, buf
 			buffer.WriteString("```")
 			buffer.WriteString(*block.Language)
 			buffer.WriteString("\n")
-			if err = m.writeRichText(ctx, buffer, block.RichText); err != nil {
+			if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
 				return err
 			}
 			buffer.WriteString("\n")
@@ -680,15 +777,15 @@ func (m Migrator) pageToMarkdown(ctx context.Context, blocks []notion.Block, buf
 			}
 			buffer.WriteString("\n")
 		case *notion.ColumnListBlock:
-			if err = m.writeChrildren(ctx, object, buffer); err != nil {
+			if err = m.writeChrildren(ctx, parentPage, object); err != nil {
 				return err
 			}
 		case *notion.ColumnBlock:
-			if err = m.writeChrildren(ctx, object, buffer); err != nil {
+			if err = m.writeChrildren(ctx, parentPage, object); err != nil {
 				return err
 			}
 		case *notion.TableBlock:
-			if err = m.writeTable(ctx, block.TableWidth, object, buffer); err != nil {
+			if err = m.writeTable(ctx, parentPage, block.TableWidth, object, buffer); err != nil {
 				return err
 			}
 		case *notion.EquationBlock:
@@ -715,14 +812,14 @@ type richText struct {
 }
 
 // TODO: Handle annotations better
-func (m Migrator) writeRichText(ctx context.Context, buffer *bufio.Writer, richTextBlock []notion.RichText) error {
+func (m *Migrator) writeRichText(ctx context.Context, parentPage *page, buffer *strings.Builder, richTextBlock []notion.RichText) error {
 	richTexts := []richText{}
 
 	for _, text := range richTextBlock {
 		var annotation string
 		r := richText{}
-		b := &bytes.Buffer{}
-		richTextBuffer := bufio.NewWriter(b)
+
+		richTextBuffer := &strings.Builder{}
 		r.notionAnnotations = text.Annotations
 
 		if hasAnnotation(text.Annotations) {
@@ -739,7 +836,7 @@ func (m Migrator) writeRichText(ctx context.Context, buffer *bufio.Writer, richT
 			if link != nil && !strings.Contains(annotation, "`") {
 				if strings.HasPrefix(link.URL, "/") {
 					// Link to internal Notion page
-					err := m.fetchPage(ctx, strings.TrimPrefix(link.URL, "/"), text.PlainText, richTextBuffer, false)
+					err := m.fetchPage(ctx, parentPage, strings.TrimPrefix(link.URL, "/"), text.PlainText, richTextBuffer, false)
 					if err != nil {
 						return err
 					}
@@ -752,7 +849,7 @@ func (m Migrator) writeRichText(ctx context.Context, buffer *bufio.Writer, richT
 		case notion.RichTextTypeMention:
 			switch text.Mention.Type {
 			case notion.MentionTypePage:
-				err := m.fetchPage(ctx, text.Mention.Page.ID, text.PlainText, richTextBuffer, false)
+				err := m.fetchPage(ctx, parentPage, text.Mention.Page.ID, text.PlainText, richTextBuffer, false)
 				if err != nil {
 					return err
 				}
@@ -773,11 +870,7 @@ func (m Migrator) writeRichText(ctx context.Context, buffer *bufio.Writer, richT
 
 		richTextBuffer.WriteString(reverseString(annotation))
 
-		err := richTextBuffer.Flush()
-		if err != nil {
-			return err
-		}
-		r.text = b.String()
+		r.text = richTextBuffer.String()
 		richTexts = append(richTexts, r)
 	}
 
@@ -810,24 +903,24 @@ func (m Migrator) writeRichText(ctx context.Context, buffer *bufio.Writer, richT
 		}
 	}
 
-	buffer.WriteString(result)
+	parentPage.buffer.WriteString(result)
 
 	return nil
 }
 
-func (m Migrator) writeChrildren(ctx context.Context, block notion.Block, buffer *bufio.Writer) error {
+func (m *Migrator) writeChrildren(ctx context.Context, parentPage *page, block notion.Block) error {
 	if block.HasChildren() {
 		pageBlocks, err := m.Client.FindBlockChildrenByID(ctx, block.ID(), nil)
 		if err != nil {
 			return fmt.Errorf("failed to extract children blocks for block ID %s. error: %w", block.ID(), err)
 		}
-		return m.pageToMarkdown(ctx, pageBlocks.Results, buffer, true)
+		return m.pageToMarkdown(ctx, parentPage, pageBlocks.Results, true)
 	}
 
 	return nil
 }
 
-func (m Migrator) writeTable(ctx context.Context, tableWidth int, block notion.Block, buffer *bufio.Writer) error {
+func (m *Migrator) writeTable(ctx context.Context, parentPage *page, tableWidth int, block notion.Block, buffer *strings.Builder) error {
 	if block.HasChildren() {
 		pageBlocks, err := m.Client.FindBlockChildrenByID(ctx, block.ID(), nil)
 		if err != nil {
@@ -837,7 +930,7 @@ func (m Migrator) writeTable(ctx context.Context, tableWidth int, block notion.B
 		for rowIndex, object := range pageBlocks.Results {
 			row := object.(*notion.TableRowBlock)
 			for i, cell := range row.Cells {
-				if err = m.writeRichText(ctx, buffer, cell); err != nil {
+				if err = m.writeRichText(ctx, parentPage, buffer, cell); err != nil {
 					return err
 				}
 				buffer.WriteString("|")
@@ -857,7 +950,7 @@ func (m Migrator) writeTable(ctx context.Context, tableWidth int, block notion.B
 	return nil
 }
 
-func (m Migrator) fetchNotionDBPages(ctx context.Context) ([]notion.Page, error) {
+func (m *Migrator) fetchNotionDBPages(ctx context.Context) ([]notion.Page, error) {
 	notionResponse, err := m.Client.QueryDatabase(ctx, m.Config.DatabaseID, nil)
 	if err != nil {
 		return []notion.Page{}, err
@@ -882,7 +975,7 @@ func (m Migrator) fetchNotionDBPages(ctx context.Context) ([]notion.Page, error)
 	return result, nil
 }
 
-func (m Migrator) downloadImage(name, url string) error {
+func (m *Migrator) downloadImage(name, url string) error {
 	response, err := http.Get(url)
 	if err != nil {
 		return err
