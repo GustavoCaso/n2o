@@ -46,8 +46,8 @@ func NewMigrator(config config.Config, cache *cache.Cache) *Migrator {
 }
 
 func (m *Migrator) Setup() error {
-	if m.Config.StoreImages {
-		err := os.MkdirAll(m.Config.VaultFilepath(), 0770)
+	if m.Config.StoreImages && !m.Config.DryRun {
+		err := os.MkdirAll(m.Config.VaultImagePath(), 0770)
 		if err != nil {
 			return fmt.Errorf("failed to create image folder. error: %s", err.Error())
 		}
@@ -57,9 +57,14 @@ func (m *Migrator) Setup() error {
 
 func (m *Migrator) FetchPages(ctx context.Context) error {
 	if m.Config.DatabaseID != "" {
+		db, err := m.Client.FindDatabaseByID(ctx, m.Config.DatabaseID)
+		if err != nil {
+			return fmt.Errorf("failed to get DB %s. error: %s\n", m.Config.DatabaseID, err.Error())
+		}
+		dbTitle := extractPlainTextFromRichText(db.Title)
 		notionPages, err := m.fetchNotionDBPages(ctx)
 		if err != nil {
-			return fmt.Errorf("failed to gets all pages from DB %s. error: %s\n", m.Config.DatabaseID, err.Error())
+			return fmt.Errorf("failed to get pages from DB %s. error: %s\n", m.Config.DatabaseID, err.Error())
 		}
 		pages := make([]*page, len(notionPages))
 
@@ -67,7 +72,7 @@ func (m *Migrator) FetchPages(ctx context.Context) error {
 			pages[i] = &page{
 				id:         notionPage.ID,
 				buffer:     &strings.Builder{},
-				Path:       m.ExtractPageTitle(notionPage),
+				Path:       path.Join(m.Config.VaultFilepath(), dbTitle, m.extractPageTitle(notionPage)),
 				notionPage: notionPage,
 				parent:     nil,
 			}
@@ -86,7 +91,7 @@ func (m *Migrator) FetchPages(ctx context.Context) error {
 			{
 				id:         notionPage.ID,
 				buffer:     &strings.Builder{},
-				Path:       m.ExtractPageTitle(notionPage),
+				Path:       m.ExtractPageTitleWithObsidianVault(notionPage),
 				notionPage: notionPage,
 				parent:     nil,
 			},
@@ -96,10 +101,15 @@ func (m *Migrator) FetchPages(ctx context.Context) error {
 	}
 }
 
-func (m *Migrator) ExtractPageTitle(page notion.Page) string {
+func (m *Migrator) ExtractPageTitleWithObsidianVault(page notion.Page) string {
+	return path.Join(m.Config.VaultFilepath(), m.extractPageTitle(page))
+}
+
+func (m *Migrator) extractPageTitle(page notion.Page) string {
 	var str string
 
-	if m.Config.DatabaseID != "" {
+	switch page.Parent.Type {
+	case notion.ParentTypeDatabase:
 		properties := page.Properties.(notion.DatabasePageProperties)
 		sortedPropkeys := make([]string, 0, len(properties))
 
@@ -109,8 +119,15 @@ func (m *Migrator) ExtractPageTitle(page notion.Page) string {
 
 		sort.Strings(sortedPropkeys)
 
+		var titleProperty notion.DatabasePageProperty
+
 		for _, key := range sortedPropkeys {
 			value := properties[key]
+
+			if value.Type == notion.DBPropTypeTitle {
+				titleProperty = value
+			}
+
 			val, ok := m.Config.PageNameFilters[strings.ToLower(key)]
 
 			if ok {
@@ -129,27 +146,24 @@ func (m *Migrator) ExtractPageTitle(page notion.Page) string {
 				}
 			}
 		}
-	} else {
+
+		// In the case we did not find any element to create the page title, we default to the title property
+		if str == "" {
+			str = extractPlainTextFromRichText(titleProperty.Title)
+		}
+	case notion.ParentTypePage:
 		properties := page.Properties.(notion.PageProperties)
 		str = extractPlainTextFromRichText(properties.Title.Title)
+	default:
+		panic("HAHAHAHAH")
 	}
 
 	fileName := fmt.Sprintf("%s.md", str)
-	return path.Join(m.Config.VaultFilepath(), fileName)
+	return fileName
 }
 
 func (m *Migrator) FetchParseAndSavePage(ctx context.Context, page *page, pageProperties map[string]bool) error {
-	err := m.fetchParseAndSavePage(ctx, page, pageProperties)
-
-	if err != nil {
-		return err
-	}
-
-	if m.Config.DryRun {
-		return m.displayInformation(ctx)
-	} else {
-		return m.writePagesToDisk(ctx)
-	}
+	return m.fetchParseAndSavePage(ctx, page, pageProperties)
 }
 
 func (m *Migrator) fetchParseAndSavePage(ctx context.Context, page *page, pageProperties map[string]bool) error {
@@ -198,11 +212,11 @@ func (m *Migrator) fetchParseAndSavePage(ctx context.Context, page *page, pagePr
 	return nil
 }
 
-func (m *Migrator) displayInformation(ctx context.Context) error {
+func (m *Migrator) DisplayInformation(ctx context.Context) error {
 	buffer := bufio.NewWriter(os.Stdout)
 	for _, page := range m.Pages {
-		buffer.WriteString(fmt.Sprintf("%s\n", page.Path))
-		displayPageInfo(page, buffer)
+		buffer.WriteString(fmt.Sprintf("%s \n", m.removeObsidianVault(page.Path)))
+		m.displayPageInfo(page, buffer, 0)
 	}
 
 	if err := buffer.Flush(); err != nil {
@@ -212,15 +226,24 @@ func (m *Migrator) displayInformation(ctx context.Context) error {
 	return nil
 }
 
-func displayPageInfo(page *page, buffer *bufio.Writer) {
-	for i, childPage := range page.children {
-		spaces := (i + 1) * 5
-		buffer.WriteString(fmt.Sprintf("%*s %s\n", spaces, "|->", childPage.Path))
-		displayPageInfo(childPage, buffer)
+func (m *Migrator) displayPageInfo(page *page, buffer *bufio.Writer, index int) {
+	var spaces int
+	if index > 0 {
+		spaces = index * 5
+	} else {
+		spaces = 4
+	}
+	for _, childPage := range page.children {
+		buffer.WriteString(fmt.Sprintf("%*s %s\n", spaces, "|->", m.removeObsidianVault(childPage.Path)))
+		m.displayPageInfo(childPage, buffer, 2)
 	}
 }
 
-func (m *Migrator) writePagesToDisk(ctx context.Context) error {
+func (m *Migrator) removeObsidianVault(s string) string {
+	return strings.TrimPrefix(s, m.Config.VaultPath)
+}
+
+func (m *Migrator) WritePagesToDisk(ctx context.Context) error {
 	for _, page := range m.Pages {
 		err := writePage(page)
 		if err != nil {
@@ -243,7 +266,9 @@ func writePage(page *page) error {
 
 	defer f.Close()
 
-	_, err = f.WriteString(page.buffer.String())
+	output := page.buffer.String()
+
+	_, err = f.WriteString(output)
 	if err != nil {
 		return err
 	}
@@ -406,14 +431,13 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 		if childTitle == "" {
 			extractTitle = true
 		}
+
 		switch mentionPage.Parent.Type {
 		case notion.ParentTypeDatabase:
 			if extractTitle {
-				props := mentionPage.Properties.(notion.DatabasePageProperties)
-				childTitle = extractPlainTextFromRichText(props["Name"].Title)
+				childTitle = m.extractPageTitle(mentionPage)
 			}
 
-			var childPath string
 			// Since we are migrating from the same DB we do need to create a subfolder
 			// within the Obsidian vault. So we can skip fetching the database to gather
 			// the name to create the subfolder
@@ -425,10 +449,7 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 
 				dbTitle := extractPlainTextFromRichText(dbPage.Title)
 
-				childPath = path.Join(dbTitle, fmt.Sprintf("%s.md", childTitle))
 				childTitle = path.Join(dbTitle, childTitle)
-			} else {
-				childPath = fmt.Sprintf("%s.md", childTitle)
 			}
 
 			newPage := &page{
@@ -436,7 +457,7 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 				notionPage: mentionPage,
 				buffer:     &strings.Builder{},
 				parent:     parentPage,
-				Path:       path.Join(m.Config.VaultFilepath(), childPath),
+				Path:       path.Join(m.Config.VaultFilepath(), childTitle),
 			}
 
 			parentPage.children = append(parentPage.children, newPage)
@@ -450,22 +471,7 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 				return fmt.Errorf("failed to find parent block %s.  error: %w", mentionPage.Parent.BlockID, err)
 			}
 			if extractTitle {
-				var title []notion.RichText
-
-				if notionParentPage.Parent.Type == notion.ParentTypeDatabase {
-					props := notionParentPage.Properties.(notion.DatabasePageProperties)
-					for _, val := range props {
-						if val.Type == notion.DBPropTypeTitle {
-							title = val.Title
-							break
-						}
-					}
-				} else {
-					props := notionParentPage.Properties.(notion.PageProperties)
-					title = props.Title.Title
-				}
-
-				childTitle = extractPlainTextFromRichText(title)
+				childTitle = m.extractPageTitle(notionParentPage)
 			}
 
 			newPage := &page{
@@ -488,22 +494,7 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 			}
 
 			if extractTitle {
-				var title []notion.RichText
-
-				if notionParentPage.Parent.Type == notion.ParentTypeDatabase {
-					props := notionParentPage.Properties.(notion.DatabasePageProperties)
-					for _, val := range props {
-						if val.Type == notion.DBPropTypeTitle {
-							title = val.Title
-							break
-						}
-					}
-				} else {
-					props := notionParentPage.Properties.(notion.PageProperties)
-					title = props.Title.Title
-				}
-
-				childTitle = extractPlainTextFromRichText(title)
+				childTitle = m.extractPageTitle(notionParentPage)
 			}
 
 			newPage := &page{
@@ -731,7 +722,7 @@ func (m *Migrator) pageToMarkdown(ctx context.Context, parentPage *page, blocks 
 				}
 				buffer.WriteString("\n")
 			}
-			if block.Type == notion.FileTypeFile && m.Config.StoreImages {
+			if block.Type == notion.FileTypeFile && m.Config.StoreImages && !m.Config.DryRun {
 				name := block.ID() + ".png"
 				err := m.downloadImage(name, block.File.URL)
 
