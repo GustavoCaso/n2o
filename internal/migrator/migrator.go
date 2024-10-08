@@ -486,11 +486,14 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 		m.Cache.Mark(pageID)
 		var result string
 
-		emptyList := map[string]bool{}
 		extractTitle := false
 		childTitle := title
 		if childTitle == "" {
 			extractTitle = true
+		} else {
+			if !strings.HasSuffix(childTitle, ".md") {
+				childTitle = fmt.Sprintf("%s.md", childTitle)
+			}
 		}
 
 		defer func() {
@@ -534,7 +537,7 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 
 			parentPage.children = append(parentPage.children, newPage)
 
-			if err = m.fetchParseAndSavePage(ctx, newPage, emptyList); err != nil {
+			if err = m.fetchParseAndSavePage(ctx, newPage, m.Config.PagePropertiesToMigrate); err != nil {
 				return fmt.Errorf("failed to fetch and save mention page %s content with DB %s. error: %w", childTitle, mentionPage.Parent.DatabaseID, err)
 			}
 		case notion.ParentTypeBlock:
@@ -556,7 +559,7 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 
 			parentPage.children = append(parentPage.children, newPage)
 
-			if err = m.fetchParseAndSavePage(ctx, newPage, emptyList); err != nil {
+			if err = m.fetchParseAndSavePage(ctx, newPage, m.Config.PagePropertiesToMigrate); err != nil {
 				return fmt.Errorf("failed to fetch and save mention page %s content with block parent %s. error: %w", childTitle, mentionPage.Parent.BlockID, err)
 			}
 		case notion.ParentTypePage:
@@ -579,7 +582,7 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 
 			parentPage.children = append(parentPage.children, newPage)
 
-			if err = m.fetchParseAndSavePage(ctx, newPage, emptyList); err != nil {
+			if err = m.fetchParseAndSavePage(ctx, newPage, m.Config.PagePropertiesToMigrate); err != nil {
 				fmt.Printf("failed to fetch mention page content with page parent: %s\n", childTitle)
 			}
 		default:

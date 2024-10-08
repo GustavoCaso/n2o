@@ -150,6 +150,9 @@ func TestExtractPageTitle(t *testing.T) {
 				VaultDestination: "notes",
 			},
 			page: notion.Page{
+				Parent: notion.Parent{
+					Type: notion.ParentTypeDatabase,
+				},
 				Properties: notion.DatabasePageProperties{
 					"Title": notion.DatabasePageProperty{
 						Type: notion.DBPropTypeTitle,
@@ -161,7 +164,7 @@ func TestExtractPageTitle(t *testing.T) {
 					},
 				},
 			},
-			expected: "scr/vault/notes/Hello.md",
+			expected: "Hello.md",
 		},
 		{
 			name: "with database and date title and custom format",
@@ -172,6 +175,9 @@ func TestExtractPageTitle(t *testing.T) {
 				},
 			},
 			page: notion.Page{
+				Parent: notion.Parent{
+					Type: notion.ParentTypeDatabase,
+				},
 				Properties: notion.DatabasePageProperties{
 					"Date": notion.DatabasePageProperty{
 						Type: notion.DBPropTypeDate,
@@ -193,6 +199,9 @@ func TestExtractPageTitle(t *testing.T) {
 				},
 			},
 			page: notion.Page{
+				Parent: notion.Parent{
+					Type: notion.ParentTypeDatabase,
+				},
 				Properties: notion.DatabasePageProperties{
 					"Date": notion.DatabasePageProperty{
 						Type: notion.DBPropTypeDate,
@@ -211,6 +220,9 @@ func TestExtractPageTitle(t *testing.T) {
 				PageID: "0000",
 			},
 			page: notion.Page{
+				Parent: notion.Parent{
+					Type: notion.ParentTypePage,
+				},
 				Properties: notion.PageProperties{
 					Title: notion.PageTitle{
 						Title: []notion.RichText{
@@ -235,6 +247,9 @@ func TestExtractPageTitle(t *testing.T) {
 				VaultDestination: "notes",
 			},
 			page: notion.Page{
+				Parent: notion.Parent{
+					Type: notion.ParentTypeDatabase,
+				},
 				Properties: notion.DatabasePageProperties{
 					"Title": notion.DatabasePageProperty{
 						Type: notion.DBPropTypeTitle,
@@ -253,7 +268,7 @@ func TestExtractPageTitle(t *testing.T) {
 					},
 				},
 			},
-			expected: "scr/vault/notes/2021/05/18Hello.md",
+			expected: "2021/05/18Hello.md",
 		},
 		{
 			name: "with database and unsupported page name filter",
@@ -267,6 +282,9 @@ func TestExtractPageTitle(t *testing.T) {
 				VaultDestination: "notes",
 			},
 			page: notion.Page{
+				Parent: notion.Parent{
+					Type: notion.ParentTypeDatabase,
+				},
 				Properties: notion.DatabasePageProperties{
 					"Title": notion.DatabasePageProperty{
 						Type: notion.DBPropTypeTitle,
@@ -281,7 +299,7 @@ func TestExtractPageTitle(t *testing.T) {
 					},
 				},
 			},
-			expected: "scr/vault/notes/Hello.md",
+			expected: "Hello.md",
 		},
 	}
 
@@ -293,7 +311,7 @@ func TestExtractPageTitle(t *testing.T) {
 				Cache:  nil,
 			}
 
-			value := migrator.ExtractPageTitle(test.page)
+			value := migrator.extractPageTitle(test.page)
 			assert.Equal(t, test.expected, value)
 		})
 	}
@@ -302,7 +320,7 @@ func TestExtractPageTitle(t *testing.T) {
 // TODO: Fix Realation test
 // Select type
 // Multi Select
-func TestFetchParseAndSavePage(t *testing.T) {
+func TestFetchParseAndSavePage_WritePagesToDisk(t *testing.T) {
 	tests := []struct {
 		name             string
 		statusCode       int
@@ -619,6 +637,9 @@ URL: https://example.com
 				assert.NoError(t, err)
 			}
 
+			err := migrator.WritePagesToDisk(ctx)
+			assert.NoError(t, err)
+
 			for _, page := range migrator.Pages {
 				content, err := os.ReadFile(page.Path)
 				assert.NoError(t, err)
@@ -632,7 +653,7 @@ URL: https://example.com
 	}
 }
 
-func TestFetchParseAndSavePageDryRun(t *testing.T) {
+func TestFetchParseAndSavePage_DryRun(t *testing.T) {
 	tests := []struct {
 		name           string
 		statusCode     int
@@ -714,15 +735,15 @@ func TestFetchParseAndSavePageDryRun(t *testing.T) {
 			assert.Equal(t, 1, len(migrator.Pages))
 
 			output, err := captureStdout(func() error {
-				return migrator.FetchParseAndSavePage(ctx, migrator.Pages[0], test.pageProperties)
+				err := migrator.FetchParseAndSavePage(ctx, migrator.Pages[0], test.pageProperties)
+				assert.NoError(t, err)
+				return migrator.DisplayInformation(ctx)
 			})
 			assert.NoError(t, err)
 
-			expectedFormat := `%s/example.md
-  |-> %s/Personal Notes/ANSI Codes for the terminal.md
+			expected := `/example.md 
+ |-> /Personal Notes/ANSI Codes for the terminal.md
 `
-			expected := fmt.Sprintf(expectedFormat, tempDir, tempDir)
-
 			assert.Equal(t, expected, output)
 		})
 	}

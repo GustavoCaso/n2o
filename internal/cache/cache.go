@@ -5,8 +5,7 @@ import (
 )
 
 type Page struct {
-	Title   string
-	Content string
+	Title string
 }
 
 type Cache struct {
