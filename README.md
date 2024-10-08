@@ -18,29 +18,33 @@ To install the binary, you could:
 ```
 $ n2o
 Usage of n2o:
- -download-images
- download external images to the Obsidian vault
- -notion-db-ID string
- Notion database to migrate
- -notion-page-ID string
- Notion page to migrate
- -notion-token string
- Notion token
- -page-name string
- Notion page properties to extract the Obsidian page title.
- Support selecting different page attributes and formatting. To select multiple properties, use a comma-separated list.
- The attributes that support custom formatting are Notion date attributes.
- Example of how to use a Notion date property with custom format as the title for the Obsidian page:
- -name=date:%Y/%B/%d-%A
- (default "Name")
- -page-properties string
- Notion page properties to convert to Obsidian frontmater.
- You can select multiple properties using a comma-separated list.
+  -download-images
+    	download external images to the Obsidian vault
+  -dry-run
+    	do not write the pages in the Obsidian vault. Output to stdout what pages would be created in the Obsidian vault
+  -notion-db-ID string
+    	Notion database to migrate
+  -notion-page-ID string
+    	Notion page to migrate
+  -notion-token string
+    	Notion token
+  -page-name string
+    	Notion page properties to extract the Obsidian page title.
+    	Support selecting different page attributes and formatting. To select multiple properties, use a comma-separated list.
+    	The attributes that support custom formatting are Notion date attributes.
+    	Example of how to use a Notion date property with custom format as the title for the Obsidian page:
+    	-name=date:%Y/%B/%d-%A
 
- -vault-folder string
- folder to store pages inside the Obsidian Vault
- -vault-path string
- Obsidian vault location
+    	By default if you do not configure any we get the Title property
+
+  -page-properties string
+    	Notion page properties to convert to Obsidian frontmater.
+    	You can select multiple properties using a comma-separated list.
+
+  -vault-folder string
+    	folder to store pages inside the Obsidian Vault
+  -vault-path string
+    	Obsidian vault location
 ```
 
 ## How do you get your Notion token?

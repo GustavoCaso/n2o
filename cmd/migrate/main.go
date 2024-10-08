@@ -35,7 +35,7 @@ var filenameFromPage = flag.String("page-name", "", filenameFromPageExplanation)
 var obsidianVault = flag.String("vault-path", os.Getenv("N2O_OBSIDIAN_VAULT_PATH"), "Obsidian vault location")
 var vaultDestination = flag.String("vault-folder", "", "folder to store pages inside the Obsidian Vault")
 var storeImages = flag.Bool("download-images", false, "download external images to the Obsidian vault")
-var dryRun = flag.Bool("dry-run", false, "do not write the pages in the Obsidian vault. Output to stdout what pages would be created and their links")
+var dryRun = flag.Bool("dry-run", false, "do not write the pages in the Obsidian vault. Output to stdout what pages would be created in the Obsidian vault")
 
 func main() {
 	flag.Parse()
