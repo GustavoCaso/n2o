@@ -22,9 +22,11 @@ func TestCache(t *testing.T) {
 	working = c.IsWorking(key)
 	assert.True(t, working)
 
-	c.Set(key, "foo")
+	c.Set(key, Page{
+		Title: "foo",
+	})
 
 	val, ok := c.Get(key)
 	assert.True(t, ok)
-	assert.Equal(t, "foo", val)
+	assert.Equal(t, "foo", val.Title)
 }

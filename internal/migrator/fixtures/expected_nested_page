@@ -1,6 +1,6 @@
 https://github.com/Shopify/cli-ui
 
-The cli-ui gem provides utility functions to create dynamic, beautiful CLI prompts quickly. Is used extensible [[Personal Notes/ANSI Codes for the terminal]] codes to format the text, as well as other advanced techniques
+The cli-ui gem provides utility functions to create dynamic, beautiful CLI prompts quickly. Is used extensible [[Personal Notes/ANSI Codes for the terminal.md]] codes to format the text, as well as other advanced techniques
 The gem is thread-safe and uses extensible the `Thread.current` API to store thread local information. The gem has some very interesting code snippets. 
 
 ### Capturing terminal information

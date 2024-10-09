@@ -19,6 +19,8 @@ Support selecting different page attributes and formatting. To select multiple p
 The attributes that support custom formatting are Notion date attributes.
 Example of how to use a Notion date property with custom format as the title for the Obsidian page:
 -name=date:%Y/%B/%d-%A
+
+By default if you do not configure any we get the Title property 
 `
 
 var pagePropertiesExplanation = `Notion page properties to convert to Obsidian frontmater.
@@ -29,10 +31,11 @@ var notionToken = flag.String("notion-token", os.Getenv("N2O_NOTION_TOKEN"), "No
 var notionDatabaseID = flag.String("notion-db-ID", os.Getenv("N2O_NOTION_DATABASE_ID"), "Notion database to migrate")
 var notionPageID = flag.String("notion-page-ID", os.Getenv("N2O_NOTION_PAGE_ID"), "Notion page to migrate")
 var pagePropertiesList = flag.String("page-properties", "", pagePropertiesExplanation)
-var filenameFromPage = flag.String("page-name", "Name", filenameFromPageExplanation)
+var filenameFromPage = flag.String("page-name", "", filenameFromPageExplanation)
 var obsidianVault = flag.String("vault-path", os.Getenv("N2O_OBSIDIAN_VAULT_PATH"), "Obsidian vault location")
 var vaultDestination = flag.String("vault-folder", "", "folder to store pages inside the Obsidian Vault")
 var storeImages = flag.Bool("download-images", false, "download external images to the Obsidian vault")
+var dryRun = flag.Bool("dry-run", false, "do not write the pages in the Obsidian vault. Output to stdout what pages would be created in the Obsidian vault")
 
 func main() {
 	flag.Parse()
@@ -70,12 +73,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if empty(vaultDestination) {
-		flag.Usage()
-		fmt.Println("You must provide the Obsidian vault folder")
-		os.Exit(1)
-	}
-
 	pageNameFilters := map[string]string{}
 	if !empty(filenameFromPage) {
 		pagePathResults := strings.Split(*filenameFromPage, ",")
@@ -98,6 +95,7 @@ func main() {
 		PagePropertiesToMigrate: pageProperties,
 		VaultPath:               *obsidianVault,
 		VaultDestination:        *vaultDestination,
+		DryRun:                  *dryRun,
 	}
 
 	ctx := context.Background()
@@ -110,7 +108,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	pages, err := migrator.FetchPages(ctx)
+	err = migrator.FetchPages(ctx)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
@@ -118,19 +116,17 @@ func main() {
 
 	var jobs []*queue.Job
 
-	q := queue.NewQueue("migrating notion pages", queue.WithProgressBar())
+	q := queue.NewQueue("fetching notion pages information", queue.WithProgressBar())
 
-	for _, page := range pages {
+	for _, page := range migrator.Pages {
 		// We need to do this, because variables declared inside for loops are passed by reference.
 		// Otherwise, our closure will always receive the last item from the page.
 		newPage := page
 
-		path := migrator.ExtractPageTitle(newPage)
-
 		job := &queue.Job{
-			Path: path,
+			Path: newPage.Path,
 			Run: func() error {
-				return migrator.FetchParseAndSavePage(ctx, page, config.PagePropertiesToMigrate, path)
+				return migrator.FetchParseAndSavePage(ctx, newPage, config.PagePropertiesToMigrate)
 			},
 		}
 
@@ -148,6 +144,20 @@ func main() {
 
 	for _, errJob := range worker.ErrorJobs {
 		fmt.Printf("an error ocurred when processing a page %s. error: %v\n", errJob.Job.Path, errors.Unwrap(errJob.Err))
+	}
+
+	if migrator.Config.DryRun {
+		fmt.Println("Displaying notion pages information")
+		err := migrator.DisplayInformation(ctx)
+		if err != nil {
+			fmt.Printf("an error ocurred when displaying information to stdout. error: %v\n", err)
+		}
+	} else {
+		fmt.Println("Saving notion pages to disk")
+		err := migrator.WritePagesToDisk(ctx)
+		if err != nil {
+			fmt.Printf("an error ocurred when writing pages to disk. error: %v\n", err)
+		}
 	}
 }
 

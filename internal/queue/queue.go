@@ -121,7 +121,6 @@ func (w *Worker) DoWork() bool {
 	for {
 		select {
 		case <-w.Queue.ctx.Done():
-			fmt.Print("Finish migrating pages\n")
 			return true
 		case job := <-w.Queue.jobs:
 			err := job.Run()
