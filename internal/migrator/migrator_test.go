@@ -113,12 +113,12 @@ func TestFetchPages(t *testing.T) {
 				}},
 			}
 
-			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			notionClient := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
 
 			migrator := Migrator{
-				Client: client,
-				Config: test.config,
-				Cache:  nil,
+				NotionClient: notionClient,
+				Config:       test.config,
+				Cache:        nil,
 			}
 
 			err := migrator.FetchPages(context.TODO())
@@ -306,9 +306,9 @@ func TestExtractPageTitle(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			migrator := Migrator{
-				Client: nil,
-				Config: test.config,
-				Cache:  nil,
+				NotionClient: nil,
+				Config:       test.config,
+				Cache:        nil,
 			}
 
 			value := migrator.extractPageTitle(test.page)
@@ -324,7 +324,8 @@ func TestFetchParseAndSavePage_WritePagesToDisk(t *testing.T) {
 	tests := []struct {
 		name             string
 		statusCode       int
-		respBody         func(*http.Request) io.Reader
+		notionRespBody   func(*http.Request) io.Reader
+		httpClient       func(t *testing.T) *http.Client
 		pageProperties   map[string]bool
 		expected         string
 		config           config.Config
@@ -334,7 +335,7 @@ func TestFetchParseAndSavePage_WritePagesToDisk(t *testing.T) {
 		{
 			name:       "store page in the correct path and format markdown correctly",
 			statusCode: 200,
-			respBody: func(_ *http.Request) io.Reader {
+			notionRespBody: func(_ *http.Request) io.Reader {
 				f, err := fixtures.ReadFile("fixtures/page_blocks.json")
 				if err != nil {
 					panic(err)
@@ -361,7 +362,7 @@ func TestFetchParseAndSavePage_WritePagesToDisk(t *testing.T) {
 		{
 			name:       "store page with frontmatter",
 			statusCode: 200,
-			respBody: func(_ *http.Request) io.Reader {
+			notionRespBody: func(_ *http.Request) io.Reader {
 				f, err := fixtures.ReadFile("fixtures/page_blocks.json")
 				if err != nil {
 					panic(err)
@@ -557,7 +558,7 @@ URL: https://example.com
 		{
 			name:       "store nested pages and creates subfolder in correct location",
 			statusCode: 200,
-			respBody: func(r *http.Request) io.Reader {
+			notionRespBody: func(r *http.Request) io.Reader {
 				readFixture := func(path string) io.Reader {
 					f := mustReadFixture(path)
 					return bytes.NewReader(f)
@@ -603,6 +604,59 @@ URL: https://example.com
 			expected:       string(mustReadFixture("fixtures/expected_nested_page")),
 			config:         config.Config{},
 		},
+		{
+			name:       "page with children blocks and download internal image",
+			statusCode: 200,
+			httpClient: func(t *testing.T) *http.Client {
+				internalImageURL := "https://prod-files-secure.s3.us-west-2.amazonaws.com/1f88cc90-92fd-4ce4-bfcd-25daec2ffbbe/5e659275-5b7b-4ed9-97a4-0316fccd1403/person.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20241010%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20241010T065327Z&X-Amz-Expires=3600&X-Amz-Signature=ea0420f025f133ac65ecc5b983c2b417900155936be42bd224130333e9c8eff2&X-Amz-SignedHeaders=host&x-id=GetObject"
+
+				return &http.Client{
+					Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+						assert.Equal(t, internalImageURL, r.URL.String())
+						return &http.Response{
+							StatusCode: 200,
+							Status:     http.StatusText(200),
+							Body:       io.NopCloser(bytes.NewReader([]byte(""))),
+						}, nil
+					}},
+				}
+			},
+			notionRespBody: func(r *http.Request) io.Reader {
+				readFixture := func(path string) io.Reader {
+					f := mustReadFixture(path)
+					return bytes.NewReader(f)
+				}
+
+				switch r.URL.String() {
+				case "https://api.notion.com/v1/blocks/1/children":
+					return readFixture("fixtures/page_blocks_with_children/page_blocks_with_children.json")
+				case "https://api.notion.com/v1/blocks/117a3598-a993-81d6-895d-ca67578bc85a/children":
+					return readFixture("fixtures/page_blocks_with_children/children_blocks_1.json")
+				case "https://api.notion.com/v1/blocks/117a3598-a993-8138-8e35-d1362c1e7aa8/children":
+					return readFixture("fixtures/page_blocks_with_children/children_blocks_2.json")
+				case "https://api.notion.com/v1/blocks/117a3598-a993-81f0-8694-ed4cd7b32974/children":
+					return readFixture("fixtures/page_blocks_with_children/children_blocks_3.json")
+				default:
+					panic(fmt.Sprintf("unhandled URL: %s", r.URL.String()))
+				}
+			},
+			buildPages: func(path string) []*page {
+				return []*page{
+					{
+						id:         "1",
+						buffer:     &strings.Builder{},
+						notionPage: notion.Page{ID: "1"},
+						parent:     nil,
+						Path:       filepath.Join(path, "example.md"),
+					},
+				}
+			},
+			pageProperties: map[string]bool{},
+			expected:       string(mustReadFixture("fixtures/page_blocks_with_children/result")),
+			config: config.Config{
+				StoreImages: true,
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -612,22 +666,26 @@ URL: https://example.com
 					return &http.Response{
 						StatusCode: test.statusCode,
 						Status:     http.StatusText(test.statusCode),
-						Body:       io.NopCloser(test.respBody(r)),
+						Body:       io.NopCloser(test.notionRespBody(r)),
 					}, nil
 				}},
 			}
 
-			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			notionClient := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
 
 			tempDir := t.TempDir()
 
 			test.config.VaultPath = tempDir
 
 			migrator := Migrator{
-				Client: client,
-				Config: test.config,
-				Cache:  cache.NewCache(),
-				Pages:  test.buildPages(tempDir),
+				NotionClient: notionClient,
+				Config:       test.config,
+				Cache:        cache.NewCache(),
+				Pages:        test.buildPages(tempDir),
+			}
+
+			if test.httpClient != nil {
+				migrator.HttpClient = test.httpClient(t)
 			}
 
 			ctx := context.TODO()
@@ -643,7 +701,11 @@ URL: https://example.com
 			for _, page := range migrator.Pages {
 				content, err := os.ReadFile(page.Path)
 				assert.NoError(t, err)
-				assert.Equal(t, test.expected, string(content))
+				if test.expected == "" {
+					os.WriteFile(fmt.Sprintf("%s.result", test.name), content, 0770)
+				} else {
+					assert.Equal(t, test.expected, string(content))
+				}
 			}
 
 			if test.customAssertions != nil {
@@ -717,17 +779,17 @@ func TestFetchParseAndSavePage_DryRun(t *testing.T) {
 				}},
 			}
 
-			client := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			notionClient := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
 
 			tempDir := t.TempDir()
 
 			test.config.VaultPath = tempDir
 
 			migrator := Migrator{
-				Client: client,
-				Config: test.config,
-				Cache:  cache.NewCache(),
-				Pages:  test.buildPages(tempDir),
+				NotionClient: notionClient,
+				Config:       test.config,
+				Cache:        cache.NewCache(),
+				Pages:        test.buildPages(tempDir),
 			}
 
 			ctx := context.TODO()
@@ -751,9 +813,9 @@ func TestFetchParseAndSavePage_DryRun(t *testing.T) {
 
 func TestWriteRichText_Annotations(t *testing.T) {
 	migrator := Migrator{
-		Client: nil,
-		Config: config.Config{},
-		Cache:  nil,
+		NotionClient: nil,
+		Config:       config.Config{},
+		Cache:        nil,
 	}
 	ctx := context.Background()
 
