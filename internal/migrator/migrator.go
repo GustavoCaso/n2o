@@ -55,16 +55,6 @@ func NewMigrator(config config.Config, cache *cache.Cache) *Migrator {
 	}
 }
 
-func (m *Migrator) Setup() error {
-	if m.Config.StoreImages {
-		err := os.MkdirAll(m.Config.VaultImagePath(), 0770)
-		if err != nil {
-			return fmt.Errorf("failed to create image folder. error: %s", err.Error())
-		}
-	}
-	return nil
-}
-
 func (m *Migrator) FetchPages(ctx context.Context) error {
 	if m.Config.DatabaseID != "" {
 		db, err := m.NotionClient.FindDatabaseByID(ctx, m.Config.DatabaseID)
@@ -277,11 +267,6 @@ func (m *Migrator) removeObsidianVault(s string) string {
 }
 
 func (m *Migrator) WritePagesToDisk(ctx context.Context) error {
-	// err := m.Setup()
-	// if err != nil {
-	// 	return err
-	// }
-
 	for _, page := range m.Pages {
 		err := m.writePage(page)
 		if err != nil {
@@ -1081,8 +1066,6 @@ func (m *Migrator) downloadImage(name, url string) error {
 	}
 	defer response.Body.Close()
 
-	// We should not worry about checking if the file exists
-	// it has been created by the caller when calling Migrator.Setup()
 	file, err := os.Create(imageLocation)
 	if err != nil {
 		return err
