@@ -102,13 +102,7 @@ func main() {
 
 	migrator := migrator.NewMigrator(config, cache.NewCache())
 
-	err := migrator.Setup()
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-
-	err = migrator.FetchPages(ctx)
+	err := migrator.FetchPages(ctx)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)

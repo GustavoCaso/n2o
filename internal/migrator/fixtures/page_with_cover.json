@@ -1,0 +1,60 @@
+{
+  "object": "page",
+  "id": "117a3598-a993-8082-ad8a-dc620fb12e53",
+  "created_time": "2024-10-06T15:56:00.000Z",
+  "last_edited_time": "2024-10-06T16:07:00.000Z",
+  "created_by": {
+    "object": "user",
+    "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+  },
+  "last_edited_by": {
+    "object": "user",
+    "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+  },
+  "cover": {
+    "type": "external",
+    "external": {
+      "url": "https://images.unsplash.com/photo-1543352632-5a4b24e4d2a6?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb"
+    }
+  },
+  "icon": {
+    "type": "external",
+    "external": {
+      "url": "https://www.notion.so/icons/dining_lightgray.svg"
+    }
+  },
+  "parent": {
+    "type": "workspace",
+    "workspace": true
+  },
+  "archived": false,
+  "in_trash": false,
+  "properties": {
+    "title": {
+      "id": "title",
+      "type": "title",
+      "title": [
+        {
+          "type": "text",
+          "text": {
+            "content": "Meal Planner",
+            "link": null
+          },
+          "annotations": {
+            "bold": false,
+            "italic": false,
+            "strikethrough": false,
+            "underline": false,
+            "code": false,
+            "color": "default"
+          },
+          "plain_text": "Meal Planner",
+          "href": null
+        }
+      ]
+    }
+  },
+  "url": "https://www.notion.so/Meal-Planner-117a3598a9938082ad8adc620fb12e53",
+  "public_url": null,
+  "request_id": "3e1907e9-5a43-4654-b2a2-ced240351e5d"
+}
