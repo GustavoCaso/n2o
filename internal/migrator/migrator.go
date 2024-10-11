@@ -25,54 +25,61 @@ type image struct {
 	name     string
 }
 
-type page struct {
+type Page struct {
 	Path       string
 	id         string
 	buffer     *strings.Builder
 	notionPage notion.Page
 	coverPhoto *image
 	images     []*image
-	parent     *page
-	children   []*page
+	parent     *Page
+	children   []*Page
 }
 
-type Migrator struct {
-	NotionClient *notion.Client
-	Config       config.Config
-	Cache        *cache.Cache
-	Pages        []*page
-	HttpClient   *http.Client
+type Migrator interface {
+	FetchPages(ctx context.Context) ([]*Page, error)
+	FetchParseAndSavePage(ctx context.Context, page *Page, pageProperties map[string]bool) error
+	DisplayInformation(ctx context.Context) error
+	WritePagesToDisk(ctx context.Context) error
 }
 
-func NewMigrator(config config.Config, cache *cache.Cache) *Migrator {
+type migrator struct {
+	notionClient *notion.Client
+	config       *config.Config
+	cache        *cache.Cache
+	pages        []*Page
+	httpClient   *http.Client
+}
+
+func NewMigrator(config *config.Config, cache *cache.Cache) Migrator {
 	notionClient := notion.NewClient(config.Token)
 
-	return &Migrator{
-		NotionClient: notionClient,
-		Config:       config,
-		Cache:        cache,
-		HttpClient:   http.DefaultClient,
+	return &migrator{
+		notionClient: notionClient,
+		config:       config,
+		cache:        cache,
+		httpClient:   http.DefaultClient,
 	}
 }
 
-func (m *Migrator) FetchPages(ctx context.Context) error {
-	if m.Config.DatabaseID != "" {
-		db, err := m.NotionClient.FindDatabaseByID(ctx, m.Config.DatabaseID)
+func (m *migrator) FetchPages(ctx context.Context) ([]*Page, error) {
+	if m.config.DatabaseID != "" {
+		db, err := m.notionClient.FindDatabaseByID(ctx, m.config.DatabaseID)
 		if err != nil {
-			return fmt.Errorf("failed to get DB %s. error: %s\n", m.Config.DatabaseID, err.Error())
+			return []*Page{}, fmt.Errorf("failed to get DB %s. error: %s\n", m.config.DatabaseID, err.Error())
 		}
 		dbTitle := extractPlainTextFromRichText(db.Title)
 		notionPages, err := m.fetchNotionDBPages(ctx)
 		if err != nil {
-			return fmt.Errorf("failed to get pages from DB %s. error: %s\n", m.Config.DatabaseID, err.Error())
+			return []*Page{}, fmt.Errorf("failed to get pages from DB %s. error: %s\n", m.config.DatabaseID, err.Error())
 		}
-		pages := make([]*page, len(notionPages))
+		pages := make([]*Page, len(notionPages))
 
 		for i, notionPage := range notionPages {
-			page := &page{
+			page := &Page{
 				id:         notionPage.ID,
 				buffer:     &strings.Builder{},
-				Path:       path.Join(m.Config.VaultFilepath(), dbTitle, m.extractPageTitle(notionPage)),
+				Path:       path.Join(m.config.VaultFilepath(), dbTitle, m.extractPageTitle(notionPage)),
 				notionPage: notionPage,
 				parent:     nil,
 			}
@@ -89,13 +96,13 @@ func (m *Migrator) FetchPages(ctx context.Context) error {
 			pages[i] = page
 		}
 
-		m.Pages = pages
+		m.pages = pages
 
-		return nil
+		return pages, nil
 	} else {
-		notionPage, err := m.NotionClient.FindPageByID(context.Background(), m.Config.PageID)
+		notionPage, err := m.notionClient.FindPageByID(context.Background(), m.config.PageID)
 		if err != nil {
-			return fmt.Errorf("failed to find the page %s make sure the page exists in your Notioin workspace. error: %s\n", m.Config.PageID, err.Error())
+			return []*Page{}, fmt.Errorf("failed to find the page %s make sure the page exists in your Notioin workspace. error: %s\n", m.config.PageID, err.Error())
 		}
 
 		var cover *image
@@ -105,23 +112,23 @@ func (m *Migrator) FetchPages(ctx context.Context) error {
 				url:      notionPage.Cover.External.URL,
 			}
 		}
-
-		m.Pages = []*page{
+		pages := []*Page{
 			{
 				id:         notionPage.ID,
 				buffer:     &strings.Builder{},
-				Path:       path.Join(m.Config.VaultFilepath(), m.extractPageTitle(notionPage)),
+				Path:       path.Join(m.config.VaultFilepath(), m.extractPageTitle(notionPage)),
 				notionPage: notionPage,
 				parent:     nil,
 				coverPhoto: cover,
 			},
 		}
+		m.pages = pages
 
-		return nil
+		return pages, nil
 	}
 }
 
-func (m *Migrator) extractPageTitle(page notion.Page) string {
+func (m *migrator) extractPageTitle(page notion.Page) string {
 	var str string
 
 	switch page.Parent.Type {
@@ -144,7 +151,7 @@ func (m *Migrator) extractPageTitle(page notion.Page) string {
 				titleProperty = value
 			}
 
-			val, ok := m.Config.PageNameFilters[strings.ToLower(key)]
+			val, ok := m.config.PageNameFilters[strings.ToLower(key)]
 
 			if ok {
 				switch value.Type {
@@ -180,12 +187,12 @@ func (m *Migrator) extractPageTitle(page notion.Page) string {
 	return fileName
 }
 
-func (m *Migrator) FetchParseAndSavePage(ctx context.Context, page *page, pageProperties map[string]bool) error {
+func (m *migrator) FetchParseAndSavePage(ctx context.Context, page *Page, pageProperties map[string]bool) error {
 	return m.fetchParseAndSavePage(ctx, page, pageProperties)
 }
 
-func (m *Migrator) fetchParseAndSavePage(ctx context.Context, page *page, pageProperties map[string]bool) error {
-	pageBlocks, err := m.NotionClient.FindBlockChildrenByID(ctx, page.notionPage.ID, nil)
+func (m *migrator) fetchParseAndSavePage(ctx context.Context, page *Page, pageProperties map[string]bool) error {
+	pageBlocks, err := m.notionClient.FindBlockChildrenByID(ctx, page.notionPage.ID, nil)
 	if err != nil {
 		return fmt.Errorf("failed to extract children blocks for block ID %s. error: %w", page.notionPage.ID, err)
 	}
@@ -235,9 +242,9 @@ func (m *Migrator) fetchParseAndSavePage(ctx context.Context, page *page, pagePr
 	return nil
 }
 
-func (m *Migrator) DisplayInformation(ctx context.Context) error {
+func (m *migrator) DisplayInformation(ctx context.Context) error {
 	buffer := bufio.NewWriter(os.Stdout)
-	for _, page := range m.Pages {
+	for _, page := range m.pages {
 		buffer.WriteString(fmt.Sprintf("%s \n", m.removeObsidianVault(page.Path)))
 		m.displayPageInfo(page, buffer, 0)
 	}
@@ -249,7 +256,7 @@ func (m *Migrator) DisplayInformation(ctx context.Context) error {
 	return nil
 }
 
-func (m *Migrator) displayPageInfo(page *page, buffer *bufio.Writer, index int) {
+func (m *migrator) displayPageInfo(page *Page, buffer *bufio.Writer, index int) {
 	var spaces int
 	if index > 0 {
 		spaces = index * 5
@@ -262,12 +269,12 @@ func (m *Migrator) displayPageInfo(page *page, buffer *bufio.Writer, index int) 
 	}
 }
 
-func (m *Migrator) removeObsidianVault(s string) string {
-	return strings.TrimPrefix(s, m.Config.VaultPath)
+func (m *migrator) removeObsidianVault(s string) string {
+	return strings.TrimPrefix(s, m.config.VaultPath)
 }
 
-func (m *Migrator) WritePagesToDisk(ctx context.Context) error {
-	for _, page := range m.Pages {
+func (m *migrator) WritePagesToDisk(ctx context.Context) error {
+	for _, page := range m.pages {
 		err := m.writePage(page)
 		if err != nil {
 			return err
@@ -277,7 +284,7 @@ func (m *Migrator) WritePagesToDisk(ctx context.Context) error {
 	return nil
 }
 
-func (m *Migrator) writePage(page *page) error {
+func (m *migrator) writePage(page *Page) error {
 	if err := os.MkdirAll(filepath.Dir(page.Path), 0770); err != nil {
 		return fmt.Errorf("failed to create the necessary directories in for the Obsidian vault.  error: %w", err)
 	}
@@ -296,7 +303,7 @@ func (m *Migrator) writePage(page *page) error {
 		return err
 	}
 
-	if m.Config.StoreImages {
+	if m.config.StoreImages {
 		for _, image := range page.images {
 			err := m.downloadImage(image.name, image.url)
 			return err
@@ -313,7 +320,7 @@ func (m *Migrator) writePage(page *page) error {
 	return nil
 }
 
-func (m *Migrator) propertiesToFrontMatter(ctx context.Context, parentPage *page, sortedKeys []string, propertites notion.DatabasePageProperties, buffer *strings.Builder) {
+func (m *migrator) propertiesToFrontMatter(ctx context.Context, parentPage *Page, sortedKeys []string, propertites notion.DatabasePageProperties, buffer *strings.Builder) {
 	buffer.WriteString("---\n")
 	// There is a limitation between Notions and Obsidian.
 	// If the property is named tags in Notion it has ramifications in Obsidian
@@ -427,8 +434,8 @@ const Untitled = "Untitled"
 // If the page title has been provided it will use it, if is an empty string it will try to extracted from the page information.
 // The logic to extract the title varies depending on the page parent's type.
 // TODO: handle better the quote logic
-func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, title string, buffer *strings.Builder, quotes bool) error {
-	cached, ok := m.Cache.Get(pageID)
+func (m *migrator) fetchPage(ctx context.Context, parentPage *Page, pageID, title string, buffer *strings.Builder, quotes bool) error {
+	cached, ok := m.cache.Get(pageID)
 	if ok {
 		var result string
 		if quotes {
@@ -442,7 +449,7 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 		if title != "" && title == Untitled {
 			// Notion pages with Untitled would return a 404 when fetching them
 			// We do not process those
-			m.Cache.Set(pageID, cache.Page{
+			m.cache.Set(pageID, cache.Page{
 				Title: Untitled,
 			})
 			return nil
@@ -452,13 +459,13 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 		// We need a way to mark that a page is being work on
 		// to avoid endless loop. In this case we just want to get the page title
 		// TODO: Check if we need this logic
-		if m.Cache.IsWorking(pageID) {
+		if m.cache.IsWorking(pageID) {
 			childTitle := title
 			extractTitle := false
 			if childTitle == "" {
 				extractTitle = true
 			}
-			mentionPage, err := m.NotionClient.FindPageByID(ctx, pageID)
+			mentionPage, err := m.notionClient.FindPageByID(ctx, pageID)
 			if err != nil {
 				return fmt.Errorf("failed to find page %s. error %s", pageID, err.Error())
 			}
@@ -472,8 +479,8 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 				// Since we are migrating from the same DB we do need to create a subfolder
 				// within the Obsidian vault. So we can skip fetching the database to gather
 				// the name to create the subfolder
-				if m.Config.DatabaseID == "" || m.Config.DatabaseID != mentionPage.Parent.DatabaseID {
-					dbPage, err := m.NotionClient.FindDatabaseByID(ctx, mentionPage.Parent.DatabaseID)
+				if m.config.DatabaseID == "" || m.config.DatabaseID != mentionPage.Parent.DatabaseID {
+					dbPage, err := m.notionClient.FindDatabaseByID(ctx, mentionPage.Parent.DatabaseID)
 					if err != nil {
 						return fmt.Errorf("failed to find parent db %s.  error: %w", mentionPage.Parent.DatabaseID, err)
 					}
@@ -483,7 +490,7 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 					childTitle = path.Join(dbTitle, childTitle)
 				}
 			case notion.ParentTypeBlock:
-				notionParentPage, err := m.NotionClient.FindPageByID(ctx, mentionPage.Parent.BlockID)
+				notionParentPage, err := m.notionClient.FindPageByID(ctx, mentionPage.Parent.BlockID)
 				if err != nil {
 					return fmt.Errorf("failed to find parent block %s.  error: %w", mentionPage.Parent.BlockID, err)
 				}
@@ -493,7 +500,7 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 				}
 
 			case notion.ParentTypePage:
-				notionParentPage, err := m.NotionClient.FindPageByID(ctx, mentionPage.Parent.PageID)
+				notionParentPage, err := m.notionClient.FindPageByID(ctx, mentionPage.Parent.PageID)
 				if err != nil {
 					return fmt.Errorf("failed to find parent mention page %s.  error: %w", mentionPage.Parent.PageID, err)
 				}
@@ -515,7 +522,7 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 			return nil
 		}
 
-		m.Cache.Mark(pageID)
+		m.cache.Mark(pageID)
 		var result string
 
 		extractTitle := false
@@ -529,12 +536,12 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 		}
 
 		defer func() {
-			m.Cache.Set(pageID, cache.Page{
+			m.cache.Set(pageID, cache.Page{
 				Title: childTitle,
 			})
 		}()
 
-		mentionPage, err := m.NotionClient.FindPageByID(ctx, pageID)
+		mentionPage, err := m.notionClient.FindPageByID(ctx, pageID)
 		if err != nil {
 			return fmt.Errorf("failed to find page %s. error %s", pageID, err.Error())
 		}
@@ -547,8 +554,8 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 			// Since we are migrating from the same DB we do need to create a subfolder
 			// within the Obsidian vault. So we can skip fetching the database to gather
 			// the name to create the subfolder
-			if m.Config.DatabaseID == "" || m.Config.DatabaseID != mentionPage.Parent.DatabaseID {
-				dbPage, err := m.NotionClient.FindDatabaseByID(ctx, mentionPage.Parent.DatabaseID)
+			if m.config.DatabaseID == "" || m.config.DatabaseID != mentionPage.Parent.DatabaseID {
+				dbPage, err := m.notionClient.FindDatabaseByID(ctx, mentionPage.Parent.DatabaseID)
 				if err != nil {
 					return fmt.Errorf("failed to find parent db %s.  error: %w", mentionPage.Parent.DatabaseID, err)
 				}
@@ -558,7 +565,7 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 				childTitle = path.Join(dbTitle, childTitle)
 			}
 		case notion.ParentTypeBlock:
-			notionParentPage, err := m.NotionClient.FindPageByID(ctx, mentionPage.Parent.BlockID)
+			notionParentPage, err := m.notionClient.FindPageByID(ctx, mentionPage.Parent.BlockID)
 			if err != nil {
 				return fmt.Errorf("failed to find parent block %s.  error: %w", mentionPage.Parent.BlockID, err)
 			}
@@ -566,7 +573,7 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 				childTitle = m.extractPageTitle(notionParentPage)
 			}
 		case notion.ParentTypePage:
-			notionParentPage, err := m.NotionClient.FindPageByID(ctx, mentionPage.Parent.PageID)
+			notionParentPage, err := m.notionClient.FindPageByID(ctx, mentionPage.Parent.PageID)
 			if err != nil {
 				return fmt.Errorf("failed to find parent mention page %s.  error: %w", mentionPage.Parent.PageID, err)
 			}
@@ -582,12 +589,12 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 			return fmt.Errorf("unable to find page information %s", pageID)
 		}
 
-		newPage := &page{
+		newPage := &Page{
 			id:         mentionPage.ID,
 			notionPage: mentionPage,
 			buffer:     &strings.Builder{},
 			parent:     parentPage,
-			Path:       path.Join(m.Config.VaultFilepath(), childTitle),
+			Path:       path.Join(m.config.VaultFilepath(), childTitle),
 		}
 
 		if mentionPage.Cover != nil {
@@ -599,7 +606,7 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 
 		parentPage.children = append(parentPage.children, newPage)
 
-		if err = m.fetchParseAndSavePage(ctx, newPage, m.Config.PagePropertiesToMigrate); err != nil {
+		if err = m.fetchParseAndSavePage(ctx, newPage, m.config.PagePropertiesToMigrate); err != nil {
 			fmt.Printf("failed to fetch mention page content with page parent: %s\n", childTitle)
 		}
 
@@ -616,7 +623,7 @@ func (m *Migrator) fetchPage(ctx context.Context, parentPage *page, pageID, titl
 
 }
 
-func (m *Migrator) pageToMarkdown(ctx context.Context, parentPage *page, blocks []notion.Block, indent bool) error {
+func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks []notion.Block, indent bool) error {
 	var err error
 	buffer := parentPage.buffer
 
@@ -809,7 +816,7 @@ func (m *Migrator) pageToMarkdown(ctx context.Context, parentPage *page, blocks 
 				}
 				buffer.WriteString("\n")
 			}
-			if block.Type == notion.FileTypeFile && m.Config.StoreImages {
+			if block.Type == notion.FileTypeFile && m.config.StoreImages {
 				imageName := filepath.Join(m.removeObsidianVault(parentPage.Path), block.ID()+".png")
 
 				parentPage.images = append(parentPage.images, &image{
@@ -891,7 +898,7 @@ type richText struct {
 }
 
 // TODO: Handle annotations better
-func (m *Migrator) writeRichText(ctx context.Context, parentPage *page, buffer *strings.Builder, richTextBlock []notion.RichText) error {
+func (m *migrator) writeRichText(ctx context.Context, parentPage *Page, buffer *strings.Builder, richTextBlock []notion.RichText) error {
 	richTexts := []richText{}
 
 	for _, text := range richTextBlock {
@@ -987,9 +994,9 @@ func (m *Migrator) writeRichText(ctx context.Context, parentPage *page, buffer *
 	return nil
 }
 
-func (m *Migrator) writeChrildren(ctx context.Context, parentPage *page, block notion.Block) error {
+func (m *migrator) writeChrildren(ctx context.Context, parentPage *Page, block notion.Block) error {
 	if block.HasChildren() {
-		pageBlocks, err := m.NotionClient.FindBlockChildrenByID(ctx, block.ID(), nil)
+		pageBlocks, err := m.notionClient.FindBlockChildrenByID(ctx, block.ID(), nil)
 		if err != nil {
 			return fmt.Errorf("failed to extract children blocks for block ID %s. error: %w", block.ID(), err)
 		}
@@ -999,9 +1006,9 @@ func (m *Migrator) writeChrildren(ctx context.Context, parentPage *page, block n
 	return nil
 }
 
-func (m *Migrator) writeTable(ctx context.Context, parentPage *page, tableWidth int, block notion.Block, buffer *strings.Builder) error {
+func (m *migrator) writeTable(ctx context.Context, parentPage *Page, tableWidth int, block notion.Block, buffer *strings.Builder) error {
 	if block.HasChildren() {
-		pageBlocks, err := m.NotionClient.FindBlockChildrenByID(ctx, block.ID(), nil)
+		pageBlocks, err := m.notionClient.FindBlockChildrenByID(ctx, block.ID(), nil)
 		if err != nil {
 			return fmt.Errorf("failed to extract table children blocks for block ID %s. error: %w", block.ID(), err)
 		}
@@ -1029,8 +1036,8 @@ func (m *Migrator) writeTable(ctx context.Context, parentPage *page, tableWidth 
 	return nil
 }
 
-func (m *Migrator) fetchNotionDBPages(ctx context.Context) ([]notion.Page, error) {
-	notionResponse, err := m.NotionClient.QueryDatabase(ctx, m.Config.DatabaseID, nil)
+func (m *migrator) fetchNotionDBPages(ctx context.Context) ([]notion.Page, error) {
+	notionResponse, err := m.notionClient.QueryDatabase(ctx, m.config.DatabaseID, nil)
 	if err != nil {
 		return []notion.Page{}, err
 	}
@@ -1043,7 +1050,7 @@ func (m *Migrator) fetchNotionDBPages(ctx context.Context) ([]notion.Page, error
 	for notionResponse.HasMore {
 		query.StartCursor = *notionResponse.NextCursor
 
-		notionResponse, err = m.NotionClient.QueryDatabase(ctx, m.Config.DatabaseID, query)
+		notionResponse, err = m.notionClient.QueryDatabase(ctx, m.config.DatabaseID, query)
 		if err != nil {
 			return []notion.Page{}, err
 		}
@@ -1054,13 +1061,13 @@ func (m *Migrator) fetchNotionDBPages(ctx context.Context) ([]notion.Page, error
 	return result, nil
 }
 
-func (m *Migrator) downloadImage(name, url string) error {
-	imageLocation := filepath.Join(m.Config.VaultImagePath(), name)
+func (m *migrator) downloadImage(name, url string) error {
+	imageLocation := filepath.Join(m.config.VaultImagePath(), name)
 	if err := os.MkdirAll(path.Dir(imageLocation), 0770); err != nil {
 		return fmt.Errorf("failed to create the necessary directories to store images.  error: %w", err)
 	}
 
-	response, err := m.HttpClient.Get(url)
+	response, err := m.httpClient.Get(url)
 	if err != nil {
 		return err
 	}

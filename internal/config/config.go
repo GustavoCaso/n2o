@@ -14,10 +14,10 @@ type Config struct {
 	DryRun                  bool
 }
 
-func (c Config) VaultFilepath() string {
+func (c *Config) VaultFilepath() string {
 	return filepath.Join(c.VaultPath, c.VaultDestination)
 }
 
-func (c Config) VaultImagePath() string {
+func (c *Config) VaultImagePath() string {
 	return filepath.Join(c.VaultPath, "Images")
 }
