@@ -1,0 +1,383 @@
+{
+  "object": "list",
+  "results": [
+    {
+      "object": "block",
+      "id": "117a3598-a993-81fb-9056-cd3f5e9208c2",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8082-ad8a-dc620fb12e53"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": " ↓ Click the button below at the start of every week to clear the current meal plan.",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "gray"
+            },
+            "plain_text": " ↓ Click the button below at the start of every week to clear the current meal plan.",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81a1-ad99-c661aa64a758",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8082-ad8a-dc620fb12e53"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "unsupported",
+      "unsupported": {}
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-8198-8ea7-c14940224622",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8082-ad8a-dc620fb12e53"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "heading_1",
+      "heading_1": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Weekly Plan",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Weekly Plan",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-8177-a1eb-db70aff08e0b",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8082-ad8a-dc620fb12e53"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "To edit meals from a specific day of the week, click on the meal entry you want to modify.",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "gray"
+            },
+            "plain_text": "To edit meals from a specific day of the week, click on the meal entry you want to modify.",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-8156-8c0e-c98ff5491c59",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8082-ad8a-dc620fb12e53"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "child_database",
+      "child_database": {
+        "title": "Weekly Plan"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81a5-b6d1-d50e30d1c9a2",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8082-ad8a-dc620fb12e53"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "heading_1",
+      "heading_1": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Meals",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Meals",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-817d-91f9-c9b802032bac",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8082-ad8a-dc620fb12e53"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Here’s a list of all meals you’ve saved. You can easily add another meal by clicking ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "gray"
+            },
+            "plain_text": "Here’s a list of all meals you’ve saved. You can easily add another meal by clicking ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "+ New",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": true,
+              "color": "gray"
+            },
+            "plain_text": "+ New",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": " ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "gray"
+            },
+            "plain_text": " ",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-819a-8d2b-d6b5be6acd99",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8082-ad8a-dc620fb12e53"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Click into a meal card to add cooking directions and ingredients needed for that meal.",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "gray"
+            },
+            "plain_text": "Click into a meal card to add cooking directions and ingredients needed for that meal.",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-814a-b9f2-f9747765b467",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8082-ad8a-dc620fb12e53"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "child_database",
+      "child_database": {
+        "title": "Meals"
+      }
+    }
+  ],
+  "next_cursor": null,
+  "has_more": false,
+  "type": "block",
+  "block": {},
+  "request_id": "9c6506e9-d38e-4e66-87a3-402fcf3f03c7"
+}

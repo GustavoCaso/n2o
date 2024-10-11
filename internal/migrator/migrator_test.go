@@ -657,6 +657,41 @@ URL: https://example.com
 				StoreImages: true,
 			},
 		},
+		{
+			name:       "page with cover photo",
+			statusCode: 200,
+			notionRespBody: func(r *http.Request) io.Reader {
+				readFixture := func(path string) io.Reader {
+					f := mustReadFixture(path)
+					return bytes.NewReader(f)
+				}
+
+				switch r.URL.String() {
+				case "https://api.notion.com/v1/blocks/1/children":
+					return readFixture("fixtures/page_with_cover/page_blocks.json")
+				default:
+					panic(fmt.Sprintf("unhandled URL: %s", r.URL.String()))
+				}
+			},
+			buildPages: func(path string) []*page {
+				return []*page{
+					{
+						id:         "1",
+						buffer:     &strings.Builder{},
+						notionPage: notion.Page{ID: "1"},
+						parent:     nil,
+						Path:       filepath.Join(path, "example.md"),
+						coverPhoto: &image{
+							external: true,
+							url:      "https://images.unsplash.com/photo-1543352632-5a4b24e4d2a6?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb",
+						},
+					},
+				}
+			},
+			pageProperties: map[string]bool{},
+			expected:       string(mustReadFixture("fixtures/page_with_cover/result")),
+			config:         config.Config{},
+		},
 	}
 
 	for _, test := range tests {
