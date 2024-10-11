@@ -1,0 +1,1870 @@
+{
+  "object": "list",
+  "results": [
+    {
+      "object": "block",
+      "id": "117a3598-a993-81d6-895d-ca67578bc85a",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": true,
+      "archived": false,
+      "in_trash": false,
+      "type": "column_list",
+      "column_list": {}
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-819e-90b1-f51cca077f9f",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81bd-9448-e6c9280473fb",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "heading_1",
+      "heading_1": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "🌈 About Me",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "🌈 About Me",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81e7-b622-c543869d0275",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "I'm a creative thinker, a problem solver, and an avid learner, always exploring new trends and techniques in design. When I'm not pushing pixels, you can find me with a sketchbook, capturing the world or lost in the pages of a good design book.",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "I'm a creative thinker, a problem solver, and an avid learner, always exploring new trends and techniques in design. When I'm not pushing pixels, you can find me with a sketchbook, capturing the world or lost in the pages of a good design book.",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81dd-91ca-dcc4d409ba0f",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "heading_1",
+      "heading_1": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "💼 Experience",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "💼 Experience",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-819c-a8d1-e0e3560057fd",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Senior UX/UI Designer - Creative Minds Inc. | June 2018 - Present",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Senior UX/UI Designer - Creative Minds Inc. | June 2018 - Present",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-8157-b2cc-c27e75f6bfc8",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Lead the design of intuitive user interfaces for mobile and web applications, enhancing user satisfaction and engagement.",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Lead the design of intuitive user interfaces for mobile and web applications, enhancing user satisfaction and engagement.",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81b9-97e2-dc1cf8a8c370",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Collaborate with cross-functional teams to create cohesive brand experiences across all platforms.",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Collaborate with cross-functional teams to create cohesive brand experiences across all platforms.",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81fd-9bf5-cf6aae7093d4",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Mentor junior designers, fostering a collaborative and innovative design culture.",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Mentor junior designers, fostering a collaborative and innovative design culture.",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-8118-9d84-cbae124263dd",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Graphic Designer - BrandWorks Agency | Jan 2014 - May 2018",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Graphic Designer - BrandWorks Agency | Jan 2014 - May 2018",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-8190-9eb1-f466196c45a3",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Developed brand identities, including logos, typography, and color schemes, for over 30 clients.",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Developed brand identities, including logos, typography, and color schemes, for over 30 clients.",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81d4-8bc7-c3a520ba1eef",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Produced marketing materials, digital ads, and promotional content, resulting in a 25% increase in client engagement for key accounts.",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Produced marketing materials, digital ads, and promotional content, resulting in a 25% increase in client engagement for key accounts.",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81a0-af88-fdf9da11e5ba",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "heading_1",
+      "heading_1": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "🎓 Education",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "🎓 Education",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81ae-a103-e3cd848c8004",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Master of Fine Arts in Design - Rhode Island School of Design | 2013",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Master of Fine Arts in Design - Rhode Island School of Design | 2013",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-816b-84d9-e34822d80660",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Specialized in Digital + Media",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Specialized in Digital + Media",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-8163-a14f-c19b81d7e5bf",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Thesis: \"Interactivity and User Engagement in Digital Platforms\"",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Thesis: \"Interactivity and User Engagement in Digital Platforms\"",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-817e-b69f-c78b500eed01",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Bachelor of Arts in Graphic Design - University of California, Berkeley | 2011",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Bachelor of Arts in Graphic Design - University of California, Berkeley | 2011",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-811c-ae31-e250615c9cdd",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Graduated with Honors",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Graduated with Honors",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-8169-9e96-d56557a66d83",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Relevant coursework: Typography, Web Design, Digital Photography",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Relevant coursework: Typography, Web Design, Digital Photography",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-8129-a170-defbe43c609a",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "heading_1",
+      "heading_1": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "🚀 Projects",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "🚀 Projects",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81f7-9c2b-fe8fe2e0b2b8",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "\"EcoLife\" Mobile App",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "\"EcoLife\" Mobile App",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-8115-b9ea-c2161ac369a8",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "An environmentally-focused app designed to encourage sustainable living through daily challenges, tips, and community engagement.",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "An environmentally-focused app designed to encourage sustainable living through daily challenges, tips, and community engagement.",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-8170-9c70-d1bebc20bbe0",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Role: Lead Designer",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Role: Lead Designer",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-8144-9698-edf0dce1da3e",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Tools: Sketch, InVision, Adobe Creative Suite",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Tools: Sketch, InVision, Adobe Creative Suite",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-8180-806e-e91f1fa4457e",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "heading_3",
+      "heading_3": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "\"Brand Reimagined\" - Cafe Fresco",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "\"Brand Reimagined\" - Cafe Fresco",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81a4-bb9e-c2d2ac8e51e8",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "A complete rebranding project for a local café, including logo redesign, packaging, and in-store visuals, resulting in a 40% increase in foot traffic.",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "A complete rebranding project for a local café, including logo redesign, packaging, and in-store visuals, resulting in a 40% increase in foot traffic.",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81be-a3fe-fe0d431056cb",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Role: Brand Strategist & Designer",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Role: Brand Strategist & Designer",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-8115-8ab0-e3fd89963629",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Tools: Illustrator, Photoshop, Procreate",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Tools: Illustrator, Photoshop, Procreate",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-8177-8533-d5cccef818c2",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "heading_1",
+      "heading_1": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "🔨 Skills",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "🔨 Skills",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81a7-9e61-e9fc16b5e5bd",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "User Experience (UX) Design",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "User Experience (UX) Design",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-8163-8d36-cf3909fb54d8",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "User Interface (UI) Design",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "User Interface (UI) Design",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81a4-999c-f8863e6b6a26",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Branding & Visual Identity",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Branding & Visual Identity",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81cb-b96f-ca6c6fb84dc1",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Adobe Creative Suite",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Adobe Creative Suite",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81ac-833c-cfdf1e4175dc",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Sketch & InVision",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Sketch & InVision",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81fb-b91c-ea12b9f9a522",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Prototyping & Wireframing",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Prototyping & Wireframing",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-8118-9a73-c8dc126ef685",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "heading_1",
+      "heading_1": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "📬 Contact",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "📬 Contact",
+            "href": null
+          }
+        ],
+        "is_toggleable": false,
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-814d-a59c-deb23663af83",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Let's create something amazing together! Reach out to me at:",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Let's create something amazing together! Reach out to me at:",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81f2-a56c-d24ff82669b9",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Email: ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Email: ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "ada@yourdomain.com",
+              "link": {
+                "url": "mailto:ada@yourdomain.com"
+              }
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "ada@yourdomain.com",
+            "href": "mailto:ada@yourdomain.com"
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-8154-99d2-ea13f6fa0d05",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "LinkedIn: ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "LinkedIn: ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "linkedin.com/in/adalee",
+              "link": {
+                "url": "https://www.linkedin.com/in/adalee"
+              }
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "linkedin.com/in/adalee",
+            "href": "https://www.linkedin.com/in/adalee"
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81b2-a2bd-cd8e499ccecb",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "bulleted_list_item",
+      "bulleted_list_item": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Portfolio: ",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Portfolio: ",
+            "href": null
+          },
+          {
+            "type": "text",
+            "text": {
+              "content": "adaleedesigns.com",
+              "link": {
+                "url": "http://adaleedesigns.com/"
+              }
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "adaleedesigns.com",
+            "href": "http://adaleedesigns.com/"
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81a0-8b61-ccfe3f3c6711",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Thanks for stopping by my corner of the internet! 💫",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Thanks for stopping by my corner of the internet! 💫",
+            "href": null
+          }
+        ],
+        "color": "default"
+      }
+    },
+    {
+      "object": "block",
+      "id": "117a3598-a993-81a7-958d-c24fb8096e38",
+      "parent": {
+        "type": "page_id",
+        "page_id": "117a3598-a993-8033-b285-ee32583f0b89"
+      },
+      "created_time": "2024-10-06T15:56:00.000Z",
+      "last_edited_time": "2024-10-06T15:56:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "117d872b-594c-817b-8ab4-0002fe34f184"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [],
+        "color": "default"
+      }
+    }
+  ],
+  "next_cursor": null,
+  "has_more": false,
+  "type": "block",
+  "block": {},
+  "request_id": "43ab8f8f-2a9c-408c-a5b3-05dbd4fd3b58"
+}
