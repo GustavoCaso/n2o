@@ -36,13 +36,13 @@ func TestFetchPages(t *testing.T) {
 		statusCode     int
 		respBody       func(r *http.Request) io.Reader
 		respStatusCode int
-		config         config.Config
+		config         *config.Config
 		hasError       bool
-		assertions     func(t *testing.T, pages []*page)
+		assertions     func(t *testing.T, pages []*Page)
 	}{
 		{
 			name: "with database ID",
-			config: config.Config{
+			config: &config.Config{
 				DatabaseID:      "000000",
 				PageNameFilters: map[string]string{"name": ""},
 			},
@@ -51,17 +51,17 @@ func TestFetchPages(t *testing.T) {
 				f := mustReadFixture("fixtures/database_query.json")
 				return bytes.NewReader(f)
 			},
-			assertions: func(t *testing.T, pages []*page) {
+			assertions: func(t *testing.T, pages []*Page) {
 				assert.Equal(t, 1, len(pages))
 				p := pages[0]
-				assert.IsType(t, &page{}, p)
+				assert.IsType(t, &Page{}, p)
 				assert.Equal(t, "Foobar.md", p.Path)
 				assert.Nil(t, p.parent)
 			},
 		},
 		{
 			name: "with database ID and error",
-			config: config.Config{
+			config: &config.Config{
 				DatabaseID: "000000",
 			},
 			statusCode: 400,
@@ -72,7 +72,7 @@ func TestFetchPages(t *testing.T) {
 		},
 		{
 			name: "with page ID",
-			config: config.Config{
+			config: &config.Config{
 				PageID: "000000",
 			},
 			statusCode: 200,
@@ -80,17 +80,17 @@ func TestFetchPages(t *testing.T) {
 				f := mustReadFixture("fixtures/page_query.json")
 				return bytes.NewReader(f)
 			},
-			assertions: func(t *testing.T, pages []*page) {
+			assertions: func(t *testing.T, pages []*Page) {
 				assert.Equal(t, 1, len(pages))
 				p := pages[0]
-				assert.IsType(t, &page{}, p)
+				assert.IsType(t, &Page{}, p)
 				assert.Equal(t, "Lorem ipsum.md", p.Path)
 				assert.Nil(t, p.parent)
 			},
 		},
 		{
 			name: "with page ID and error",
-			config: config.Config{
+			config: &config.Config{
 				PageID: "000000",
 			},
 			statusCode: 400,
@@ -115,18 +115,18 @@ func TestFetchPages(t *testing.T) {
 
 			notionClient := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
 
-			migrator := Migrator{
-				NotionClient: notionClient,
-				Config:       test.config,
-				Cache:        nil,
+			migrator := migrator{
+				notionClient: notionClient,
+				config:       test.config,
+				cache:        nil,
 			}
 
-			err := migrator.FetchPages(context.TODO())
+			pages, err := migrator.FetchPages(context.TODO())
 			if test.hasError {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				test.assertions(t, migrator.Pages)
+				test.assertions(t, pages)
 			}
 		})
 	}
@@ -137,11 +137,11 @@ func TestExtractPageTitle(t *testing.T) {
 		name     string
 		page     notion.Page
 		expected string
-		config   config.Config
+		config   *config.Config
 	}{
 		{
 			name: "with database and text title",
-			config: config.Config{
+			config: &config.Config{
 				DatabaseID: "0000",
 				PageNameFilters: map[string]string{
 					"title": "",
@@ -168,7 +168,7 @@ func TestExtractPageTitle(t *testing.T) {
 		},
 		{
 			name: "with database and date title and custom format",
-			config: config.Config{
+			config: &config.Config{
 				DatabaseID: "0000",
 				PageNameFilters: map[string]string{
 					"date": "%Y/%m/%d %H:%M:%S",
@@ -192,7 +192,7 @@ func TestExtractPageTitle(t *testing.T) {
 		},
 		{
 			name: "with database and date title and no custom format",
-			config: config.Config{
+			config: &config.Config{
 				DatabaseID: "0000",
 				PageNameFilters: map[string]string{
 					"date": "",
@@ -216,7 +216,7 @@ func TestExtractPageTitle(t *testing.T) {
 		},
 		{
 			name: "with page",
-			config: config.Config{
+			config: &config.Config{
 				PageID: "0000",
 			},
 			page: notion.Page{
@@ -237,7 +237,7 @@ func TestExtractPageTitle(t *testing.T) {
 		},
 		{
 			name: "with database and multiple page name filters",
-			config: config.Config{
+			config: &config.Config{
 				DatabaseID: "0000",
 				PageNameFilters: map[string]string{
 					"title": "",
@@ -272,7 +272,7 @@ func TestExtractPageTitle(t *testing.T) {
 		},
 		{
 			name: "with database and unsupported page name filter",
-			config: config.Config{
+			config: &config.Config{
 				DatabaseID: "0000",
 				PageNameFilters: map[string]string{
 					"title":    "",
@@ -305,10 +305,10 @@ func TestExtractPageTitle(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			migrator := Migrator{
-				NotionClient: nil,
-				Config:       test.config,
-				Cache:        nil,
+			migrator := migrator{
+				notionClient: nil,
+				config:       test.config,
+				cache:        nil,
 			}
 
 			value := migrator.extractPageTitle(test.page)
@@ -328,9 +328,9 @@ func TestFetchParseAndSavePage_WritePagesToDisk(t *testing.T) {
 		httpClient       func(t *testing.T) *http.Client
 		pageProperties   map[string]bool
 		expected         string
-		config           config.Config
+		config           *config.Config
 		customAssertions func(t *testing.T, path string)
-		buildPages       func(path string) []*page
+		buildPages       func(path string) []*Page
 	}{
 		{
 			name:       "store page in the correct path and format markdown correctly",
@@ -346,9 +346,9 @@ func TestFetchParseAndSavePage_WritePagesToDisk(t *testing.T) {
 			expected: `## Lacinato kale
 [Lacinato kale is a variety of kale with a long tradition in Italian cuisine, especially that of Tuscany. It is also known as Tuscan kale, Italian kale, dinosaur kale, kale, flat back kale, palm tree kale, or black Tuscan palm.](https://en.wikipedia.org/wiki/Lacinato_kale)
 `,
-			config: config.Config{},
-			buildPages: func(path string) []*page {
-				return []*page{
+			config: &config.Config{},
+			buildPages: func(path string) []*Page {
+				return []*Page{
 					{
 						id:         "1",
 						buffer:     &strings.Builder{},
@@ -402,9 +402,9 @@ URL: https://example.com
 ## Lacinato kale
 [Lacinato kale is a variety of kale with a long tradition in Italian cuisine, especially that of Tuscany. It is also known as Tuscan kale, Italian kale, dinosaur kale, kale, flat back kale, palm tree kale, or black Tuscan palm.](https://en.wikipedia.org/wiki/Lacinato_kale)
 `,
-			config: config.Config{},
-			buildPages: func(path string) []*page {
-				return []*page{
+			config: &config.Config{},
+			buildPages: func(path string) []*Page {
+				return []*Page{
 					{
 						id:     "1",
 						buffer: &strings.Builder{},
@@ -580,8 +580,8 @@ URL: https://example.com
 					panic(fmt.Sprintf("unhandled URL: %s", r.URL.String()))
 				}
 			},
-			buildPages: func(path string) []*page {
-				return []*page{
+			buildPages: func(path string) []*Page {
+				return []*Page{
 					{
 						id:         "1",
 						buffer:     &strings.Builder{},
@@ -602,7 +602,7 @@ URL: https://example.com
 			},
 			pageProperties: map[string]bool{},
 			expected:       string(mustReadFixture("fixtures/expected_nested_page")),
-			config:         config.Config{},
+			config:         &config.Config{},
 		},
 		{
 			name:       "page with children blocks and download internal image",
@@ -640,8 +640,8 @@ URL: https://example.com
 					panic(fmt.Sprintf("unhandled URL: %s", r.URL.String()))
 				}
 			},
-			buildPages: func(path string) []*page {
-				return []*page{
+			buildPages: func(path string) []*Page {
+				return []*Page{
 					{
 						id:         "1",
 						buffer:     &strings.Builder{},
@@ -653,7 +653,7 @@ URL: https://example.com
 			},
 			pageProperties: map[string]bool{},
 			expected:       string(mustReadFixture("fixtures/page_blocks_with_children/result")),
-			config: config.Config{
+			config: &config.Config{
 				StoreImages: true,
 			},
 		},
@@ -673,8 +673,8 @@ URL: https://example.com
 					panic(fmt.Sprintf("unhandled URL: %s", r.URL.String()))
 				}
 			},
-			buildPages: func(path string) []*page {
-				return []*page{
+			buildPages: func(path string) []*Page {
+				return []*Page{
 					{
 						id:         "1",
 						buffer:     &strings.Builder{},
@@ -690,7 +690,7 @@ URL: https://example.com
 			},
 			pageProperties: map[string]bool{},
 			expected:       string(mustReadFixture("fixtures/page_with_cover/result")),
-			config:         config.Config{},
+			config:         &config.Config{},
 		},
 	}
 
@@ -712,20 +712,24 @@ URL: https://example.com
 
 			test.config.VaultPath = tempDir
 
-			migrator := Migrator{
-				NotionClient: notionClient,
-				Config:       test.config,
-				Cache:        cache.NewCache(),
-				Pages:        test.buildPages(tempDir),
+			pages := test.buildPages(tempDir)
+
+			var httpclient *http.Client
+			if test.httpClient != nil {
+				httpclient = test.httpClient(t)
 			}
 
-			if test.httpClient != nil {
-				migrator.HttpClient = test.httpClient(t)
+			migrator := migrator{
+				notionClient: notionClient,
+				config:       test.config,
+				cache:        cache.NewCache(),
+				pages:        pages,
+				httpClient:   httpclient,
 			}
 
 			ctx := context.TODO()
 
-			for _, page := range migrator.Pages {
+			for _, page := range pages {
 				err := migrator.FetchParseAndSavePage(ctx, page, test.pageProperties)
 				assert.NoError(t, err)
 			}
@@ -733,7 +737,7 @@ URL: https://example.com
 			err := migrator.WritePagesToDisk(ctx)
 			assert.NoError(t, err)
 
-			for _, page := range migrator.Pages {
+			for _, page := range pages {
 				content, err := os.ReadFile(page.Path)
 				assert.NoError(t, err)
 				if test.expected == "" {
@@ -755,9 +759,9 @@ func TestFetchParseAndSavePage_DryRun(t *testing.T) {
 		name           string
 		statusCode     int
 		respBody       func(*http.Request) io.Reader
-		buildPages     func(path string) []*page
+		buildPages     func(path string) []*Page
 		pageProperties map[string]bool
-		config         config.Config
+		config         *config.Config
 	}{
 		{
 			name:       "dry-run nested pages",
@@ -784,8 +788,8 @@ func TestFetchParseAndSavePage_DryRun(t *testing.T) {
 					panic(fmt.Sprintf("unhandled URL: %s", r.URL.String()))
 				}
 			},
-			buildPages: func(path string) []*page {
-				return []*page{
+			buildPages: func(path string) []*Page {
+				return []*Page{
 					{
 						id:         "1",
 						buffer:     &strings.Builder{},
@@ -796,7 +800,7 @@ func TestFetchParseAndSavePage_DryRun(t *testing.T) {
 				}
 			},
 			pageProperties: map[string]bool{},
-			config: config.Config{
+			config: &config.Config{
 				DryRun: true,
 			},
 		},
@@ -820,19 +824,21 @@ func TestFetchParseAndSavePage_DryRun(t *testing.T) {
 
 			test.config.VaultPath = tempDir
 
-			migrator := Migrator{
-				NotionClient: notionClient,
-				Config:       test.config,
-				Cache:        cache.NewCache(),
-				Pages:        test.buildPages(tempDir),
+			pages := test.buildPages(tempDir)
+
+			migrator := migrator{
+				notionClient: notionClient,
+				config:       test.config,
+				cache:        cache.NewCache(),
+				pages:        pages,
 			}
 
 			ctx := context.TODO()
 
-			assert.Equal(t, 1, len(migrator.Pages))
+			assert.Equal(t, 1, len(pages))
 
 			output, err := captureStdout(func() error {
-				err := migrator.FetchParseAndSavePage(ctx, migrator.Pages[0], test.pageProperties)
+				err := migrator.FetchParseAndSavePage(ctx, pages[0], test.pageProperties)
 				assert.NoError(t, err)
 				return migrator.DisplayInformation(ctx)
 			})
@@ -847,10 +853,10 @@ func TestFetchParseAndSavePage_DryRun(t *testing.T) {
 }
 
 func TestWriteRichText_Annotations(t *testing.T) {
-	migrator := Migrator{
-		NotionClient: nil,
-		Config:       config.Config{},
-		Cache:        nil,
+	migrator := migrator{
+		notionClient: nil,
+		config:       &config.Config{},
+		cache:        nil,
 	}
 	ctx := context.Background()
 
@@ -1048,7 +1054,7 @@ func TestWriteRichText_Annotations(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(*testing.T) {
 			buffer := &strings.Builder{}
-			parentPage := &page{
+			parentPage := &Page{
 				buffer: &strings.Builder{},
 			}
 			err := migrator.writeRichText(ctx, parentPage, buffer, test.notionRichText)

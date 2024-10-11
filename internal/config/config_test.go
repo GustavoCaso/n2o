@@ -7,7 +7,7 @@ import (
 )
 
 func TestVaultFilepath(t *testing.T) {
-	c := Config{
+	c := &Config{
 		VaultPath:        "test",
 		VaultDestination: "here",
 	}
@@ -16,7 +16,7 @@ func TestVaultFilepath(t *testing.T) {
 }
 
 func TestVaultImagePath(t *testing.T) {
-	c := Config{
+	c := &Config{
 		VaultPath:        "test",
 		VaultDestination: "here",
 	}

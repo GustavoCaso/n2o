@@ -86,7 +86,7 @@ func main() {
 		}
 	}
 
-	config := config.Config{
+	config := &config.Config{
 		Token:                   *notionToken,
 		DatabaseID:              *notionDatabaseID,
 		PageID:                  *notionPageID,
@@ -102,7 +102,7 @@ func main() {
 
 	migrator := migrator.NewMigrator(config, cache.NewCache())
 
-	err := migrator.FetchPages(ctx)
+	pages, err := migrator.FetchPages(ctx)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
@@ -112,7 +112,7 @@ func main() {
 
 	q := queue.NewQueue("fetching notion pages information", queue.WithProgressBar())
 
-	for _, page := range migrator.Pages {
+	for _, page := range pages {
 		// We need to do this, because variables declared inside for loops are passed by reference.
 		// Otherwise, our closure will always receive the last item from the page.
 		newPage := page
@@ -140,7 +140,7 @@ func main() {
 		fmt.Printf("an error ocurred when processing a page %s. error: %v\n", errJob.Job.Path, errors.Unwrap(errJob.Err))
 	}
 
-	if migrator.Config.DryRun {
+	if config.DryRun {
 		fmt.Println("Displaying notion pages information")
 		err := migrator.DisplayInformation(ctx)
 		if err != nil {
