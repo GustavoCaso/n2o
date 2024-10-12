@@ -10,6 +10,7 @@ import (
 
 	"github.com/GustavoCaso/n2o/internal/cache"
 	"github.com/GustavoCaso/n2o/internal/config"
+	"github.com/GustavoCaso/n2o/internal/log"
 	"github.com/GustavoCaso/n2o/internal/migrator"
 	"github.com/GustavoCaso/n2o/internal/queue"
 )
@@ -40,21 +41,23 @@ var dryRun = flag.Bool("dry-run", false, "do not write the pages in the Obsidian
 func main() {
 	flag.Parse()
 
+	logger := log.New(os.Stdout)
+
 	if empty(notionToken) {
 		flag.Usage()
-		fmt.Println("You must provide the notion token")
+		logger.Warn("You must provide the notion token")
 		os.Exit(1)
 	}
 
 	if empty(notionDatabaseID) && empty(notionPageID) {
 		flag.Usage()
-		fmt.Println("You must provide a notion database ID or a page ID")
+		logger.Warn("You must provide a notion database ID or a page ID")
 		os.Exit(1)
 	}
 
 	if !empty(notionDatabaseID) && !empty(notionPageID) {
 		flag.Usage()
-		fmt.Println("You must provide a notion database ID or a page ID not both")
+		logger.Warn("You must provide a notion database ID or a page ID not both")
 		os.Exit(1)
 	}
 
@@ -69,7 +72,7 @@ func main() {
 
 	if empty(obsidianVault) {
 		flag.Usage()
-		fmt.Println("You must provide the Obisidian vault path")
+		logger.Warn("You must provide the Obisidian vault path")
 		os.Exit(1)
 	}
 
@@ -100,11 +103,11 @@ func main() {
 
 	ctx := context.Background()
 
-	migrator := migrator.NewMigrator(config, cache.NewCache())
+	migrator := migrator.NewMigrator(config, cache.NewCache(), logger)
 
 	pages, err := migrator.FetchPages(ctx)
 	if err != nil {
-		fmt.Println(err.Error())
+		logger.Error(fmt.Sprintf("an error ocurred when fetching page. error: %v\n", err))
 		os.Exit(1)
 	}
 
@@ -137,22 +140,24 @@ func main() {
 	worker.DoWork()
 
 	for _, errJob := range worker.ErrorJobs {
-		fmt.Printf("an error ocurred when processing a page %s. error: %v\n", errJob.Job.Path, errors.Unwrap(errJob.Err))
+		logger.Error(fmt.Sprintf("an error ocurred when processing a page %s. error: %v\n", errJob.Job.Path, errors.Unwrap(errJob.Err)))
 	}
 
 	if config.DryRun {
-		fmt.Println("Displaying notion pages information")
+		logger.Info("Displaying notion pages information")
 		err := migrator.DisplayInformation(ctx)
 		if err != nil {
-			fmt.Printf("an error ocurred when displaying information to stdout. error: %v\n", err)
+			logger.Error(fmt.Sprintf("an error ocurred when displaying information to stdout. error: %v\n", err))
 		}
 	} else {
-		fmt.Println("Saving notion pages to disk")
+		logger.Info("Saving notion pages to disk")
 		err := migrator.WritePagesToDisk(ctx)
 		if err != nil {
-			fmt.Printf("an error ocurred when writing pages to disk. error: %v\n", err)
+			logger.Error(fmt.Sprintf("an error ocurred when writing pages to disk. error: %v\n", err))
 		}
 	}
+
+	logger.Info("Done 🎉")
 }
 
 func empty(v *string) bool {

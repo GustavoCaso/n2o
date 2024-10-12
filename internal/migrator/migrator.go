@@ -14,6 +14,7 @@ import (
 
 	"github.com/GustavoCaso/n2o/internal/cache"
 	"github.com/GustavoCaso/n2o/internal/config"
+	"github.com/GustavoCaso/n2o/internal/log"
 	"github.com/dstotijn/go-notion"
 	"github.com/itchyny/timefmt-go"
 )
@@ -47,16 +48,18 @@ type migrator struct {
 	config       *config.Config
 	cache        *cache.Cache
 	pages        []*Page
+	logger       log.Log
 	httpClient   *http.Client
 }
 
-func NewMigrator(config *config.Config, cache *cache.Cache) Migrator {
+func NewMigrator(config *config.Config, cache *cache.Cache, logger log.Log) Migrator {
 	notionClient := notion.NewClient(config.Token)
 
 	return &migrator{
 		notionClient: notionClient,
 		config:       config,
 		cache:        cache,
+		logger:       logger,
 		httpClient:   http.DefaultClient,
 	}
 }
@@ -164,7 +167,7 @@ func (m *migrator) extractPageTitle(page notion.Page) string {
 				case notion.DBPropTypeTitle:
 					str += extractPlainTextFromRichText(value.Title)
 				default:
-					fmt.Printf("type: `%s` for extracting page title not supported\n", value.Type)
+					m.logger.Info(fmt.Sprintf("type: `%s` for extracting page title not supported\n", value.Type))
 				}
 			}
 		}
@@ -495,7 +498,7 @@ func (m *migrator) fetchPage(ctx context.Context, parentPage *Page, pageID, titl
 		parentPage.children = append(parentPage.children, newPage)
 
 		if err = m.FetchParseAndSavePage(ctx, newPage, m.config.PagePropertiesToMigrate); err != nil {
-			fmt.Printf("failed to fetch mention page content with page parent: %s\n", childTitle)
+			m.logger.Info(fmt.Sprintf("failed to fetch mention page content with page parent: %s\n", childTitle))
 		}
 
 		if quotes {

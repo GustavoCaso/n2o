@@ -72,7 +72,7 @@ func (m *migrator) propertiesToFrontMatter(ctx context.Context, parentPage *Page
 				err := m.fetchPage(ctx, parentPage, relation.ID, "", b, true)
 				if err != nil {
 					// We do not want to break the migration proccess for this case
-					fmt.Println("failed to get page relation for frontmatter")
+					m.logger.Info("failed to get page relation for frontmatter")
 					continue
 				}
 				b.WriteString("\n")
