@@ -66,7 +66,7 @@ jobs:
           cache-dependency-path: src/n2o/go.sum
 
       - name: build artifacts
-      - run: ./build_releases cmd/migrate/main.go n2o
+        run: ./build_releases cmd/migrate/main.go n2o
       
       - name: release
         uses: actions/create-release@v1
