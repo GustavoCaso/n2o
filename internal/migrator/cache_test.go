@@ -1,4 +1,4 @@
-package cache
+package migrator
 
 import (
 	"testing"
@@ -22,11 +22,11 @@ func TestCache(t *testing.T) {
 	working = c.IsWorking(key)
 	assert.True(t, working)
 
-	c.Set(key, Page{
-		Title: "foo",
+	c.Set(key, &Page{
+		title: "foo",
 	})
 
 	val, ok := c.Get(key)
 	assert.True(t, ok)
-	assert.Equal(t, "foo", val.Title)
+	assert.Equal(t, "foo", val.title)
 }

@@ -1,27 +1,23 @@
-package cache
+package migrator
 
 import (
 	"sync"
 )
 
-type Page struct {
-	Title string
-}
-
 type Cache struct {
-	storage map[string]Page
+	storage map[string]*Page
 	working map[string]bool
 	mu      sync.RWMutex
 }
 
-func (c *Cache) Get(value string) (Page, bool) {
+func (c *Cache) Get(value string) (*Page, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	val, ok := c.storage[value]
 	return val, ok
 }
 
-func (c *Cache) Set(key string, page Page) {
+func (c *Cache) Set(key string, page *Page) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.storage[key] = page
@@ -41,7 +37,7 @@ func (c *Cache) IsWorking(key string) bool {
 }
 
 func NewCache() *Cache {
-	storage := map[string]Page{}
+	storage := map[string]*Page{}
 	working := map[string]bool{}
 	return &Cache{
 		storage: storage,

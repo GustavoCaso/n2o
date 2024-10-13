@@ -11,7 +11,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/GustavoCaso/n2o/internal/cache"
 	"github.com/GustavoCaso/n2o/internal/config"
 	"github.com/GustavoCaso/n2o/internal/log"
 	"github.com/GustavoCaso/n2o/internal/migrator"
@@ -103,13 +102,14 @@ func main() {
 		VaultPath:               *obsidianVault,
 		VaultDestination:        *vaultDestination,
 		SaveToDisk:              *saveToDisk,
+		Debug:                   *debug,
 	}
 
 	ctx := context.Background()
 	buf := &bytes.Buffer{}
 	migratorLogger := log.New(buf)
 
-	migrator := migrator.NewMigrator(config, cache.NewCache(), migratorLogger)
+	migrator := migrator.NewMigrator(config, migrator.NewCache(), migratorLogger)
 
 	pages, err := migrator.FetchPages(ctx)
 	if err != nil {
@@ -151,13 +151,6 @@ func main() {
 
 	for _, errJob := range worker.ErrorJobs {
 		logger.Error(fmt.Sprintf("an error ocurred when processing a page %s. error: %v\n", errJob.Job.Path, errors.Unwrap(errJob.Err)))
-	}
-
-	if *debug {
-		for _, page := range pages {
-			fmt.Println(page)
-		}
-		os.Exit(0)
 	}
 
 	if config.SaveToDisk {

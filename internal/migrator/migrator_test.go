@@ -13,7 +13,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/GustavoCaso/n2o/internal/cache"
 	"github.com/GustavoCaso/n2o/internal/config"
 	"github.com/GustavoCaso/n2o/internal/log"
 	"github.com/dstotijn/go-notion"
@@ -738,7 +737,7 @@ URL: https://example.com
 			migrator := migrator{
 				notionClient: notionClient,
 				config:       test.config,
-				cache:        cache.NewCache(),
+				cache:        NewCache(),
 				pages:        pages,
 				httpClient:   httpclient,
 				logger:       logger,
@@ -846,7 +845,7 @@ func TestFetchParseAndSavePage_DryRun(t *testing.T) {
 			migrator := migrator{
 				notionClient: notionClient,
 				config:       test.config,
-				cache:        cache.NewCache(),
+				cache:        NewCache(),
 				pages:        pages,
 				logger:       logger,
 			}
