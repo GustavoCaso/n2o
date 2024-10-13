@@ -33,8 +33,8 @@ func (l *logger) Error(msg string) {
 func New(out io.Writer) Log {
 	return &logger{
 		out:   out,
-		war:   log.New(out, "[WARNING] ", log.LstdFlags),
-		info:  log.New(out, "[INFO] ", log.LstdFlags),
-		error: log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
+		war:   log.New(out, "[WARNING] ", 0),
+		info:  log.New(out, "[INFO] ", 0),
+		error: log.New(os.Stderr, "[ERROR] ", 0),
 	}
 }

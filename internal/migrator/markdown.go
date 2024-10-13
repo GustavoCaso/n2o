@@ -351,6 +351,8 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			}
 			buffer.WriteString("\n")
 		case *notion.ChildDatabaseBlock:
+			m.logger.Warn(fmt.Sprintf("Child database `%s` found on page `%s`. You might want to migrate that database separately", block.Title, m.removeObsidianVault(parentPage.Path)))
+
 			if indent {
 				buffer.WriteString(fmt.Sprintf("	%s", block.Title))
 			} else {

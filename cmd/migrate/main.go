@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -36,7 +39,7 @@ var filenameFromPage = flag.String("page-name", "", filenameFromPageExplanation)
 var obsidianVault = flag.String("vault-path", os.Getenv("N2O_OBSIDIAN_VAULT_PATH"), "Obsidian vault location")
 var vaultDestination = flag.String("vault-folder", "", "folder to store pages inside the Obsidian Vault")
 var storeImages = flag.Bool("download-images", false, "download external images to the Obsidian vault")
-var dryRun = flag.Bool("dry-run", false, "do not write the pages in the Obsidian vault. Output to stdout what pages would be created in the Obsidian vault")
+var saveToDisk = flag.Bool("save-to-disk", false, "write the pages in the Obsidian vault")
 
 func main() {
 	flag.Parse()
@@ -98,12 +101,14 @@ func main() {
 		PagePropertiesToMigrate: pageProperties,
 		VaultPath:               *obsidianVault,
 		VaultDestination:        *vaultDestination,
-		DryRun:                  *dryRun,
+		SaveToDisk:              *saveToDisk,
 	}
 
 	ctx := context.Background()
+	buf := &bytes.Buffer{}
+	migratorLogger := log.New(buf)
 
-	migrator := migrator.NewMigrator(config, cache.NewCache(), logger)
+	migrator := migrator.NewMigrator(config, cache.NewCache(), migratorLogger)
 
 	pages, err := migrator.FetchPages(ctx)
 	if err != nil {
@@ -139,23 +144,38 @@ func main() {
 
 	worker.DoWork()
 
+	migratorLogs, _ := io.ReadAll(buf)
+
+	fmt.Fprint(os.Stdout, string(migratorLogs))
+
 	for _, errJob := range worker.ErrorJobs {
 		logger.Error(fmt.Sprintf("an error ocurred when processing a page %s. error: %v\n", errJob.Job.Path, errors.Unwrap(errJob.Err)))
 	}
 
-	if config.DryRun {
-		logger.Info("Displaying notion pages information")
-		err := migrator.DisplayInformation(ctx)
+	if config.SaveToDisk {
+		logger.Info("Saving pages to the Obsidian vault")
+		err := migrator.WritePagesToDisk(ctx)
 		if err != nil {
-			logger.Error(fmt.Sprintf("an error ocurred when displaying information to stdout. error: %v\n", err))
+			logger.Error(fmt.Sprintf("an error ocurred when writing pages to the Obsidian vault. error: %v\n", err))
 			os.Exit(1)
 		}
 	} else {
-		logger.Info("Saving notion pages to disk")
-		err := migrator.WritePagesToDisk(ctx)
+		logger.Info("Displaying the pages that would be created in your vault")
+		err := migrator.DisplayInformation(ctx)
 		if err != nil {
-			logger.Error(fmt.Sprintf("an error ocurred when writing pages to disk. error: %v\n", err))
+			logger.Error(fmt.Sprintf("an error ocurred when displaying the pages information. error: %v\n", err))
 			os.Exit(1)
+		}
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Println("Do you want to write the pages to the Obsidian vault? y/n")
+		text, _ := reader.ReadString('\n')
+		if strings.Contains(strings.ToLower(text), "y") {
+			logger.Info("Saving pages to the Obsidian vault")
+			err := migrator.WritePagesToDisk(ctx)
+			if err != nil {
+				logger.Error(fmt.Sprintf("an error ocurred when writing pages to the Obsidian vault. error: %v\n", err))
+				os.Exit(1)
+			}
 		}
 	}
 

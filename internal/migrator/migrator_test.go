@@ -353,7 +353,9 @@ func TestFetchParseAndSavePage_WritePagesToDisk(t *testing.T) {
 			expected: `## Lacinato kale
 [Lacinato kale is a variety of kale with a long tradition in Italian cuisine, especially that of Tuscany. It is also known as Tuscan kale, Italian kale, dinosaur kale, kale, flat back kale, palm tree kale, or black Tuscan palm.](https://en.wikipedia.org/wiki/Lacinato_kale)
 `,
-			config: &config.Config{},
+			config: &config.Config{
+				SaveToDisk: true,
+			},
 			buildPages: func(path string) []*Page {
 				return []*Page{
 					{
@@ -409,7 +411,9 @@ URL: https://example.com
 ## Lacinato kale
 [Lacinato kale is a variety of kale with a long tradition in Italian cuisine, especially that of Tuscany. It is also known as Tuscan kale, Italian kale, dinosaur kale, kale, flat back kale, palm tree kale, or black Tuscan palm.](https://en.wikipedia.org/wiki/Lacinato_kale)
 `,
-			config: &config.Config{},
+			config: &config.Config{
+				SaveToDisk: true,
+			},
 			buildPages: func(path string) []*Page {
 				return []*Page{
 					{
@@ -662,6 +666,7 @@ URL: https://example.com
 			expected:       string(mustReadFixture("fixtures/page_blocks_with_children/result")),
 			config: &config.Config{
 				StoreImages: true,
+				SaveToDisk:  true,
 			},
 		},
 		{
@@ -697,7 +702,9 @@ URL: https://example.com
 			},
 			pageProperties: map[string]bool{},
 			expected:       string(mustReadFixture("fixtures/page_with_cover/result")),
-			config:         &config.Config{},
+			config: &config.Config{
+				SaveToDisk: true,
+			},
 		},
 	}
 
@@ -810,9 +817,7 @@ func TestFetchParseAndSavePage_DryRun(t *testing.T) {
 				}
 			},
 			pageProperties: map[string]bool{},
-			config: &config.Config{
-				DryRun: true,
-			},
+			config:         &config.Config{},
 		},
 	}
 
@@ -857,8 +862,8 @@ func TestFetchParseAndSavePage_DryRun(t *testing.T) {
 			})
 			assert.NoError(t, err)
 
-			expected := `/example.md 
- |-> /Personal Notes/ANSI Codes for the terminal.md
+			expected := `example.md 
+ |-> Personal Notes/ANSI Codes for the terminal.md
 `
 			assert.Equal(t, expected, output)
 		})

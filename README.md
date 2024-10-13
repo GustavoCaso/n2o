@@ -9,9 +9,7 @@ With `n2o`, you have complete control over what you import from your Notion work
 
 ## Install
 
-To install the binary, you could:
-- Use homebrew `brew install n2o`
-- Download the `n2o` artifact from the [releases page](https://github.com/GustavoCaso/n2o/releases).
+Download the `n2o` artifact from the [releases page](https://github.com/GustavoCaso/n2o/releases).
 
 ## Usage
 
@@ -20,8 +18,6 @@ $ n2o
 Usage of n2o:
   -download-images
     	download external images to the Obsidian vault
-  -dry-run
-    	do not write the pages in the Obsidian vault. Output to stdout what pages would be created in the Obsidian vault
   -notion-db-ID string
     	Notion database to migrate
   -notion-page-ID string
@@ -41,6 +37,8 @@ Usage of n2o:
     	Notion page properties to convert to Obsidian frontmater.
     	You can select multiple properties using a comma-separated list.
 
+  -save-to-disk
+    	write the pages in the Obsidian vault
   -vault-folder string
     	folder to store pages inside the Obsidian Vault
   -vault-path string
@@ -75,18 +73,23 @@ This value is your page ID.
 
 ## Examples
 
-### Download a single page and convert all page properties to frontmatter
+### Get information about the pages that would be created in your Obsidian Vault
 `n2o -notion-token="NOTION_TOKEN" -notion-page-ID="1429989f-e8ac-4eff-bc8f-57f56486db54" -page-properties="all" -vault-path="/Users/johndoe/Obsidian\ Vault/Testing" -vault-folder="Migrated"`
 
+### Download a single page and convert all page properties to frontmatter
+`n2o -notion-token="NOTION_TOKEN" -notion-page-ID="1429989f-e8ac-4eff-bc8f-57f56486db54" -page-properties="all" -vault-path="/Users/johndoe/Obsidian\ Vault/Testing" -vault-folder="Migrated" -save-to-disk`
+
 ### Download a full database and images, and convert some page properties to frontmatter
-`n2o -notion-token="NOTION_TOKEN" -notion-page-ID="668d797c-76fa-4934-9b05-ad288df2d136" -page-properties="location" -vault-path="/Users/johndoe/Obsidian\ Vault/Testing" -vault-folder="Migrated"` -download-images
+`n2o -notion-token="NOTION_TOKEN" -notion-page-ID="668d797c-76fa-4934-9b05-ad288df2d136" -page-properties="location" -vault-path="/Users/johndoe/Obsidian\ Vault/Testing" -vault-folder="Migrated"` -download-images -save-to-disk
 
 ### Download a complete database and customize the resulting Obsidan page name
-`n2o -notion-token="NOTION_TOKEN" -notion-page-ID="668d797c-76fa-4934-9b05-ad288df2d136" -page-name="date:%Y/%B/%d-%A" -vault-path="/Users/johndoe/Obsidian\ Vault/Testing" -vault-folder="Migrated" -download-images`
+`n2o -notion-token="NOTION_TOKEN" -notion-page-ID="668d797c-76fa-4934-9b05-ad288df2d136" -page-name="date:%Y/%B/%d-%A" -vault-path="/Users/johndoe/Obsidian\ Vault/Testing" -vault-folder="Migrated" -download-images -save-to-disk`
 
 For these examples, the location of the different pages would be based dynamically on the `date` value in the Notion page property and the custom format `%Y/%B/%d-%A`. For a list of available formatting options for dates, refer to [man 3 strftime](https://linux.die.net/man/3/strftime)
 
 A notion page with the date value `2024-09-30` would be stored in: `/Users/johndoe/Obsidian\ Vault/Testing/Migrated/2024/September/09-Monday`
+
+## Known Limitations
 
 ## TODOS
 

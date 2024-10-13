@@ -11,7 +11,7 @@ type Config struct {
 	VaultDestination        string
 	StoreImages             bool
 	PageNameFilters         map[string]string
-	DryRun                  bool
+	SaveToDisk              bool
 }
 
 func (c *Config) VaultFilepath() string {

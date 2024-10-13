@@ -268,7 +268,7 @@ func (m *migrator) displayPageInfo(page *Page, buffer *bufio.Writer, index int) 
 }
 
 func (m *migrator) removeObsidianVault(s string) string {
-	return strings.TrimPrefix(s, m.config.VaultPath)
+	return strings.TrimPrefix(s, m.config.VaultPath+"/")
 }
 
 func (m *migrator) WritePagesToDisk(ctx context.Context) error {
