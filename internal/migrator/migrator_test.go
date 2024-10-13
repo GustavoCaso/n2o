@@ -15,6 +15,7 @@ import (
 
 	"github.com/GustavoCaso/n2o/internal/cache"
 	"github.com/GustavoCaso/n2o/internal/config"
+	"github.com/GustavoCaso/n2o/internal/log"
 	"github.com/dstotijn/go-notion"
 	"github.com/stretchr/testify/assert"
 )
@@ -115,9 +116,12 @@ func TestFetchPages(t *testing.T) {
 
 			notionClient := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
 
+			logger, _ := log.MockLogger()
+
 			migrator := migrator{
 				notionClient: notionClient,
 				config:       test.config,
+				logger:       logger,
 				cache:        nil,
 			}
 
@@ -305,10 +309,13 @@ func TestExtractPageTitle(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			logger, _ := log.MockLogger()
+
 			migrator := migrator{
 				notionClient: nil,
 				config:       test.config,
 				cache:        nil,
+				logger:       logger,
 			}
 
 			value := migrator.extractPageTitle(test.page)
@@ -719,12 +726,15 @@ URL: https://example.com
 				httpclient = test.httpClient(t)
 			}
 
+			logger, _ := log.MockLogger()
+
 			migrator := migrator{
 				notionClient: notionClient,
 				config:       test.config,
 				cache:        cache.NewCache(),
 				pages:        pages,
 				httpClient:   httpclient,
+				logger:       logger,
 			}
 
 			ctx := context.TODO()
@@ -826,11 +836,14 @@ func TestFetchParseAndSavePage_DryRun(t *testing.T) {
 
 			pages := test.buildPages(tempDir)
 
+			logger, _ := log.MockLogger()
+
 			migrator := migrator{
 				notionClient: notionClient,
 				config:       test.config,
 				cache:        cache.NewCache(),
 				pages:        pages,
+				logger:       logger,
 			}
 
 			ctx := context.TODO()
