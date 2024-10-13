@@ -76,6 +76,29 @@ This value is your page ID.
 ### Get information about the pages that would be created in your Obsidian Vault
 `n2o -notion-token="NOTION_TOKEN" -notion-page-ID="1429989f-e8ac-4eff-bc8f-57f56486db54" -page-properties="all" -vault-path="/Users/johndoe/Obsidian\ Vault/Testing" -vault-folder="Migrated"`
 
+The command prints the pages that would be created in the Obsidian vault and their references. The reference is displayed with `|->` 
+
+```
+fetching notion pages information 100% |███████████████████████████████████████████████| (7/7, 17 it/min)
+[INFO] Displaying the pages that would be created in your vault
+Weekly Plan/Wednesday.md
+ |-> Meals/Egg Muffins.md
+ |-> Meals/Quinoa and Black Bean Bowl.md
+ |-> Meals/Beef Stir-Fry.md
+Weekly Plan/Monday.md
+ |-> Meals/Overnight Oats.md
+ |-> Meals/Chicken Salad.md
+ |-> Meals/Turkey Stuffed Peppers.md
+Weekly Plan/Sunday.md
+ |-> Meals/Overnight Oats.md
+ |-> Meals/Chicken Salad.md
+ |-> Meals/Salmon and Asparagus.md
+Weekly Plan/Thursday.md
+ |-> Meals/Overnight Oats.md
+ |-> Meals/Smoothie.md
+ |-> Meals/Salmon and Asparagus.md
+```
+
 ### Download a single page and convert all page properties to frontmatter
 `n2o -notion-token="NOTION_TOKEN" -notion-page-ID="1429989f-e8ac-4eff-bc8f-57f56486db54" -page-properties="all" -vault-path="/Users/johndoe/Obsidian\ Vault/Testing" -vault-folder="Migrated" -save-to-disk`
 
