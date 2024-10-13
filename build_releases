@@ -35,9 +35,14 @@ do
 		exit 1
 	fi
 	
+	cd ${build_folder}
+	cp ../../README.md .
+	
 	if [ $GOOS = "windows" ]; then
-		zip -9 -y build/${package_name}-${GOOS}-${GOARCH}.zip "${build_folder}/${output_name}"
+		zip -9 -y ${package_name}-${GOOS}-${GOARCH}.zip ${output_name} README.md
 	else 
-		tar -czvf build/${package_name}-${GOOS}-${GOARCH}.tar.gz "${build_folder}/${output_name}"
-	fi	
+		tar -czvf ${package_name}-${GOOS}-${GOARCH}.tar.gz ${output_name} README.md
+	fi
+	
+	cd -	
 done
