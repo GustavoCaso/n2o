@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -x
 
 package=$1
 package_name=$2
@@ -47,5 +46,3 @@ do
 	
 	cd -	
 done
-
-ls -lRa build

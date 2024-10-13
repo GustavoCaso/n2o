@@ -11,7 +11,7 @@ With `n2o`, you have complete control over what you import from your Notion work
 
 To install the binary, you could:
 - Use homebrew `brew install n2o`
-- Download the `n2o` tool from the releases page.
+- Download the `n2o` artifact from the [releases page](https://github.com/GustavoCaso/n2o/releases).
 
 ## Usage
 
@@ -88,7 +88,7 @@ For these examples, the location of the different pages would be based dynamical
 
 A notion page with the date value `2024-09-30` would be stored in: `/Users/johndoe/Obsidian\ Vault/Testing/Migrated/2024/September/09-Monday`
 
+## TODOS
 
-TODOS:
 - [ ] Figure out how to parse self-referential links. Transform links like `/<Notion_PAGE_ID>#<BLOCK_ID>` to `[[Page^Block_ID]]` or `[[Page#Block_ID]]`
 - [ ] Create Brew formula
