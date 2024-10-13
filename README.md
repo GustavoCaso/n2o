@@ -92,4 +92,3 @@ A notion page with the date value `2024-09-30` would be stored in: `/Users/johnd
 TODOS:
 - [ ] Figure out how to parse self-referential links. Transform links like `/<Notion_PAGE_ID>#<BLOCK_ID>` to `[[Page^Block_ID]]` or `[[Page#Block_ID]]`
 - [ ] Create Brew formula
-- [ ] Create Github Action to create a release
