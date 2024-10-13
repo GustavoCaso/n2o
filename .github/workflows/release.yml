@@ -13,8 +13,6 @@ permissions:
   contents: write
 
 jobs:
-    
-  name: "create tag and release"
   runs-on: ubuntu-latest
   timeout-minutes: 15
   steps:
