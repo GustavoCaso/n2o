@@ -3,6 +3,7 @@ package log
 import (
 	"io"
 	"log"
+	"os"
 )
 
 type Log interface {
@@ -34,6 +35,6 @@ func New(out io.Writer) Log {
 		out:   out,
 		war:   log.New(out, "[WARNING] ", log.LstdFlags),
 		info:  log.New(out, "[INFO] ", log.LstdFlags),
-		error: log.New(out, "[ERROR] ", log.LstdFlags),
+		error: log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
 	}
 }

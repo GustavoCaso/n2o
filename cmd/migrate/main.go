@@ -148,12 +148,14 @@ func main() {
 		err := migrator.DisplayInformation(ctx)
 		if err != nil {
 			logger.Error(fmt.Sprintf("an error ocurred when displaying information to stdout. error: %v\n", err))
+			os.Exit(1)
 		}
 	} else {
 		logger.Info("Saving notion pages to disk")
 		err := migrator.WritePagesToDisk(ctx)
 		if err != nil {
 			logger.Error(fmt.Sprintf("an error ocurred when writing pages to disk. error: %v\n", err))
+			os.Exit(1)
 		}
 	}
 
