@@ -36,6 +36,15 @@ type Page struct {
 	children   []*Page
 }
 
+func (p *Page) String() string {
+	childPages := make([]string, len(p.children))
+	for i, page := range p.children {
+		childPages[i] = page.String()
+	}
+
+	return fmt.Sprintf("%s child pages: %s", p.Path, childPages)
+}
+
 type Migrator interface {
 	FetchPages(ctx context.Context) ([]*Page, error)
 	FetchParseAndSavePage(ctx context.Context, page *Page, pageProperties map[string]bool) error

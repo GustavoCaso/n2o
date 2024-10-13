@@ -40,6 +40,7 @@ var obsidianVault = flag.String("vault-path", os.Getenv("N2O_OBSIDIAN_VAULT_PATH
 var vaultDestination = flag.String("vault-folder", "", "folder to store pages inside the Obsidian Vault")
 var storeImages = flag.Bool("download-images", false, "download external images to the Obsidian vault")
 var saveToDisk = flag.Bool("save-to-disk", false, "write the pages in the Obsidian vault")
+var debug = flag.Bool("debug", false, "print debug information")
 
 func main() {
 	flag.Parse()
@@ -150,6 +151,13 @@ func main() {
 
 	for _, errJob := range worker.ErrorJobs {
 		logger.Error(fmt.Sprintf("an error ocurred when processing a page %s. error: %v\n", errJob.Job.Path, errors.Unwrap(errJob.Err)))
+	}
+
+	if *debug {
+		for _, page := range pages {
+			fmt.Println(page)
+		}
+		os.Exit(0)
 	}
 
 	if config.SaveToDisk {
