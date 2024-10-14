@@ -112,9 +112,45 @@ For these examples, the location of the different pages would be based dynamical
 
 A notion page with the date value `2024-09-30` would be stored in: `/Users/johndoe/Obsidian\ Vault/Testing/Migrated/2024/September/09-Monday`
 
+## Supported blocks to markdown
+
+- [x] bookmark
+- [x] bulleted_list_item
+- [x] callout
+- [x] child_database
+- [x] child_page
+- [x] column
+- [x] column_list
+- [x] divider
+- [x] embed
+- [x] equation
+- [x] file
+- [x] heading_1
+- [x] heading_2
+- [x] heading_3
+- [x] image
+- [x] link_preview
+- [x] link_to_page
+- [x] numbered_list_item
+- [x] paragraph
+- [x] pdf
+- [x] quote
+- [ ] synced_block
+- [x] table
+- [x] table_of_contents
+- [x] table_row
+- [x] to_do
+- [x] toggle
+- [x] unsupported
+- [x] video
+
 ## Known Limitations
 
-## TODOS
+Child page and child datadase blocks do not include information that allow to query the Notion API. If you want to migrate those you would have to manually call `n2o`
+
+## Roadmap
 
 - [ ] Figure out how to parse self-referential links. Transform links like `/<Notion_PAGE_ID>#<BLOCK_ID>` to `[[Page^Block_ID]]` or `[[Page#Block_ID]]`
-- [ ] Create Brew formula
+- [ ] Parse User blocks
+- [ ] Add support for custom configuration file. The configuration file allows to specify the different DB and pages that we want to migrate and their properties, increasing the usabilty of `n2o`.
+- [ ] Create a HomeBrew formula
