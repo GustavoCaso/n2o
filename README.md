@@ -128,7 +128,7 @@ This value is your page ID.
 
 ## Supported Notion rich text mentions. Every mention would create a link between notes.
 
-- [/] database (Partial support. We do not fetch the datadase pages)
+- [ ] database (Partial support. We do not fetch the datadase pages)
 - [x] date 
 - [x] link_preview 
 - [x] page 
@@ -186,3 +186,11 @@ A notion page with the date value `2024-09-30` would be stored in: `/Users/johnd
 - [ ] Add more unit tests
 - [ ] Add support for custom configuration file. The configuration file allows to specify the different DB and pages that we want to migrate and their properties, increasing the usabilty of `n2o`.
 - [ ] Create a HomeBrew formula
+
+## Contributing
+Pull requests are welcome. Feel free to...
+
+- Revise documentation
+- Add new features
+- Fix bugs
+- Suggest improvements
