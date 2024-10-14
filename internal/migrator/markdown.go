@@ -276,6 +276,32 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 				}
 			}
 			buffer.WriteString("\n")
+		case *notion.PDFBlock:
+			if block.Type == notion.FileTypeExternal {
+				if indent {
+					buffer.WriteString(fmt.Sprintf("	![](%s)", block.External.URL))
+				} else {
+					buffer.WriteString(fmt.Sprintf("![](%s)", block.External.URL))
+				}
+				buffer.WriteString("\n")
+			} else {
+				if m.config.StoreImages {
+					imageName := filepath.Join(parentPage.title, block.ID()+".pdf")
+
+					parentPage.images = append(parentPage.images, &image{
+						external: false,
+						url:      block.File.URL,
+						name:     imageName,
+					})
+
+					if indent {
+						buffer.WriteString(fmt.Sprintf("	![[%s]]", filepath.Join("Images", imageName)))
+					} else {
+						buffer.WriteString(fmt.Sprintf("![[%s]]", filepath.Join("Images", imageName)))
+					}
+					buffer.WriteString("\n")
+				}
+			}
 		case *notion.DividerBlock:
 			buffer.WriteString("---")
 			buffer.WriteString("\n")
@@ -290,6 +316,13 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			err := m.fetchPage(ctx, parentPage, block.PageID, "", buffer, false)
 			if err != nil {
 				return err
+			}
+			buffer.WriteString("\n")
+		case *notion.LinkPreviewBlock:
+			if indent {
+				buffer.WriteString(fmt.Sprintf("	![](%s)", block.URL))
+			} else {
+				buffer.WriteString(fmt.Sprintf("![](%s)", block.URL))
 			}
 			buffer.WriteString("\n")
 		case *notion.CodeBlock:
@@ -312,7 +345,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 				buffer.WriteString("\n")
 			}
 			if block.Type == notion.FileTypeFile && m.config.StoreImages {
-				imageName := filepath.Join(m.removeObsidianVault(parentPage.Path), block.ID()+".png")
+				imageName := filepath.Join(parentPage.title, block.ID()+".png")
 
 				parentPage.images = append(parentPage.images, &image{
 					external: false,
@@ -351,6 +384,8 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			}
 			buffer.WriteString("\n")
 		case *notion.ChildDatabaseBlock:
+			m.logger.Warn(fmt.Sprintf("Child database `%s` found on page `%s`. You might want to migrate that database separately", block.Title, m.removeObsidianVault(parentPage.Path)))
+
 			if indent {
 				buffer.WriteString(fmt.Sprintf("	%s", block.Title))
 			} else {
@@ -376,6 +411,8 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 				buffer.WriteString(fmt.Sprintf("$$%s$$", block.Expression))
 			}
 			buffer.WriteString("\n")
+		case *notion.TableOfContentsBlock:
+		case *notion.BreadcrumbBlock:
 		case *notion.UnsupportedBlock:
 		default:
 			return fmt.Errorf("block not supported: %+v", block)

@@ -13,7 +13,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/GustavoCaso/n2o/internal/cache"
 	"github.com/GustavoCaso/n2o/internal/config"
 	"github.com/GustavoCaso/n2o/internal/log"
 	"github.com/dstotijn/go-notion"
@@ -353,7 +352,9 @@ func TestFetchParseAndSavePage_WritePagesToDisk(t *testing.T) {
 			expected: `## Lacinato kale
 [Lacinato kale is a variety of kale with a long tradition in Italian cuisine, especially that of Tuscany. It is also known as Tuscan kale, Italian kale, dinosaur kale, kale, flat back kale, palm tree kale, or black Tuscan palm.](https://en.wikipedia.org/wiki/Lacinato_kale)
 `,
-			config: &config.Config{},
+			config: &config.Config{
+				SaveToDisk: true,
+			},
 			buildPages: func(path string) []*Page {
 				return []*Page{
 					{
@@ -409,7 +410,9 @@ URL: https://example.com
 ## Lacinato kale
 [Lacinato kale is a variety of kale with a long tradition in Italian cuisine, especially that of Tuscany. It is also known as Tuscan kale, Italian kale, dinosaur kale, kale, flat back kale, palm tree kale, or black Tuscan palm.](https://en.wikipedia.org/wiki/Lacinato_kale)
 `,
-			config: &config.Config{},
+			config: &config.Config{
+				SaveToDisk: true,
+			},
 			buildPages: func(path string) []*Page {
 				return []*Page{
 					{
@@ -594,6 +597,7 @@ URL: https://example.com
 						buffer:     &strings.Builder{},
 						notionPage: notion.Page{ID: "1"},
 						parent:     nil,
+						title:      "example.md",
 						Path:       filepath.Join(path, "example.md"),
 					},
 				}
@@ -654,6 +658,7 @@ URL: https://example.com
 						buffer:     &strings.Builder{},
 						notionPage: notion.Page{ID: "1"},
 						parent:     nil,
+						title:      "example.md",
 						Path:       filepath.Join(path, "example.md"),
 					},
 				}
@@ -662,6 +667,7 @@ URL: https://example.com
 			expected:       string(mustReadFixture("fixtures/page_blocks_with_children/result")),
 			config: &config.Config{
 				StoreImages: true,
+				SaveToDisk:  true,
 			},
 		},
 		{
@@ -697,7 +703,9 @@ URL: https://example.com
 			},
 			pageProperties: map[string]bool{},
 			expected:       string(mustReadFixture("fixtures/page_with_cover/result")),
-			config:         &config.Config{},
+			config: &config.Config{
+				SaveToDisk: true,
+			},
 		},
 	}
 
@@ -731,7 +739,7 @@ URL: https://example.com
 			migrator := migrator{
 				notionClient: notionClient,
 				config:       test.config,
-				cache:        cache.NewCache(),
+				cache:        NewCache(),
 				pages:        pages,
 				httpClient:   httpclient,
 				logger:       logger,
@@ -810,9 +818,7 @@ func TestFetchParseAndSavePage_DryRun(t *testing.T) {
 				}
 			},
 			pageProperties: map[string]bool{},
-			config: &config.Config{
-				DryRun: true,
-			},
+			config:         &config.Config{},
 		},
 	}
 
@@ -841,7 +847,7 @@ func TestFetchParseAndSavePage_DryRun(t *testing.T) {
 			migrator := migrator{
 				notionClient: notionClient,
 				config:       test.config,
-				cache:        cache.NewCache(),
+				cache:        NewCache(),
 				pages:        pages,
 				logger:       logger,
 			}
@@ -857,8 +863,8 @@ func TestFetchParseAndSavePage_DryRun(t *testing.T) {
 			})
 			assert.NoError(t, err)
 
-			expected := `/example.md 
- |-> /Personal Notes/ANSI Codes for the terminal.md
+			expected := `example.md 
+ |-> Personal Notes/ANSI Codes for the terminal.md
 `
 			assert.Equal(t, expected, output)
 		})
