@@ -71,6 +71,65 @@ It should be a 32 character long string. Format this value by inserting hyphens 
 Example: 1429989fe8ac4effbc8f57f56486db54 becomes 1429989f-e8ac-4eff-bc8f-57f56486db54.
 This value is your page ID.
 
+## Supported Notion blocks to Obsidian markdown
+
+- [x] bookmark
+- [x] bulleted_list_item
+- [x] callout
+- [x] child_database
+- [x] child_page
+- [x] column
+- [x] column_list
+- [x] divider
+- [x] embed
+- [x] equation
+- [x] file
+- [x] heading_1
+- [x] heading_2
+- [x] heading_3
+- [x] image
+- [x] link_preview
+- [x] link_to_page
+- [x] numbered_list_item
+- [x] paragraph
+- [x] pdf
+- [x] quote
+- [ ] synced_block
+- [x] table
+- [x] table_of_contents
+- [x] table_row
+- [x] to_do
+- [x] toggle
+- [x] unsupported
+- [x] video
+
+## Supported Notion page properties to Obsidian frontmatter
+
+- [x] checkbox
+- [x] created_by
+- [x] created_time
+- [x] date
+- [x] email
+- [ ] files (No information from the Notion API)
+- [ ] formula (No equivalent in Obsidian)
+- [x] last_edited_by
+- [x] last_edited_time
+- [x] multi_select
+- [x] number
+- [ ] people (No information from the Notion API)
+- [x] phone_number
+- [x] relation
+- [x] rich_text
+- [x] rollup
+- [x] select
+- [x] status
+- [x] title
+- [x] url
+
+## Known Limitations
+
+Child page and child datadase blocks do not include information that allow to query the Notion API. If you want to migrate those you would have to manually call `n2o`
+
 ## Examples
 
 ### Get information about the pages that would be created in your Obsidian Vault
@@ -111,42 +170,6 @@ Weekly Plan/Thursday.md
 For these examples, the location of the different pages would be based dynamically on the `date` value in the Notion page property and the custom format `%Y/%B/%d-%A`. For a list of available formatting options for dates, refer to [man 3 strftime](https://linux.die.net/man/3/strftime)
 
 A notion page with the date value `2024-09-30` would be stored in: `/Users/johndoe/Obsidian\ Vault/Testing/Migrated/2024/September/09-Monday`
-
-## Supported blocks to markdown
-
-- [x] bookmark
-- [x] bulleted_list_item
-- [x] callout
-- [x] child_database
-- [x] child_page
-- [x] column
-- [x] column_list
-- [x] divider
-- [x] embed
-- [x] equation
-- [x] file
-- [x] heading_1
-- [x] heading_2
-- [x] heading_3
-- [x] image
-- [x] link_preview
-- [x] link_to_page
-- [x] numbered_list_item
-- [x] paragraph
-- [x] pdf
-- [x] quote
-- [ ] synced_block
-- [x] table
-- [x] table_of_contents
-- [x] table_row
-- [x] to_do
-- [x] toggle
-- [x] unsupported
-- [x] video
-
-## Known Limitations
-
-Child page and child datadase blocks do not include information that allow to query the Notion API. If you want to migrate those you would have to manually call `n2o`
 
 ## Roadmap
 
