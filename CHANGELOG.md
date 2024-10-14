@@ -1,1 +1,1 @@
-- Initial Release 🎉
+Initial Release 🎉
