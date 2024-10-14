@@ -597,6 +597,7 @@ URL: https://example.com
 						buffer:     &strings.Builder{},
 						notionPage: notion.Page{ID: "1"},
 						parent:     nil,
+						title:      "example.md",
 						Path:       filepath.Join(path, "example.md"),
 					},
 				}
@@ -657,6 +658,7 @@ URL: https://example.com
 						buffer:     &strings.Builder{},
 						notionPage: notion.Page{ID: "1"},
 						parent:     nil,
+						title:      "example.md",
 						Path:       filepath.Join(path, "example.md"),
 					},
 				}

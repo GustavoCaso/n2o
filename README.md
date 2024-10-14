@@ -126,6 +126,15 @@ This value is your page ID.
 - [x] title
 - [x] url
 
+## Supported Notion rich text mentions. Every mention would create a link between notes.
+
+- [/] database (Partial support. We do not fetch the datadase pages)
+- [x] date 
+- [x] link_preview 
+- [x] page 
+- [ ] template_mention (No equivalent in Obsidian)
+- [ ] user
+
 ## Known Limitations
 
 Child page and child datadase blocks do not include information that allow to query the Notion API. If you want to migrate those you would have to manually call `n2o`
@@ -174,6 +183,6 @@ A notion page with the date value `2024-09-30` would be stored in: `/Users/johnd
 ## Roadmap
 
 - [ ] Figure out how to parse self-referential links. Transform links like `/<Notion_PAGE_ID>#<BLOCK_ID>` to `[[Page^Block_ID]]` or `[[Page#Block_ID]]`
-- [ ] Parse User blocks
+- [ ] Add more unit tests
 - [ ] Add support for custom configuration file. The configuration file allows to specify the different DB and pages that we want to migrate and their properties, increasing the usabilty of `n2o`.
 - [ ] Create a HomeBrew formula
