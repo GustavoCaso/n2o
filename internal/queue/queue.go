@@ -12,7 +12,7 @@ import (
 
 type Job struct {
 	Path string
-	Run  func() error
+	Run  func()
 }
 
 type ErrJob struct {
@@ -30,8 +30,7 @@ type Queue struct {
 	jobs    chan *Job
 	options []Option
 	wg      sync.WaitGroup
-	cancel  context.CancelFunc
-	ctx     context.Context
+	total   int
 }
 
 type progressBarOption struct {
@@ -72,16 +71,12 @@ func WithProgressBar() Option {
 }
 
 func NewQueue(description string, opts ...Option) *Queue {
-	ctx, cancel := context.WithCancel(context.Background())
-
 	for _, opt := range opts {
 		opt.OnCreate(description)
 	}
 
 	return &Queue{
 		jobs:    make(chan *Job),
-		ctx:     ctx,
-		cancel:  cancel,
 		options: opts,
 	}
 }
@@ -89,6 +84,7 @@ func NewQueue(description string, opts ...Option) *Queue {
 func (q *Queue) AddJobs(jobs []*Job) {
 	total := len(jobs)
 	q.wg.Add(total)
+	q.total = total
 	for _, opt := range q.options {
 		opt.OnAdd(total)
 	}
@@ -102,7 +98,6 @@ func (q *Queue) AddJobs(jobs []*Job) {
 
 	go func() {
 		q.wg.Wait()
-		q.cancel()
 	}()
 }
 
@@ -112,26 +107,37 @@ func (q *Queue) Done() {
 	}
 }
 
-type Worker struct {
-	Queue     *Queue
-	ErrorJobs []ErrJob
+type WorkerPool struct {
+	queue *Queue
+	pool  chan struct{}
+	wg    sync.WaitGroup
 }
 
-func (w *Worker) DoWork() bool {
-	for {
-		select {
-		case <-w.Queue.ctx.Done():
-			return true
-		case job := <-w.Queue.jobs:
-			err := job.Run()
-			if err != nil {
-				errJob := ErrJob{
-					Job: job,
-					Err: err,
-				}
-				w.ErrorJobs = append(w.ErrorJobs, errJob)
-			}
-			w.Queue.Done()
-		}
+func NewWorkerPool(q *Queue, workerPoolSize int) *WorkerPool {
+	return &WorkerPool{
+		queue: q,
+		pool:  make(chan struct{}, workerPoolSize),
 	}
+}
+
+func (w *WorkerPool) DoWork(ctx context.Context) {
+	w.wg.Add(w.queue.total)
+
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+			case job := <-w.queue.jobs:
+				w.pool <- struct{}{}
+				go func(j *Job) {
+					defer w.wg.Done()
+					defer func() { <-w.pool }()
+					defer w.queue.Done()
+					j.Run()
+				}(job)
+			}
+		}
+	}()
+
+	w.wg.Wait()
 }

@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -128,8 +127,11 @@ func main() {
 
 		job := &queue.Job{
 			Path: newPage.Path,
-			Run: func() error {
-				return migrator.FetchParseAndSavePage(ctx, newPage, config.PagePropertiesToMigrate)
+			Run: func() {
+				err := migrator.FetchParseAndSavePage(ctx, newPage, config.PagePropertiesToMigrate)
+				if err != nil {
+					migratorLogger.Error(fmt.Sprintf("an error ocurred when processing a page %s. error: %v", newPage.Path, err))
+				}
 			},
 		}
 
@@ -139,19 +141,13 @@ func main() {
 	// enequeue page to download and parse
 	q.AddJobs(jobs)
 
-	worker := queue.Worker{
-		Queue: q,
-	}
+	workerPool := queue.NewWorkerPool(q, 10)
 
-	worker.DoWork()
+	workerPool.DoWork(ctx)
 
 	migratorLogs, _ := io.ReadAll(buf)
 
 	fmt.Fprint(os.Stdout, string(migratorLogs))
-
-	for _, errJob := range worker.ErrorJobs {
-		logger.Error(fmt.Sprintf("an error ocurred when processing a page %s. error: %v\n", errJob.Job.Path, errors.Unwrap(errJob.Err)))
-	}
 
 	if config.SaveToDisk {
 		logger.Info("Saving pages to the Obsidian vault")

@@ -1,9 +1,10 @@
 package queue
 
 import (
-	"errors"
+	"context"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/schollz/progressbar/v3"
 	"github.com/stretchr/testify/assert"
@@ -35,36 +36,33 @@ func TestQueue(t *testing.T) {
 	option := &testprogressBarOption{}
 	queue := NewQueue("testing", option)
 
-	errJob := &Job{
+	job1 := &Job{
 		Path: "failed",
-		Run: func() error {
-			return errors.New("failed")
+		Run: func() {
 		},
 	}
 
-	successJob := &Job{
+	job2 := &Job{
 		Path: "success",
-		Run: func() error {
-			return nil
+		Run: func() {
 		},
 	}
 
 	jobs := []*Job{
-		successJob,
-		errJob,
+		job1,
+		job2,
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
 	queue.AddJobs(jobs)
 
-	worker := Worker{
-		Queue: queue,
-	}
+	workerPool := NewWorkerPool(queue, 10)
 
-	worker.DoWork()
+	workerPool.DoWork(ctx)
 
 	result := strings.TrimSpace(option.buf.String())
 
 	assert.True(t, strings.Contains(result, "50% |████████████████████                    |  [0s:0s]"))
 	assert.True(t, strings.Contains(result, "100% |████████████████████████████████████████|"))
-
-	assert.Equal(t, errJob, worker.ErrorJobs[0].Job)
 }
