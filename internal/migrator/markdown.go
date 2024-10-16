@@ -25,7 +25,11 @@ func (m *migrator) propertiesToFrontMatter(ctx context.Context, parentPage *Page
 		case notion.DBPropTypeRichText:
 			buffer.WriteString(fmt.Sprintf("%s: %s\n", key, extractPlainTextFromRichText(value.RichText)))
 		case notion.DBPropTypeNumber:
-			buffer.WriteString(fmt.Sprintf("%s: %f\n", key, *value.Number))
+			if value.Number != nil {
+				buffer.WriteString(fmt.Sprintf("%s: %f\n", key, *value.Number))
+			} else {
+				buffer.WriteString(fmt.Sprintf("%s: \n", key))
+			}
 		case notion.DBPropTypeSelect:
 			if value.Select != nil {
 				buffer.WriteString(fmt.Sprintf("%s: %s\n", key, value.Select.Name))
@@ -48,13 +52,29 @@ func (m *migrator) propertiesToFrontMatter(ctx context.Context, parentPage *Page
 		case notion.DBPropTypePeople:
 		case notion.DBPropTypeFiles:
 		case notion.DBPropTypeCheckbox:
-			buffer.WriteString(fmt.Sprintf("%s: %t\n", key, *value.Checkbox))
+			if value.Checkbox != nil {
+				buffer.WriteString(fmt.Sprintf("%s: %t\n", key, *value.Checkbox))
+			} else {
+				buffer.WriteString(fmt.Sprintf("%s: \n", key))
+			}
 		case notion.DBPropTypeURL:
-			buffer.WriteString(fmt.Sprintf("%s: %s\n", key, *value.URL))
+			if value.URL != nil {
+				buffer.WriteString(fmt.Sprintf("%s: %s\n", key, *value.URL))
+			} else {
+				buffer.WriteString(fmt.Sprintf("%s: \n", key))
+			}
 		case notion.DBPropTypeEmail:
-			buffer.WriteString(fmt.Sprintf("%s: %s\n", key, *value.Email))
+			if value.Email != nil {
+				buffer.WriteString(fmt.Sprintf("%s: %s\n", key, *value.Email))
+			} else {
+				buffer.WriteString(fmt.Sprintf("%s: \n", key))
+			}
 		case notion.DBPropTypePhoneNumber:
-			buffer.WriteString(fmt.Sprintf("%s: %s\n", key, *value.PhoneNumber))
+			if value.PhoneNumber != nil {
+				buffer.WriteString(fmt.Sprintf("%s: %s\n", key, *value.PhoneNumber))
+			} else {
+				buffer.WriteString(fmt.Sprintf("%s: \n", key))
+			}
 		case notion.DBPropTypeStatus:
 			buffer.WriteString(fmt.Sprintf("%s: %s\n", key, value.Status.Name))
 		case notion.DBPropTypeFormula:
@@ -81,7 +101,11 @@ func (m *migrator) propertiesToFrontMatter(ctx context.Context, parentPage *Page
 		case notion.DBPropTypeRollup:
 			switch value.Rollup.Type {
 			case notion.RollupResultTypeNumber:
-				buffer.WriteString(fmt.Sprintf("%s: %f\n", key, *value.Rollup.Number))
+				if value.Rollup.Number != nil {
+					buffer.WriteString(fmt.Sprintf("%s: %f\n", key, *value.Rollup.Number))
+				} else {
+					buffer.WriteString(fmt.Sprintf("%s: \n", key))
+				}
 			case notion.RollupResultTypeDate:
 				if value.Rollup.Date.Start.HasTime() {
 					buffer.WriteString(fmt.Sprintf("%s: %s\n", key, value.Rollup.Date.Start.Format("2006-01-02T15:04:05")))
