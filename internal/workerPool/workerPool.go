@@ -1,4 +1,4 @@
-package queue
+package workerPool
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 
 type Job struct {
 	Path string
-	Run  func() error
+	Run  func()
 }
 
 type ErrJob struct {
@@ -24,14 +24,6 @@ type Option interface {
 	OnCreate(description string)
 	OnAdd(total int)
 	OnDone()
-}
-
-type Queue struct {
-	jobs    chan *Job
-	options []Option
-	wg      sync.WaitGroup
-	cancel  context.CancelFunc
-	ctx     context.Context
 }
 
 type progressBarOption struct {
@@ -71,67 +63,76 @@ func WithProgressBar() Option {
 	return &progressBarOption{}
 }
 
-func NewQueue(description string, opts ...Option) *Queue {
-	ctx, cancel := context.WithCancel(context.Background())
+type queue struct {
+	jobs chan *Job
+	wg   sync.WaitGroup
+}
 
+type WorkerPool struct {
+	queue     *queue
+	pool      chan struct{}
+	options   []Option
+	wg        sync.WaitGroup
+	totalJobs int
+}
+
+func New(description string, workerPoolSize int, opts ...Option) *WorkerPool {
 	for _, opt := range opts {
 		opt.OnCreate(description)
 	}
 
-	return &Queue{
-		jobs:    make(chan *Job),
-		ctx:     ctx,
-		cancel:  cancel,
+	return &WorkerPool{
+		queue: &queue{
+			jobs: make(chan *Job),
+		},
 		options: opts,
+		pool:    make(chan struct{}, workerPoolSize),
 	}
 }
 
-func (q *Queue) AddJobs(jobs []*Job) {
+func (w *WorkerPool) AddJobs(jobs []*Job) {
 	total := len(jobs)
-	q.wg.Add(total)
-	for _, opt := range q.options {
+	w.queue.wg.Add(total)
+	w.totalJobs = total
+
+	for _, opt := range w.options {
 		opt.OnAdd(total)
 	}
 
 	for _, pageJob := range jobs {
 		go func(job *Job) {
-			q.jobs <- job
-			q.wg.Done()
+			w.queue.jobs <- job
+			w.queue.wg.Done()
 		}(pageJob)
 	}
 
 	go func() {
-		q.wg.Wait()
-		q.cancel()
+		w.queue.wg.Wait()
 	}()
 }
 
-func (q *Queue) Done() {
-	for _, opt := range q.options {
-		opt.OnDone()
-	}
-}
+func (w *WorkerPool) DoWork(ctx context.Context) {
+	w.wg.Add(w.totalJobs)
 
-type Worker struct {
-	Queue     *Queue
-	ErrorJobs []ErrJob
-}
-
-func (w *Worker) DoWork() bool {
-	for {
-		select {
-		case <-w.Queue.ctx.Done():
-			return true
-		case job := <-w.Queue.jobs:
-			err := job.Run()
-			if err != nil {
-				errJob := ErrJob{
-					Job: job,
-					Err: err,
-				}
-				w.ErrorJobs = append(w.ErrorJobs, errJob)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+			case job := <-w.queue.jobs:
+				w.pool <- struct{}{}
+				go func(j *Job) {
+					defer w.wg.Done()
+					defer func() { <-w.pool }()
+					defer func() {
+						for _, opt := range w.options {
+							opt.OnDone()
+						}
+					}()
+					j.Run()
+				}(job)
 			}
-			w.Queue.Done()
 		}
-	}
+	}()
+
+	w.wg.Wait()
 }

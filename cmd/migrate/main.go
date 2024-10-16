@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -14,7 +13,7 @@ import (
 	"github.com/GustavoCaso/n2o/internal/config"
 	"github.com/GustavoCaso/n2o/internal/log"
 	"github.com/GustavoCaso/n2o/internal/migrator"
-	"github.com/GustavoCaso/n2o/internal/queue"
+	"github.com/GustavoCaso/n2o/internal/workerPool"
 )
 
 var filenameFromPageExplanation = `Notion page properties to extract the Obsidian page title. 
@@ -117,19 +116,22 @@ func main() {
 		os.Exit(1)
 	}
 
-	var jobs []*queue.Job
+	var jobs []*workerPool.Job
 
-	q := queue.NewQueue("fetching notion pages information", queue.WithProgressBar())
+	pool := workerPool.New("fetching notion pages information", 10, workerPool.WithProgressBar())
 
 	for _, page := range pages {
 		// We need to do this, because variables declared inside for loops are passed by reference.
 		// Otherwise, our closure will always receive the last item from the page.
 		newPage := page
 
-		job := &queue.Job{
+		job := &workerPool.Job{
 			Path: newPage.Path,
-			Run: func() error {
-				return migrator.FetchParseAndSavePage(ctx, newPage, config.PagePropertiesToMigrate)
+			Run: func() {
+				err := migrator.FetchParseAndSavePage(ctx, newPage, config.PagePropertiesToMigrate)
+				if err != nil {
+					migratorLogger.Error(fmt.Sprintf("an error ocurred when processing a page %s. error: %v", newPage.Path, err))
+				}
 			},
 		}
 
@@ -137,21 +139,14 @@ func main() {
 	}
 
 	// enequeue page to download and parse
-	q.AddJobs(jobs)
+	pool.AddJobs(jobs)
 
-	worker := queue.Worker{
-		Queue: q,
-	}
-
-	worker.DoWork()
+	// blocking operation
+	pool.DoWork(ctx)
 
 	migratorLogs, _ := io.ReadAll(buf)
 
 	fmt.Fprint(os.Stdout, string(migratorLogs))
-
-	for _, errJob := range worker.ErrorJobs {
-		logger.Error(fmt.Sprintf("an error ocurred when processing a page %s. error: %v\n", errJob.Job.Path, errors.Unwrap(errJob.Err)))
-	}
 
 	if config.SaveToDisk {
 		logger.Info("Saving pages to the Obsidian vault")

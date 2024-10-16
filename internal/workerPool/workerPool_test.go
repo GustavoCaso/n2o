@@ -1,9 +1,10 @@
-package queue
+package workerPool
 
 import (
-	"errors"
+	"context"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/schollz/progressbar/v3"
 	"github.com/stretchr/testify/assert"
@@ -31,40 +32,35 @@ func (p *testprogressBarOption) OnDone() {
 	p.progressBar.Add(1)
 }
 
-func TestQueue(t *testing.T) {
+func TestWorkerPool(t *testing.T) {
 	option := &testprogressBarOption{}
-	queue := NewQueue("testing", option)
+	pool := New("testing", 10, option)
 
-	errJob := &Job{
+	job1 := &Job{
 		Path: "failed",
-		Run: func() error {
-			return errors.New("failed")
+		Run: func() {
 		},
 	}
 
-	successJob := &Job{
+	job2 := &Job{
 		Path: "success",
-		Run: func() error {
-			return nil
+		Run: func() {
 		},
 	}
 
 	jobs := []*Job{
-		successJob,
-		errJob,
+		job1,
+		job2,
 	}
-	queue.AddJobs(jobs)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
 
-	worker := Worker{
-		Queue: queue,
-	}
+	pool.AddJobs(jobs)
 
-	worker.DoWork()
+	pool.DoWork(ctx)
 
 	result := strings.TrimSpace(option.buf.String())
 
 	assert.True(t, strings.Contains(result, "50% |████████████████████                    |  [0s:0s]"))
 	assert.True(t, strings.Contains(result, "100% |████████████████████████████████████████|"))
-
-	assert.Equal(t, errJob, worker.ErrorJobs[0].Job)
 }
