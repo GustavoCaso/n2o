@@ -13,7 +13,7 @@ import (
 	"github.com/GustavoCaso/n2o/internal/config"
 	"github.com/GustavoCaso/n2o/internal/log"
 	"github.com/GustavoCaso/n2o/internal/migrator"
-	"github.com/GustavoCaso/n2o/internal/queue"
+	"github.com/GustavoCaso/n2o/internal/workerPool"
 )
 
 var filenameFromPageExplanation = `Notion page properties to extract the Obsidian page title. 
@@ -116,16 +116,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	var jobs []*queue.Job
+	var jobs []*workerPool.Job
 
-	q := queue.NewQueue("fetching notion pages information", queue.WithProgressBar())
+	pool := workerPool.New("fetching notion pages information", 10, workerPool.WithProgressBar())
 
 	for _, page := range pages {
 		// We need to do this, because variables declared inside for loops are passed by reference.
 		// Otherwise, our closure will always receive the last item from the page.
 		newPage := page
 
-		job := &queue.Job{
+		job := &workerPool.Job{
 			Path: newPage.Path,
 			Run: func() {
 				err := migrator.FetchParseAndSavePage(ctx, newPage, config.PagePropertiesToMigrate)
@@ -139,11 +139,10 @@ func main() {
 	}
 
 	// enequeue page to download and parse
-	q.AddJobs(jobs)
+	pool.AddJobs(jobs)
 
-	workerPool := queue.NewWorkerPool(q, 10)
-
-	workerPool.DoWork(ctx)
+	// blocking operation
+	pool.DoWork(ctx)
 
 	migratorLogs, _ := io.ReadAll(buf)
 

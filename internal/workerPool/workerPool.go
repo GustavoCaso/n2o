@@ -1,4 +1,4 @@
-package queue
+package workerPool
 
 import (
 	"context"
@@ -24,13 +24,6 @@ type Option interface {
 	OnCreate(description string)
 	OnAdd(total int)
 	OnDone()
-}
-
-type Queue struct {
-	jobs    chan *Job
-	options []Option
-	wg      sync.WaitGroup
-	total   int
 }
 
 type progressBarOption struct {
@@ -70,58 +63,56 @@ func WithProgressBar() Option {
 	return &progressBarOption{}
 }
 
-func NewQueue(description string, opts ...Option) *Queue {
+type queue struct {
+	jobs chan *Job
+	wg   sync.WaitGroup
+}
+
+type WorkerPool struct {
+	queue     *queue
+	pool      chan struct{}
+	options   []Option
+	wg        sync.WaitGroup
+	totalJobs int
+}
+
+func New(description string, workerPoolSize int, opts ...Option) *WorkerPool {
 	for _, opt := range opts {
 		opt.OnCreate(description)
 	}
 
-	return &Queue{
-		jobs:    make(chan *Job),
+	return &WorkerPool{
+		queue: &queue{
+			jobs: make(chan *Job),
+		},
 		options: opts,
+		pool:    make(chan struct{}, workerPoolSize),
 	}
 }
 
-func (q *Queue) AddJobs(jobs []*Job) {
+func (w *WorkerPool) AddJobs(jobs []*Job) {
 	total := len(jobs)
-	q.wg.Add(total)
-	q.total = total
-	for _, opt := range q.options {
+	w.queue.wg.Add(total)
+	w.totalJobs = total
+
+	for _, opt := range w.options {
 		opt.OnAdd(total)
 	}
 
 	for _, pageJob := range jobs {
 		go func(job *Job) {
-			q.jobs <- job
-			q.wg.Done()
+			w.queue.jobs <- job
+			w.queue.wg.Done()
 		}(pageJob)
 	}
 
 	go func() {
-		q.wg.Wait()
+		w.queue.wg.Wait()
 	}()
 }
 
-func (q *Queue) Done() {
-	for _, opt := range q.options {
-		opt.OnDone()
-	}
-}
-
-type WorkerPool struct {
-	queue *Queue
-	pool  chan struct{}
-	wg    sync.WaitGroup
-}
-
-func NewWorkerPool(q *Queue, workerPoolSize int) *WorkerPool {
-	return &WorkerPool{
-		queue: q,
-		pool:  make(chan struct{}, workerPoolSize),
-	}
-}
-
 func (w *WorkerPool) DoWork(ctx context.Context) {
-	w.wg.Add(w.queue.total)
+	w.wg.Add(w.totalJobs)
 
 	go func() {
 		for {
@@ -132,7 +123,11 @@ func (w *WorkerPool) DoWork(ctx context.Context) {
 				go func(j *Job) {
 					defer w.wg.Done()
 					defer func() { <-w.pool }()
-					defer w.queue.Done()
+					defer func() {
+						for _, opt := range w.options {
+							opt.OnDone()
+						}
+					}()
 					j.Run()
 				}(job)
 			}

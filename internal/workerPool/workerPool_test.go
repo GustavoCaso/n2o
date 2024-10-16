@@ -1,4 +1,4 @@
-package queue
+package workerPool
 
 import (
 	"context"
@@ -32,9 +32,9 @@ func (p *testprogressBarOption) OnDone() {
 	p.progressBar.Add(1)
 }
 
-func TestQueue(t *testing.T) {
+func TestWorkerPool(t *testing.T) {
 	option := &testprogressBarOption{}
-	queue := NewQueue("testing", option)
+	pool := New("testing", 10, option)
 
 	job1 := &Job{
 		Path: "failed",
@@ -55,11 +55,9 @@ func TestQueue(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
-	queue.AddJobs(jobs)
+	pool.AddJobs(jobs)
 
-	workerPool := NewWorkerPool(queue, 10)
-
-	workerPool.DoWork(ctx)
+	pool.DoWork(ctx)
 
 	result := strings.TrimSpace(option.buf.String())
 
