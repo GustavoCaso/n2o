@@ -271,7 +271,7 @@ func (m *migrator) DisplayInformation(ctx context.Context) error {
 func (m *migrator) displayPageInfo(page *Page, buffer *bufio.Writer, index int) {
 	var spaces int
 	if index > 0 {
-		spaces = index * 5
+		spaces = index * 4
 	} else {
 		spaces = 4
 	}
