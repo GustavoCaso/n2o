@@ -17,6 +17,7 @@ import (
 	"github.com/GustavoCaso/n2o/internal/log"
 	"github.com/dstotijn/go-notion"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type mockRoundtripper struct {
@@ -52,7 +53,7 @@ func TestFetchPages(t *testing.T) {
 				return bytes.NewReader(f)
 			},
 			assertions: func(t *testing.T, pages []*Page) {
-				assert.Equal(t, 1, len(pages))
+				assert.Len(t, pages, 1)
 				p := pages[0]
 				assert.IsType(t, &Page{}, p)
 				assert.Equal(t, "Foobar.md", p.Path)
@@ -81,7 +82,7 @@ func TestFetchPages(t *testing.T) {
 				return bytes.NewReader(f)
 			},
 			assertions: func(t *testing.T, pages []*Page) {
-				assert.Equal(t, 1, len(pages))
+				assert.Len(t, pages, 1)
 				p := pages[0]
 				assert.IsType(t, &Page{}, p)
 				assert.Equal(t, "Lorem ipsum.md", p.Path)
@@ -128,7 +129,7 @@ func TestFetchPages(t *testing.T) {
 			if test.hasError {
 				assert.Error(t, err)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				test.assertions(t, pages)
 			}
 		})
@@ -325,7 +326,7 @@ func TestExtractPageTitle(t *testing.T) {
 
 // TODO: Fix Realation test
 // Select type
-// Multi Select
+// Multi Select.
 func TestFetchParseAndSavePage_WritePagesToDisk(t *testing.T) {
 	tests := []struct {
 		name             string
@@ -492,9 +493,11 @@ URL: https://example.com
 									PhoneNumber: notion.StringPtr("867-5309"),
 								},
 								"CreatedTime": notion.DatabasePageProperty{
-									Type:        notion.DBPropTypeCreatedTime,
-									Name:        "Created time",
-									CreatedTime: notion.TimePtr(parseTime(time.RFC3339Nano, "2021-05-24T15:44:09.123Z")),
+									Type: notion.DBPropTypeCreatedTime,
+									Name: "Created time",
+									CreatedTime: notion.TimePtr(
+										parseTime(time.RFC3339Nano, "2021-05-24T15:44:09.123Z"),
+									),
 								},
 								"CreatedBy": notion.DatabasePageProperty{
 									Type: notion.DBPropTypeCreatedBy,
@@ -512,9 +515,11 @@ URL: https://example.com
 									},
 								},
 								"LastEditedTime": notion.DatabasePageProperty{
-									Type:           notion.DBPropTypeLastEditedTime,
-									Name:           "Last edited time",
-									LastEditedTime: notion.TimePtr(parseTime(time.RFC3339Nano, "2021-05-24T15:44:09.123Z")),
+									Type: notion.DBPropTypeLastEditedTime,
+									Name: "Last edited time",
+									LastEditedTime: notion.TimePtr(
+										parseTime(time.RFC3339Nano, "2021-05-24T15:44:09.123Z"),
+									),
 								},
 								"LastEditedBy": notion.DatabasePageProperty{
 									Type: notion.DBPropTypeLastEditedBy,
@@ -605,7 +610,7 @@ URL: https://example.com
 			customAssertions: func(t *testing.T, path string) {
 				nestedPage := filepath.Join(path, "Personal Notes", "ANSI Codes for the terminal.md")
 				content, err := os.ReadFile(nestedPage)
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				expectedNestedContent := `## Lacinato kale
 [Lacinato kale is a variety of kale with a long tradition in Italian cuisine, especially that of Tuscany. It is also known as Tuscan kale, Italian kale, dinosaur kale, kale, flat back kale, palm tree kale, or black Tuscan palm.](https://en.wikipedia.org/wiki/Lacinato_kale)
 `
@@ -625,8 +630,8 @@ URL: https://example.com
 					Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
 						assert.Equal(t, internalImageURL, r.URL.String())
 						return &http.Response{
-							StatusCode: 200,
-							Status:     http.StatusText(200),
+							StatusCode: http.StatusOK,
+							Status:     http.StatusText(http.StatusOK),
 							Body:       io.NopCloser(bytes.NewReader([]byte(""))),
 						}, nil
 					}},
@@ -749,15 +754,15 @@ URL: https://example.com
 
 			for _, page := range pages {
 				err := migrator.FetchParseAndSavePage(ctx, page, test.pageProperties)
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			}
 
 			err := migrator.WritePagesToDisk(ctx)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			for _, page := range pages {
 				content, err := os.ReadFile(page.Path)
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				if test.expected == "" {
 					os.WriteFile(fmt.Sprintf("%s.result", test.name), content, 0770)
 				} else {
@@ -854,14 +859,14 @@ func TestFetchParseAndSavePage_DryRun(t *testing.T) {
 
 			ctx := context.TODO()
 
-			assert.Equal(t, 1, len(pages))
+			assert.Len(t, pages, 1)
 
 			output, err := captureStdout(func() error {
 				err := migrator.FetchParseAndSavePage(ctx, pages[0], test.pageProperties)
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				return migrator.DisplayInformation(ctx)
 			})
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			expected := `example.md 
  |-> Personal Notes/ANSI Codes for the terminal.md
@@ -1072,12 +1077,11 @@ func TestWriteRichText_Annotations(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(*testing.T) {
-			buffer := &strings.Builder{}
 			parentPage := &Page{
 				buffer: &strings.Builder{},
 			}
-			err := migrator.writeRichText(ctx, parentPage, buffer, test.notionRichText)
-			assert.NoError(t, err)
+			err := migrator.writeRichText(ctx, parentPage, test.notionRichText)
+			require.NoError(t, err)
 
 			assert.Equal(t, test.name, parentPage.buffer.String())
 		})
