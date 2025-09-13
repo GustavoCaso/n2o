@@ -1,6 +1,6 @@
 module github.com/GustavoCaso/n2o
 
-go 1.18
+go 1.25
 
 require (
 	github.com/dstotijn/go-notion v0.11.0

@@ -77,12 +77,16 @@ func (m *migrator) FetchPages(ctx context.Context) ([]*Page, error) {
 	if m.config.DatabaseID != "" {
 		db, err := m.notionClient.FindDatabaseByID(ctx, m.config.DatabaseID)
 		if err != nil {
-			return []*Page{}, fmt.Errorf("failed to get DB %s. error: %s\n", m.config.DatabaseID, err.Error())
+			return []*Page{}, fmt.Errorf("failed to get DB %s. error: %s", m.config.DatabaseID, err.Error())
 		}
 		dbTitle := extractPlainTextFromRichText(db.Title)
 		notionPages, err := m.fetchNotionDBPages(ctx)
 		if err != nil {
-			return []*Page{}, fmt.Errorf("failed to get pages from DB %s. error: %s\n", m.config.DatabaseID, err.Error())
+			return []*Page{}, fmt.Errorf(
+				"failed to get pages from DB %s. error: %s",
+				m.config.DatabaseID,
+				err.Error(),
+			)
 		}
 		pages := make([]*Page, len(notionPages))
 
@@ -112,36 +116,39 @@ func (m *migrator) FetchPages(ctx context.Context) ([]*Page, error) {
 		m.pages = pages
 
 		return pages, nil
-	} else {
-		notionPage, err := m.notionClient.FindPageByID(context.Background(), m.config.PageID)
-		if err != nil {
-			return []*Page{}, fmt.Errorf("failed to find the page %s make sure the page exists in your Notioin workspace. error: %s\n", m.config.PageID, err.Error())
-		}
-
-		var cover *image
-		if notionPage.Cover != nil {
-			cover = &image{
-				external: true,
-				url:      notionPage.Cover.External.URL,
-			}
-		}
-
-		title := m.extractPageTitle(notionPage)
-		pages := []*Page{
-			{
-				id:         notionPage.ID,
-				buffer:     &strings.Builder{},
-				title:      title,
-				Path:       path.Join(m.config.VaultFilepath(), title),
-				notionPage: notionPage,
-				parent:     nil,
-				coverPhoto: cover,
-			},
-		}
-		m.pages = pages
-
-		return pages, nil
 	}
+	notionPage, err := m.notionClient.FindPageByID(context.Background(), m.config.PageID)
+	if err != nil {
+		return []*Page{}, fmt.Errorf(
+			"failed to find the page %s make sure the page exists in your Notioin workspace. error: %s",
+			m.config.PageID,
+			err.Error(),
+		)
+	}
+
+	var cover *image
+	if notionPage.Cover != nil {
+		cover = &image{
+			external: true,
+			url:      notionPage.Cover.External.URL,
+		}
+	}
+
+	title := m.extractPageTitle(notionPage)
+	pages := []*Page{
+		{
+			id:         notionPage.ID,
+			buffer:     &strings.Builder{},
+			title:      title,
+			Path:       path.Join(m.config.VaultFilepath(), title),
+			notionPage: notionPage,
+			parent:     nil,
+			coverPhoto: cover,
+		},
+	}
+	m.pages = pages
+
+	return pages, nil
 }
 
 func (m *migrator) extractPageTitle(page notion.Page) string {
@@ -149,7 +156,11 @@ func (m *migrator) extractPageTitle(page notion.Page) string {
 
 	switch page.Parent.Type {
 	case notion.ParentTypeDatabase:
-		properties := page.Properties.(notion.DatabasePageProperties)
+		properties, ok := page.Properties.(notion.DatabasePageProperties)
+		if !ok {
+			m.logger.Error(fmt.Sprintf("expected DatabasePageProperties, got %T", page.Properties))
+			return "untitled.md"
+		}
 		sortedPropkeys := make([]string, 0, len(properties))
 
 		for k := range properties {
@@ -195,7 +206,11 @@ func (m *migrator) extractPageTitle(page notion.Page) string {
 	case notion.ParentTypeBlock:
 		fallthrough
 	case notion.ParentTypePage:
-		properties := page.Properties.(notion.PageProperties)
+		properties, ok := page.Properties.(notion.PageProperties)
+		if !ok {
+			m.logger.Error(fmt.Sprintf("expected PageProperties, got %T", page.Properties))
+			return "untitled.md"
+		}
 		str = extractPlainTextFromRichText(properties.Title.Title)
 	}
 
@@ -210,7 +225,10 @@ func (m *migrator) FetchParseAndSavePage(ctx context.Context, page *Page, pagePr
 	}
 
 	if page.notionPage.Parent.Type == notion.ParentTypeDatabase && len(pageProperties) > 0 {
-		props := page.notionPage.Properties.(notion.DatabasePageProperties)
+		props, ok := page.notionPage.Properties.(notion.DatabasePageProperties)
+		if !ok {
+			return fmt.Errorf("expected DatabasePageProperties, got %T", page.notionPage.Properties)
+		}
 
 		frotmatterProps := make(notion.DatabasePageProperties)
 
@@ -241,7 +259,7 @@ func (m *migrator) FetchParseAndSavePage(ctx context.Context, page *Page, pagePr
 	}
 
 	if page.coverPhoto != nil {
-		page.buffer.WriteString(fmt.Sprintf("![700x200](%s)", page.coverPhoto.url))
+		fmt.Fprintf(page.buffer, "![700x200](%s)", page.coverPhoto.url)
 		page.buffer.WriteString("\n\n")
 	}
 
@@ -254,10 +272,12 @@ func (m *migrator) FetchParseAndSavePage(ctx context.Context, page *Page, pagePr
 	return nil
 }
 
-func (m *migrator) DisplayInformation(ctx context.Context) error {
+func (m *migrator) DisplayInformation(_ context.Context) error {
 	buffer := bufio.NewWriter(os.Stdout)
 	for _, page := range m.pages {
-		buffer.WriteString(fmt.Sprintf("%s \n", m.removeObsidianVault(page.Path)))
+		if _, err := fmt.Fprintf(buffer, "%s \n", m.removeObsidianVault(page.Path)); err != nil {
+			return fmt.Errorf("failed to write page path: %w", err)
+		}
 		m.displayPageInfo(page, buffer, 0)
 	}
 
@@ -268,16 +288,21 @@ func (m *migrator) DisplayInformation(ctx context.Context) error {
 	return nil
 }
 
+const spaceCount = 4
+const pageIndex = 2
+
 func (m *migrator) displayPageInfo(page *Page, buffer *bufio.Writer, index int) {
 	var spaces int
 	if index > 0 {
-		spaces = index * 4
+		spaces = index * spaceCount
 	} else {
-		spaces = 4
+		spaces = spaceCount
 	}
 	for _, childPage := range page.children {
-		buffer.WriteString(fmt.Sprintf("%*s %s\n", spaces, "|->", m.removeObsidianVault(childPage.Path)))
-		m.displayPageInfo(childPage, buffer, 2)
+		if _, err := fmt.Fprintf(buffer, "%*s %s\n", spaces, "|->", m.removeObsidianVault(childPage.Path)); err != nil {
+			m.logger.Error(fmt.Sprintf("failed to write child page path: %v", err))
+		}
+		m.displayPageInfo(childPage, buffer, pageIndex)
 	}
 }
 
@@ -285,7 +310,7 @@ func (m *migrator) removeObsidianVault(s string) string {
 	return strings.TrimPrefix(s, m.config.VaultPath+"/")
 }
 
-func (m *migrator) WritePagesToDisk(ctx context.Context) error {
+func (m *migrator) WritePagesToDisk(_ context.Context) error {
 	for _, page := range m.pages {
 		err := m.writePage(page)
 		if err != nil {
@@ -297,7 +322,7 @@ func (m *migrator) WritePagesToDisk(ctx context.Context) error {
 }
 
 func (m *migrator) writePage(page *Page) error {
-	if err := os.MkdirAll(filepath.Dir(page.Path), 0770); err != nil {
+	if err := os.MkdirAll(filepath.Dir(page.Path), 0750); err != nil {
 		return fmt.Errorf("failed to create the necessary directories in for the Obsidian vault.  error: %w", err)
 	}
 
@@ -339,11 +364,66 @@ const Untitled = "Untitled"
 // If the page title has been provided it will use it, if is an empty string it will try to extracted from the page information.
 // The logic to extract the title varies depending on the page parent's type.
 // TODO: handle better the quote logic
-func (m *migrator) fetchPage(ctx context.Context, parentPage *Page, pageID, title string, buffer *strings.Builder, quotes bool) error {
+// handlePageParent processes the parent type of a page and updates the childTitle accordingly.
+func (m *migrator) handlePageParent(
+	ctx context.Context,
+	mentionPage notion.Page,
+	childTitle string,
+	extractTitle bool,
+) (string, error) {
+	switch mentionPage.Parent.Type {
+	case notion.ParentTypeDatabase:
+		if extractTitle {
+			childTitle = m.extractPageTitle(mentionPage)
+		}
+		// Since we are migrating from the same DB we do not need to create a subfolder
+		// within the Obsidian vault. So we can skip fetching the database to gather
+		// the name to create the subfolder
+		if m.config.DatabaseID == "" || m.config.DatabaseID != mentionPage.Parent.DatabaseID {
+			dbPage, err := m.notionClient.FindDatabaseByID(ctx, mentionPage.Parent.DatabaseID)
+			if err != nil {
+				return "", fmt.Errorf("failed to find parent db %s: %w", mentionPage.Parent.DatabaseID, err)
+			}
+			dbTitle := extractPlainTextFromRichText(dbPage.Title)
+			childTitle = path.Join(dbTitle, childTitle)
+		}
+	case notion.ParentTypeBlock:
+		notionParentPage, err := m.notionClient.FindPageByID(ctx, mentionPage.Parent.BlockID)
+		if err != nil {
+			return "", fmt.Errorf("failed to find parent block %s: %w", mentionPage.Parent.BlockID, err)
+		}
+		if extractTitle {
+			childTitle = m.extractPageTitle(notionParentPage)
+		}
+	case notion.ParentTypePage:
+		notionParentPage, err := m.notionClient.FindPageByID(ctx, mentionPage.Parent.PageID)
+		if err != nil {
+			return "", fmt.Errorf("failed to find parent mention page %s: %w", mentionPage.Parent.PageID, err)
+		}
+		if extractTitle {
+			childTitle = m.extractPageTitle(notionParentPage)
+		}
+	case notion.ParentTypeWorkspace:
+		if extractTitle {
+			childTitle = m.extractPageTitle(mentionPage)
+		}
+	default:
+		return "", fmt.Errorf("unsupported mention page type %s", mentionPage.Parent.Type)
+	}
+	return childTitle, nil
+}
+
+func (m *migrator) fetchPage(
+	ctx context.Context,
+	parentPage *Page,
+	pageID, title string,
+	buffer *strings.Builder,
+	quotes bool,
+) error {
 	cached, ok := m.cache.Get(pageID)
 	if ok {
 		debugLog := fmt.Sprintf("cached page found %s\n", cached)
-		if !(cached.parent == parentPage) {
+		if cached.parent != parentPage {
 			debugLog += fmt.Sprintf("adding to parent %s\n", parentPage)
 			parentPage.children = append(parentPage.children, cached)
 		}
@@ -380,49 +460,12 @@ func (m *migrator) fetchPage(ctx context.Context, parentPage *Page, pageID, titl
 		}
 		mentionPage, err := m.notionClient.FindPageByID(ctx, pageID)
 		if err != nil {
-			return fmt.Errorf("failed to find page %s. error %s", pageID, err.Error())
+			return fmt.Errorf("failed to find page %s: %w", pageID, err)
 		}
 
-		switch mentionPage.Parent.Type {
-		case notion.ParentTypeDatabase:
-			if extractTitle {
-				childTitle = m.extractPageTitle(mentionPage)
-			}
-
-			// Since we are migrating from the same DB we do need to create a subfolder
-			// within the Obsidian vault. So we can skip fetching the database to gather
-			// the name to create the subfolder
-			if m.config.DatabaseID == "" || m.config.DatabaseID != mentionPage.Parent.DatabaseID {
-				dbPage, err := m.notionClient.FindDatabaseByID(ctx, mentionPage.Parent.DatabaseID)
-				if err != nil {
-					return fmt.Errorf("failed to find parent db %s.  error: %w", mentionPage.Parent.DatabaseID, err)
-				}
-
-				dbTitle := extractPlainTextFromRichText(dbPage.Title)
-
-				childTitle = path.Join(dbTitle, childTitle)
-			}
-		case notion.ParentTypeBlock:
-			notionParentPage, err := m.notionClient.FindPageByID(ctx, mentionPage.Parent.BlockID)
-			if err != nil {
-				return fmt.Errorf("failed to find parent block %s.  error: %w", mentionPage.Parent.BlockID, err)
-			}
-
-			if extractTitle {
-				childTitle = m.extractPageTitle(notionParentPage)
-			}
-
-		case notion.ParentTypePage:
-			notionParentPage, err := m.notionClient.FindPageByID(ctx, mentionPage.Parent.PageID)
-			if err != nil {
-				return fmt.Errorf("failed to find parent mention page %s.  error: %w", mentionPage.Parent.PageID, err)
-			}
-
-			if extractTitle {
-				childTitle = m.extractPageTitle(notionParentPage)
-			}
-		default:
-			return fmt.Errorf("unsupported mention page type %s", mentionPage.Parent.Type)
+		childTitle, err = m.handlePageParent(ctx, mentionPage, childTitle, extractTitle)
+		if err != nil {
+			return err
 		}
 
 		var result string
@@ -441,11 +484,9 @@ func (m *migrator) fetchPage(ctx context.Context, parentPage *Page, pageID, titl
 	defer func() {
 		if newPage != nil {
 			m.debugLog(fmt.Sprintf("saving page to cache %s\n", newPage))
-
 			m.cache.Set(pageID, newPage)
 		} else {
 			m.debugLog(fmt.Sprintf("failed to save page to cache %s\n", pageID))
-
 			m.cache.Set(pageID, &Page{
 				title: Untitled,
 			})
@@ -456,54 +497,18 @@ func (m *migrator) fetchPage(ctx context.Context, parentPage *Page, pageID, titl
 	childTitle := title
 	if childTitle == "" {
 		extractTitle = true
-	} else {
-		if !strings.HasSuffix(childTitle, ".md") {
-			childTitle = fmt.Sprintf("%s.md", childTitle)
-		}
+	} else if !strings.HasSuffix(childTitle, ".md") {
+		childTitle = fmt.Sprintf("%s.md", childTitle)
 	}
 
 	mentionPage, err := m.notionClient.FindPageByID(ctx, pageID)
 	if err != nil {
-		return fmt.Errorf("failed to find page %s. error %s", pageID, err.Error())
+		return fmt.Errorf("failed to find page %s: %w", pageID, err)
 	}
 
-	switch mentionPage.Parent.Type {
-	case notion.ParentTypeDatabase:
-		if extractTitle {
-			childTitle = m.extractPageTitle(mentionPage)
-		}
-		// Since we are migrating from the same DB we do need to create a subfolder
-		// within the Obsidian vault. So we can skip fetching the database to gather
-		// the name to create the subfolder
-		if m.config.DatabaseID == "" || m.config.DatabaseID != mentionPage.Parent.DatabaseID {
-			dbPage, err := m.notionClient.FindDatabaseByID(ctx, mentionPage.Parent.DatabaseID)
-			if err != nil {
-				return fmt.Errorf("failed to find parent db %s.  error: %w", mentionPage.Parent.DatabaseID, err)
-			}
-
-			dbTitle := extractPlainTextFromRichText(dbPage.Title)
-
-			childTitle = path.Join(dbTitle, childTitle)
-		}
-	case notion.ParentTypeBlock:
-		notionParentPage, err := m.notionClient.FindPageByID(ctx, mentionPage.Parent.BlockID)
-		if err != nil {
-			return fmt.Errorf("failed to find parent block %s.  error: %w", mentionPage.Parent.BlockID, err)
-		}
-		if extractTitle {
-			childTitle = m.extractPageTitle(notionParentPage)
-		}
-	case notion.ParentTypePage:
-		notionParentPage, err := m.notionClient.FindPageByID(ctx, mentionPage.Parent.PageID)
-		if err != nil {
-			return fmt.Errorf("failed to find parent mention page %s.  error: %w", mentionPage.Parent.PageID, err)
-		}
-
-		if extractTitle {
-			childTitle = m.extractPageTitle(notionParentPage)
-		}
-	default:
-		return fmt.Errorf("unsupported mention page type %s", mentionPage.Parent.Type)
+	childTitle, err = m.handlePageParent(ctx, mentionPage, childTitle, extractTitle)
+	if err != nil {
+		return err
 	}
 
 	if childTitle == "" {
@@ -572,7 +577,7 @@ func (m *migrator) fetchNotionDBPages(ctx context.Context) ([]notion.Page, error
 
 func (m *migrator) downloadImage(name, url string) error {
 	imageLocation := filepath.Join(m.config.VaultImagePath(), name)
-	if err := os.MkdirAll(path.Dir(imageLocation), 0770); err != nil {
+	if err := os.MkdirAll(path.Dir(imageLocation), 0750); err != nil {
 		return fmt.Errorf("failed to create the necessary directories to store images.  error: %w", err)
 	}
 

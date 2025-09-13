@@ -1,4 +1,4 @@
-package workerPool
+package workerpool
 
 import (
 	"context"
@@ -15,7 +15,7 @@ type testprogressBarOption struct {
 	buf         *strings.Builder
 }
 
-func (p *testprogressBarOption) OnCreate(description string) {
+func (p *testprogressBarOption) OnCreate(string) {
 	buf := &strings.Builder{}
 	progress := progressbar.NewOptions(0, progressbar.OptionSetWriter(buf))
 
@@ -24,8 +24,7 @@ func (p *testprogressBarOption) OnCreate(description string) {
 }
 
 func (p *testprogressBarOption) OnAdd(total int) {
-	max := p.progressBar.GetMax()
-	p.progressBar.ChangeMax(max + total)
+	p.progressBar.ChangeMax(p.progressBar.GetMax() + total)
 }
 
 func (p *testprogressBarOption) OnDone() {
@@ -61,6 +60,6 @@ func TestWorkerPool(t *testing.T) {
 
 	result := strings.TrimSpace(option.buf.String())
 
-	assert.True(t, strings.Contains(result, "50% |████████████████████                    |  [0s:0s]"))
-	assert.True(t, strings.Contains(result, "100% |████████████████████████████████████████|"))
+	assert.Contains(t, result, "50% |████████████████████                    |  [0s:0s]")
+	assert.Contains(t, result, "100% |████████████████████████████████████████|")
 }

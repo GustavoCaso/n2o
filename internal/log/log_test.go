@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestInfo(t *testing.T) {
@@ -13,7 +14,7 @@ func TestInfo(t *testing.T) {
 
 	logger.Info("Testing")
 	bytes, err := io.ReadAll(buffer)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	result := string(bytes)
 	assert.Contains(t, result, "[INFO]")
 	assert.Contains(t, result, "Testing")
@@ -24,7 +25,7 @@ func TestWarn(t *testing.T) {
 
 	logger.Warn("Testing")
 	bytes, err := io.ReadAll(buffer)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	result := string(bytes)
 	assert.Contains(t, result, "[WARNING]")
 	assert.Contains(t, result, "Testing")
@@ -41,7 +42,7 @@ func TestError(t *testing.T) {
 	wr.Close()
 
 	bytes, err := io.ReadAll(r)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	result := string(bytes)
 	assert.Contains(t, result, "[ERROR]")
 	assert.Contains(t, result, "Testing")

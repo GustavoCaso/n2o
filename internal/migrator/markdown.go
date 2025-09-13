@@ -11,7 +11,13 @@ import (
 	"github.com/dstotijn/go-notion"
 )
 
-func (m *migrator) propertiesToFrontMatter(ctx context.Context, parentPage *Page, sortedKeys []string, propertites notion.DatabasePageProperties, buffer *strings.Builder) {
+func (m *migrator) propertiesToFrontMatter(
+	ctx context.Context,
+	parentPage *Page,
+	sortedKeys []string,
+	propertites notion.DatabasePageProperties,
+	buffer *strings.Builder,
+) {
 	buffer.WriteString("---\n")
 	// There is a limitation between Notions and Obsidian.
 	// If the property is named tags in Notion it has ramifications in Obsidian
@@ -21,18 +27,18 @@ func (m *migrator) propertiesToFrontMatter(ctx context.Context, parentPage *Page
 		value := propertites[key]
 		switch value.Type {
 		case notion.DBPropTypeTitle:
-			buffer.WriteString(fmt.Sprintf("%s: %s\n", key, extractPlainTextFromRichText(value.Title)))
+			fmt.Fprintf(buffer, "%s: %s\n", key, extractPlainTextFromRichText(value.Title))
 		case notion.DBPropTypeRichText:
-			buffer.WriteString(fmt.Sprintf("%s: %s\n", key, extractPlainTextFromRichText(value.RichText)))
+			fmt.Fprintf(buffer, "%s: %s\n", key, extractPlainTextFromRichText(value.RichText))
 		case notion.DBPropTypeNumber:
 			if value.Number != nil {
-				buffer.WriteString(fmt.Sprintf("%s: %f\n", key, *value.Number))
+				fmt.Fprintf(buffer, "%s: %f\n", key, *value.Number)
 			} else {
-				buffer.WriteString(fmt.Sprintf("%s: \n", key))
+				fmt.Fprintf(buffer, "%s: \n", key)
 			}
 		case notion.DBPropTypeSelect:
 			if value.Select != nil {
-				buffer.WriteString(fmt.Sprintf("%s: %s\n", key, value.Select.Name))
+				fmt.Fprintf(buffer, "%s: %s\n", key, value.Select.Name)
 			}
 		case notion.DBPropTypeMultiSelect:
 			options := []string{}
@@ -40,43 +46,43 @@ func (m *migrator) propertiesToFrontMatter(ctx context.Context, parentPage *Page
 				options = append(options, option.Name)
 			}
 
-			buffer.WriteString(fmt.Sprintf("%s: [%s]\n", key, strings.Join(options[:], ",")))
+			fmt.Fprintf(buffer, "%s: [%s]\n", key, strings.Join(options, ","))
 		case notion.DBPropTypeDate:
 			if value.Date != nil {
 				if value.Date.Start.HasTime() {
-					buffer.WriteString(fmt.Sprintf("%s: %s\n", key, value.Date.Start.Format("2006-01-02T15:04:05")))
+					fmt.Fprintf(buffer, "%s: %s\n", key, value.Date.Start.Format("2006-01-02T15:04:05"))
 				} else {
-					buffer.WriteString(fmt.Sprintf("%s: %s\n", key, value.Date.Start.Format("2006-01-02")))
+					fmt.Fprintf(buffer, "%s: %s\n", key, value.Date.Start.Format("2006-01-02"))
 				}
 			}
 		case notion.DBPropTypePeople:
 		case notion.DBPropTypeFiles:
 		case notion.DBPropTypeCheckbox:
 			if value.Checkbox != nil {
-				buffer.WriteString(fmt.Sprintf("%s: %t\n", key, *value.Checkbox))
+				fmt.Fprintf(buffer, "%s: %t\n", key, *value.Checkbox)
 			} else {
-				buffer.WriteString(fmt.Sprintf("%s: \n", key))
+				fmt.Fprintf(buffer, "%s: \n", key)
 			}
 		case notion.DBPropTypeURL:
 			if value.URL != nil {
-				buffer.WriteString(fmt.Sprintf("%s: %s\n", key, *value.URL))
+				fmt.Fprintf(buffer, "%s: %s\n", key, *value.URL)
 			} else {
-				buffer.WriteString(fmt.Sprintf("%s: \n", key))
+				fmt.Fprintf(buffer, "%s: \n", key)
 			}
 		case notion.DBPropTypeEmail:
 			if value.Email != nil {
-				buffer.WriteString(fmt.Sprintf("%s: %s\n", key, *value.Email))
+				fmt.Fprintf(buffer, "%s: %s\n", key, *value.Email)
 			} else {
-				buffer.WriteString(fmt.Sprintf("%s: \n", key))
+				fmt.Fprintf(buffer, "%s: \n", key)
 			}
 		case notion.DBPropTypePhoneNumber:
 			if value.PhoneNumber != nil {
-				buffer.WriteString(fmt.Sprintf("%s: %s\n", key, *value.PhoneNumber))
+				fmt.Fprintf(buffer, "%s: %s\n", key, *value.PhoneNumber)
 			} else {
-				buffer.WriteString(fmt.Sprintf("%s: \n", key))
+				fmt.Fprintf(buffer, "%s: \n", key)
 			}
 		case notion.DBPropTypeStatus:
-			buffer.WriteString(fmt.Sprintf("%s: %s\n", key, value.Status.Name))
+			fmt.Fprintf(buffer, "%s: %s\n", key, value.Status.Name)
 		case notion.DBPropTypeFormula:
 		case notion.DBPropTypeRelation:
 			// TODO: Needs to handle relations bigger then 25
@@ -97,25 +103,27 @@ func (m *migrator) propertiesToFrontMatter(ctx context.Context, parentPage *Page
 				}
 				b.WriteString("\n")
 			}
-			buffer.WriteString(fmt.Sprintf("%s: %s\n", key, b.String()))
+			fmt.Fprintf(buffer, "%s: %s\n", key, b.String())
 		case notion.DBPropTypeRollup:
 			switch value.Rollup.Type {
 			case notion.RollupResultTypeNumber:
 				if value.Rollup.Number != nil {
-					buffer.WriteString(fmt.Sprintf("%s: %f\n", key, *value.Rollup.Number))
+					fmt.Fprintf(buffer, "%s: %f\n", key, *value.Rollup.Number)
 				} else {
-					buffer.WriteString(fmt.Sprintf("%s: \n", key))
+					fmt.Fprintf(buffer, "%s: \n", key)
 				}
 			case notion.RollupResultTypeDate:
 				if value.Rollup.Date.Start.HasTime() {
-					buffer.WriteString(fmt.Sprintf("%s: %s\n", key, value.Rollup.Date.Start.Format("2006-01-02T15:04:05")))
+					fmt.Fprintf(buffer, "%s: %s\n", key, value.Rollup.Date.Start.Format("2006-01-02T15:04:05"))
 				} else {
-					buffer.WriteString(fmt.Sprintf("%s: %s\n", key, value.Rollup.Date.Start.Format("2006-01-02")))
+					fmt.Fprintf(buffer, "%s: %s\n", key, value.Rollup.Date.Start.Format("2006-01-02"))
 				}
 			case notion.RollupResultTypeArray:
 				b := &bytes.Buffer{}
 				rollupBuffer := bufio.NewWriter(b)
-				rollupBuffer.WriteString(fmt.Sprintf("%s: ", key))
+				if _, err := fmt.Fprintf(rollupBuffer, "%s: ", key); err != nil {
+					m.logger.Error(fmt.Sprintf("failed to write rollup key: %v", err))
+				}
 
 				numbers := []float64{}
 				for _, prop := range value.Rollup.Array {
@@ -124,18 +132,28 @@ func (m *migrator) propertiesToFrontMatter(ctx context.Context, parentPage *Page
 					}
 				}
 
-				rollupBuffer.WriteString(fmt.Sprintf("%f\n", numbers))
-				rollupBuffer.Flush()
+				if _, err := fmt.Fprintf(rollupBuffer, "%f\n", numbers); err != nil {
+					m.logger.Error(fmt.Sprintf("failed to write rollup numbers: %v", err))
+				}
+				if err := rollupBuffer.Flush(); err != nil {
+					m.logger.Error(fmt.Sprintf("failed to flush rollup buffer: %v", err))
+				}
 				buffer.WriteString(b.String())
+			case notion.RollupResultTypeUnsupported:
+				// Unsupported rollup results are skipped
+			case notion.RollupResultTypeIncomplete:
+				// Incomplete rollup results are skipped
 			}
 		case notion.DBPropTypeCreatedTime:
-			buffer.WriteString(fmt.Sprintf("%s: %s\n", key, value.CreatedTime.String()))
+			fmt.Fprintf(buffer, "%s: %s\n", key, value.CreatedTime.String())
 		case notion.DBPropTypeCreatedBy:
-			buffer.WriteString(fmt.Sprintf("%s: %s\n", key, value.CreatedBy.Name))
+			fmt.Fprintf(buffer, "%s: %s\n", key, value.CreatedBy.Name)
 		case notion.DBPropTypeLastEditedTime:
-			buffer.WriteString(fmt.Sprintf("%s: %s\n", key, value.LastEditedTime.String()))
+			fmt.Fprintf(buffer, "%s: %s\n", key, value.LastEditedTime.String())
 		case notion.DBPropTypeLastEditedBy:
-			buffer.WriteString(fmt.Sprintf("%s: %s\n", key, value.LastEditedBy.Name))
+			fmt.Fprintf(buffer, "%s: %s\n", key, value.LastEditedBy.Name)
+		case notion.DBPropTypePropertyItem:
+			// PropertyItem type is not supported for frontmatter
 		default:
 		}
 	}
@@ -154,7 +172,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			} else {
 				buffer.WriteString("# ")
 			}
-			if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
+			if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
 				return err
 			}
 			buffer.WriteString("\n")
@@ -167,7 +185,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			} else {
 				buffer.WriteString("## ")
 			}
-			if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
+			if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
 				return err
 			}
 			buffer.WriteString("\n")
@@ -180,7 +198,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			} else {
 				buffer.WriteString("### ")
 			}
-			if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
+			if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
 				return err
 			}
 			buffer.WriteString("\n")
@@ -201,7 +219,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 					buffer.WriteString("- [ ] ")
 				}
 			}
-			if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
+			if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
 				return err
 			}
 			buffer.WriteString("\n")
@@ -212,11 +230,11 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			if len(block.RichText) > 0 {
 				if indent {
 					buffer.WriteString("	")
-					if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
+					if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
 						return err
 					}
 				} else {
-					if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
+					if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
 						return err
 					}
 				}
@@ -231,7 +249,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			} else {
 				buffer.WriteString("- ")
 			}
-			if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
+			if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
 				return err
 			}
 			buffer.WriteString("\n")
@@ -244,7 +262,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			} else {
 				buffer.WriteString("- ")
 			}
-			if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
+			if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
 				return err
 			}
 			buffer.WriteString("\n")
@@ -260,7 +278,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			if len(*block.Icon.Emoji) > 0 {
 				buffer.WriteString(*block.Icon.Emoji)
 			}
-			if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
+			if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
 				return err
 			}
 			buffer.WriteString("]")
@@ -271,7 +289,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			} else {
 				buffer.WriteString("- ")
 			}
-			if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
+			if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
 				return err
 			}
 			buffer.WriteString("\n")
@@ -284,7 +302,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			} else {
 				buffer.WriteString("> ")
 			}
-			if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
+			if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
 				return err
 			}
 			buffer.WriteString("\n")
@@ -294,46 +312,44 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 		case *notion.FileBlock:
 			if block.Type == notion.FileTypeExternal {
 				if indent {
-					buffer.WriteString(fmt.Sprintf("	![](%s)", block.External.URL))
+					fmt.Fprintf(buffer, "	![](%s)", block.External.URL)
 				} else {
-					buffer.WriteString(fmt.Sprintf("![](%s)", block.External.URL))
+					fmt.Fprintf(buffer, "![](%s)", block.External.URL)
 				}
 			}
 			buffer.WriteString("\n")
 		case *notion.PDFBlock:
 			if block.Type == notion.FileTypeExternal {
 				if indent {
-					buffer.WriteString(fmt.Sprintf("	![](%s)", block.External.URL))
+					fmt.Fprintf(buffer, "	![](%s)", block.External.URL)
 				} else {
-					buffer.WriteString(fmt.Sprintf("![](%s)", block.External.URL))
+					fmt.Fprintf(buffer, "![](%s)", block.External.URL)
 				}
 				buffer.WriteString("\n")
-			} else {
-				if m.config.StoreImages {
-					imageName := filepath.Join(parentPage.title, block.ID()+".pdf")
+			} else if m.config.StoreImages {
+				imageName := filepath.Join(parentPage.title, block.ID()+".pdf")
 
-					parentPage.images = append(parentPage.images, &image{
-						external: false,
-						url:      block.File.URL,
-						name:     imageName,
-					})
+				parentPage.images = append(parentPage.images, &image{
+					external: false,
+					url:      block.File.URL,
+					name:     imageName,
+				})
 
-					if indent {
-						buffer.WriteString(fmt.Sprintf("	![[%s]]", filepath.Join("Images", imageName)))
-					} else {
-						buffer.WriteString(fmt.Sprintf("![[%s]]", filepath.Join("Images", imageName)))
-					}
-					buffer.WriteString("\n")
+				if indent {
+					fmt.Fprintf(buffer, "	![[%s]]", filepath.Join("Images", imageName))
+				} else {
+					fmt.Fprintf(buffer, "![[%s]]", filepath.Join("Images", imageName))
 				}
+				buffer.WriteString("\n")
 			}
 		case *notion.DividerBlock:
 			buffer.WriteString("---")
 			buffer.WriteString("\n")
 		case *notion.ChildPageBlock:
 			if indent {
-				buffer.WriteString(fmt.Sprintf(" [[%s]]", block.Title))
+				fmt.Fprintf(buffer, " [[%s]]", block.Title)
 			} else {
-				buffer.WriteString(fmt.Sprintf("[[%s]]", block.Title))
+				fmt.Fprintf(buffer, "[[%s]]", block.Title)
 			}
 			buffer.WriteString("\n")
 		case *notion.LinkToPageBlock:
@@ -344,16 +360,16 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			buffer.WriteString("\n")
 		case *notion.LinkPreviewBlock:
 			if indent {
-				buffer.WriteString(fmt.Sprintf("	![](%s)", block.URL))
+				fmt.Fprintf(buffer, "	![](%s)", block.URL)
 			} else {
-				buffer.WriteString(fmt.Sprintf("![](%s)", block.URL))
+				fmt.Fprintf(buffer, "![](%s)", block.URL)
 			}
 			buffer.WriteString("\n")
 		case *notion.CodeBlock:
 			buffer.WriteString("```")
 			buffer.WriteString(*block.Language)
 			buffer.WriteString("\n")
-			if err = m.writeRichText(ctx, parentPage, buffer, block.RichText); err != nil {
+			if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
 				return err
 			}
 			buffer.WriteString("\n")
@@ -362,9 +378,9 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 		case *notion.ImageBlock:
 			if block.Type == notion.FileTypeExternal {
 				if indent {
-					buffer.WriteString(fmt.Sprintf("	![](%s)", block.External.URL))
+					fmt.Fprintf(buffer, "	![](%s)", block.External.URL)
 				} else {
-					buffer.WriteString(fmt.Sprintf("![](%s)", block.External.URL))
+					fmt.Fprintf(buffer, "![](%s)", block.External.URL)
 				}
 				buffer.WriteString("\n")
 			}
@@ -378,40 +394,40 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 				})
 
 				if indent {
-					buffer.WriteString(fmt.Sprintf("	![[%s]]", filepath.Join("Images", imageName)))
+					fmt.Fprintf(buffer, "	![[%s]]", filepath.Join("Images", imageName))
 				} else {
-					buffer.WriteString(fmt.Sprintf("![[%s]]", filepath.Join("Images", imageName)))
+					fmt.Fprintf(buffer, "![[%s]]", filepath.Join("Images", imageName))
 				}
 				buffer.WriteString("\n")
 			}
 		case *notion.VideoBlock:
 			if block.Type == notion.FileTypeExternal {
 				if indent {
-					buffer.WriteString(fmt.Sprintf("	![](%s)", block.External.URL))
+					fmt.Fprintf(buffer, "	![](%s)", block.External.URL)
 				} else {
-					buffer.WriteString(fmt.Sprintf("![](%s)", block.External.URL))
+					fmt.Fprintf(buffer, "![](%s)", block.External.URL)
 				}
 			}
 			buffer.WriteString("\n")
 		case *notion.EmbedBlock:
 			if indent {
-				buffer.WriteString(fmt.Sprintf("	![](%s)", block.URL))
+				fmt.Fprintf(buffer, "	![](%s)", block.URL)
 			} else {
-				buffer.WriteString(fmt.Sprintf("![](%s)", block.URL))
+				fmt.Fprintf(buffer, "![](%s)", block.URL)
 			}
 			buffer.WriteString("\n")
 		case *notion.BookmarkBlock:
 			if indent {
-				buffer.WriteString(fmt.Sprintf("	![](%s)", block.URL))
+				fmt.Fprintf(buffer, "	![](%s)", block.URL)
 			} else {
-				buffer.WriteString(fmt.Sprintf("![](%s)", block.URL))
+				fmt.Fprintf(buffer, "![](%s)", block.URL)
 			}
 			buffer.WriteString("\n")
 		case *notion.ChildDatabaseBlock:
 			m.logger.Warn(fmt.Sprintf("Child database `%s` found on page `%s`. You might want to migrate that database separately", block.Title, m.removeObsidianVault(parentPage.Path)))
 
 			if indent {
-				buffer.WriteString(fmt.Sprintf("	%s", block.Title))
+				fmt.Fprintf(buffer, "	%s", block.Title)
 			} else {
 				buffer.WriteString(block.Title)
 			}
@@ -430,9 +446,9 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			}
 		case *notion.EquationBlock:
 			if indent {
-				buffer.WriteString(fmt.Sprintf(" $$%s$$", block.Expression))
+				fmt.Fprintf(buffer, " $$%s$$", block.Expression)
 			} else {
-				buffer.WriteString(fmt.Sprintf("$$%s$$", block.Expression))
+				fmt.Fprintf(buffer, "$$%s$$", block.Expression)
 			}
 			buffer.WriteString("\n")
 		case *notion.TableOfContentsBlock:
@@ -453,8 +469,8 @@ type richText struct {
 	text              string
 }
 
-// TODO: Handle annotations better
-func (m *migrator) writeRichText(ctx context.Context, parentPage *Page, buffer *strings.Builder, richTextBlock []notion.RichText) error {
+// TODO: Handle annotations better.
+func (m *migrator) writeRichText(ctx context.Context, parentPage *Page, richTextBlock []notion.RichText) error {
 	richTexts := []richText{}
 
 	for _, text := range richTextBlock {
@@ -478,12 +494,19 @@ func (m *migrator) writeRichText(ctx context.Context, parentPage *Page, buffer *
 			if link != nil && !strings.Contains(annotation, "`") {
 				if strings.HasPrefix(link.URL, "/") {
 					// Link to internal Notion page
-					err := m.fetchPage(ctx, parentPage, strings.TrimPrefix(link.URL, "/"), text.PlainText, richTextBuffer, false)
+					err := m.fetchPage(
+						ctx,
+						parentPage,
+						strings.TrimPrefix(link.URL, "/"),
+						text.PlainText,
+						richTextBuffer,
+						false,
+					)
 					if err != nil {
 						return err
 					}
 				} else {
-					richTextBuffer.WriteString(fmt.Sprintf("[%s](%s)", text.Text.Content, link.URL))
+					fmt.Fprintf(richTextBuffer, "[%s](%s)", text.Text.Content, link.URL)
 				}
 			} else {
 				richTextBuffer.WriteString(text.Text.Content)
@@ -507,7 +530,7 @@ func (m *migrator) writeRichText(ctx context.Context, parentPage *Page, buffer *
 			case notion.MentionTypeUser:
 			}
 		case notion.RichTextTypeEquation:
-			richTextBuffer.WriteString(fmt.Sprintf("$$%s$$", text.Equation.Expression))
+			fmt.Fprintf(richTextBuffer, "$$%s$$", text.Equation.Expression)
 		}
 
 		richTextBuffer.WriteString(reverseString(annotation))
@@ -523,7 +546,8 @@ func (m *migrator) writeRichText(ctx context.Context, parentPage *Page, buffer *
 				// There is a corner case for nested annotation of bold and italic
 				// https://help.obsidian.md/Editing+and+formatting/Basic+formatting+syntax#Bold%2C+italics%2C+highlights
 				// We only account for the easy case for now
-				if (richTexts[i-1].notionAnnotations.Bold && !richTexts[i-1].notionAnnotations.Italic) && (richText.notionAnnotations.Bold && richText.notionAnnotations.Italic) {
+				if (richTexts[i-1].notionAnnotations.Bold && !richTexts[i-1].notionAnnotations.Italic) &&
+					(richText.notionAnnotations.Bold && richText.notionAnnotations.Italic) {
 					result = strings.TrimRight(result, "*")
 					text := richText.text
 					text = strings.TrimLeft(text, "*")
@@ -562,7 +586,13 @@ func (m *migrator) writeChrildren(ctx context.Context, parentPage *Page, block n
 	return nil
 }
 
-func (m *migrator) writeTable(ctx context.Context, parentPage *Page, tableWidth int, block notion.Block, buffer *strings.Builder) error {
+func (m *migrator) writeTable(
+	ctx context.Context,
+	parentPage *Page,
+	tableWidth int,
+	block notion.Block,
+	buffer *strings.Builder,
+) error {
 	if block.HasChildren() {
 		pageBlocks, err := m.notionClient.FindBlockChildrenByID(ctx, block.ID(), nil)
 		if err != nil {
@@ -570,9 +600,12 @@ func (m *migrator) writeTable(ctx context.Context, parentPage *Page, tableWidth 
 		}
 
 		for rowIndex, object := range pageBlocks.Results {
-			row := object.(*notion.TableRowBlock)
+			row, ok := object.(*notion.TableRowBlock)
+			if !ok {
+				return fmt.Errorf("expected TableRowBlock, got %T", object)
+			}
 			for i, cell := range row.Cells {
-				if err = m.writeRichText(ctx, parentPage, buffer, cell); err != nil {
+				if err = m.writeRichText(ctx, parentPage, cell); err != nil {
 					return err
 				}
 				buffer.WriteString("|")
@@ -622,13 +655,13 @@ func annotationsToStyle(annotations *notion.Annotations) string {
 }
 
 func hasAnnotation(annotations *notion.Annotations) bool {
-	return annotations.Bold || annotations.Strikethrough || annotations.Italic || annotations.Code || annotations.Color != notion.ColorDefault
+	return annotations.Bold || annotations.Strikethrough || annotations.Italic || annotations.Code ||
+		annotations.Color != notion.ColorDefault
 }
 
 func reverseString(s string) string {
 	rns := []rune(s) // convert to rune
 	for i, j := 0, len(rns)-1; i < j; i, j = i+1, j-1 {
-
 		// swap the letters of the string,
 		// like first with last and so on.
 		rns[i], rns[j] = rns[j], rns[i]

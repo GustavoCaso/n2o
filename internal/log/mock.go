@@ -1,7 +1,5 @@
 package log
 
-// go:build test
-
 import (
 	"bytes"
 	"io"
