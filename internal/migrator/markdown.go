@@ -326,23 +326,21 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 					fmt.Fprintf(buffer, "![](%s)", block.External.URL)
 				}
 				buffer.WriteString("\n")
-			} else {
-				if m.config.StoreImages {
-					imageName := filepath.Join(parentPage.title, block.ID()+".pdf")
+			} else if m.config.StoreImages {
+				imageName := filepath.Join(parentPage.title, block.ID()+".pdf")
 
-					parentPage.images = append(parentPage.images, &image{
-						external: false,
-						url:      block.File.URL,
-						name:     imageName,
-					})
+				parentPage.images = append(parentPage.images, &image{
+					external: false,
+					url:      block.File.URL,
+					name:     imageName,
+				})
 
-					if indent {
-						fmt.Fprintf(buffer, "	![[%s]]", filepath.Join("Images", imageName))
-					} else {
-						fmt.Fprintf(buffer, "![[%s]]", filepath.Join("Images", imageName))
-					}
-					buffer.WriteString("\n")
+				if indent {
+					fmt.Fprintf(buffer, "	![[%s]]", filepath.Join("Images", imageName))
+				} else {
+					fmt.Fprintf(buffer, "![[%s]]", filepath.Join("Images", imageName))
 				}
+				buffer.WriteString("\n")
 			}
 		case *notion.DividerBlock:
 			buffer.WriteString("---")

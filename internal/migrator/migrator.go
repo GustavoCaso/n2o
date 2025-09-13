@@ -288,18 +288,21 @@ func (m *migrator) DisplayInformation(_ context.Context) error {
 	return nil
 }
 
+const spaceCount = 4
+const pageIndex = 2
+
 func (m *migrator) displayPageInfo(page *Page, buffer *bufio.Writer, index int) {
 	var spaces int
 	if index > 0 {
-		spaces = index * 4
+		spaces = index * spaceCount
 	} else {
-		spaces = 4
+		spaces = spaceCount
 	}
 	for _, childPage := range page.children {
 		if _, err := fmt.Fprintf(buffer, "%*s %s\n", spaces, "|->", m.removeObsidianVault(childPage.Path)); err != nil {
 			m.logger.Error(fmt.Sprintf("failed to write child page path: %v", err))
 		}
-		m.displayPageInfo(childPage, buffer, 2)
+		m.displayPageInfo(childPage, buffer, pageIndex)
 	}
 }
 
@@ -494,10 +497,8 @@ func (m *migrator) fetchPage(
 	childTitle := title
 	if childTitle == "" {
 		extractTitle = true
-	} else {
-		if !strings.HasSuffix(childTitle, ".md") {
-			childTitle = fmt.Sprintf("%s.md", childTitle)
-		}
+	} else if !strings.HasSuffix(childTitle, ".md") {
+		childTitle = fmt.Sprintf("%s.md", childTitle)
 	}
 
 	mentionPage, err := m.notionClient.FindPageByID(ctx, pageID)

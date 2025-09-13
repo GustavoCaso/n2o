@@ -30,19 +30,23 @@ type progressBarOption struct {
 	progressBar *progressbar.ProgressBar
 }
 
+const progressBarWidth = 10
+const progressBarThrottle = 65 * time.Millisecond
+const progressBarSpinnerType = 14
+
 func (p *progressBarOption) OnCreate(description string) {
 	progressbar := progressbar.NewOptions(
 		0,
 		progressbar.OptionSetDescription(description),
 		progressbar.OptionSetWriter(os.Stderr),
-		progressbar.OptionSetWidth(10),
-		progressbar.OptionThrottle(65*time.Millisecond),
+		progressbar.OptionSetWidth(progressBarWidth),
+		progressbar.OptionThrottle(progressBarThrottle),
 		progressbar.OptionShowCount(),
 		progressbar.OptionShowIts(),
 		progressbar.OptionOnCompletion(func() {
 			fmt.Fprint(os.Stderr, "\n")
 		}),
-		progressbar.OptionSpinnerType(14),
+		progressbar.OptionSpinnerType(progressBarSpinnerType),
 		progressbar.OptionFullWidth(),
 		progressbar.OptionSetRenderBlankState(false),
 	)
@@ -51,12 +55,11 @@ func (p *progressBarOption) OnCreate(description string) {
 }
 
 func (p *progressBarOption) OnAdd(total int) {
-	max := p.progressBar.GetMax()
-	p.progressBar.ChangeMax(max + total)
+	p.progressBar.ChangeMax(p.progressBar.GetMax() + total)
 }
 
 func (p *progressBarOption) OnDone() {
-	p.progressBar.Add(1)
+	_ = p.progressBar.Add(1)
 }
 
 func WithProgressBar() Option {
