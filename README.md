@@ -142,7 +142,13 @@ Child page and child datadase blocks do not include information that allow to qu
 ## Examples
 
 ### Get information about the pages that would be created in your Obsidian Vault
-`n2o -notion-token="NOTION_TOKEN" -notion-page-ID="1429989f-e8ac-4eff-bc8f-57f56486db54" -page-properties="all" -vault-path="/Users/johndoe/Obsidian\ Vault/Testing" -vault-folder="Migrated"`
+```
+n2o -notion-token="NOTION_TOKEN" \
+-notion-page-ID="1429989f-e8ac-4eff-bc8f-57f56486db54" \
+-page-properties="all" \
+-vault-path="/Users/johndoe/Obsidian\ Vault/Testing" \
+-vault-folder="Migrated"
+```
 
 The command prints the pages that would be created in the Obsidian vault and their references. The reference is displayed with `|->` 
 
@@ -168,13 +174,36 @@ Weekly Plan/Thursday.md
 ```
 
 ### Download a single page and convert all page properties to frontmatter
-`n2o -notion-token="NOTION_TOKEN" -notion-page-ID="1429989f-e8ac-4eff-bc8f-57f56486db54" -page-properties="all" -vault-path="/Users/johndoe/Obsidian\ Vault/Testing" -vault-folder="Migrated" -save-to-disk`
+```
+n2o -notion-token="NOTION_TOKEN" \
+-notion-page-ID="1429989f-e8ac-4eff-bc8f-57f56486db54" \
+-page-properties="all" \
+-vault-path="/Users/johndoe/Obsidian\ Vault/Testing" \
+-vault-folder="Migrated" \
+-save-to-disk
+```
 
 ### Download a full database and images, and convert some page properties to frontmatter
-`n2o -notion-token="NOTION_TOKEN" -notion-page-ID="668d797c-76fa-4934-9b05-ad288df2d136" -page-properties="location" -vault-path="/Users/johndoe/Obsidian\ Vault/Testing" -vault-folder="Migrated"` -download-images -save-to-disk
+```
+n2o -notion-token="NOTION_TOKEN" \
+-notion-page-ID="668d797c-76fa-4934-9b05-ad288df2d136" \
+-page-properties="location" \
+-vault-path="/Users/johndoe/Obsidian\ Vault/Testing" \
+-vault-folder="Migrated" \
+-download-images \
+-save-to-disk
+```
 
 ### Download a complete database and customize the resulting Obsidan page name
-`n2o -notion-token="NOTION_TOKEN" -notion-page-ID="668d797c-76fa-4934-9b05-ad288df2d136" -page-name="date:%Y/%B/%d-%A" -vault-path="/Users/johndoe/Obsidian\ Vault/Testing" -vault-folder="Migrated" -download-images -save-to-disk`
+```
+n2o -notion-token="NOTION_TOKEN" \
+-notion-page-ID="668d797c-76fa-4934-9b05-ad288df2d136" \
+-page-name="date:%Y/%B/%d-%A" \
+-vault-path="/Users/johndoe/Obsidian\ Vault/Testing" \
+-vault-folder="Migrated" \
+-download-images \
+-save-to-disk
+```
 
 For these examples, the location of the different pages would be based dynamically on the `date` value in the Notion page property and the custom format `%Y/%B/%d-%A`. For a list of available formatting options for dates, refer to [man 3 strftime](https://linux.die.net/man/3/strftime)
 
