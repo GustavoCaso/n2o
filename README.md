@@ -1,5 +1,9 @@
 # Notion To Obsidian migrator (n2o)
 
+<div align="center">
+  <img src="img/n2o.png" alt="n2o Logo" width="50%" height="auto">
+</div>
+
 Migration tool for your Notion workspace to Obsidian.
 
 The current importer tool landscape usually requires you to import your entire workspace, does not allow you to select which page properties you would like to import, or fails to create a link between pages. 
