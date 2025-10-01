@@ -4,6 +4,10 @@
   <img src="img/n2o.png" alt="n2o Logo" width="50%" height="auto">
 </div>
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/GustavoCaso/n2o)](https://goreportcard.com/report/github.com/GustavoCaso/n2o)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/GustavoCaso/n2o)](https://golang.org/)
+
 Migration tool for your Notion workspace to Obsidian.
 
 The current importer tool landscape usually requires you to import your entire workspace, does not allow you to select which page properties you would like to import, or fails to create a link between pages. 
