@@ -1,7 +1,7 @@
 # Notion To Obsidian migrator (n2o)
 
 <div align="center">
-  <img src="img/n2o.png" alt="n2o Logo" height="auto">
+  <img src="img/n2o.png" alt="n2o Logo" width="50%" height="auto">
 </div>
 
 Migration tool for your Notion workspace to Obsidian.
