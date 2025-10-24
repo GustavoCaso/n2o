@@ -1,12 +1,12 @@
 module github.com/GustavoCaso/n2o
 
-go 1.25
+go 1.23
 
 require (
 	github.com/dstotijn/go-notion v0.11.0
 	github.com/itchyny/timefmt-go v0.1.5
 	github.com/schollz/progressbar/v3 v3.14.1
-	github.com/stretchr/testify v1.3.0
+	github.com/stretchr/testify v1.11.1
 )
 
 require (
@@ -17,4 +17,5 @@ require (
 	golang.org/x/sys v0.14.0 // indirect
 	golang.org/x/term v0.14.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

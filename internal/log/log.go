@@ -7,7 +7,7 @@ import (
 )
 
 type Log interface {
-	Info(msd string)
+	Info(msg string)
 	Warn(msg string)
 	Error(msg string)
 	Debug(msg string)
@@ -15,7 +15,7 @@ type Log interface {
 
 type logger struct {
 	out   io.Writer
-	war   *log.Logger
+	warn  *log.Logger
 	info  *log.Logger
 	debug *log.Logger
 	error *log.Logger
@@ -26,7 +26,7 @@ func (l *logger) Info(msg string) {
 }
 
 func (l *logger) Warn(msg string) {
-	l.war.Println(msg)
+	l.warn.Println(msg)
 }
 
 func (l *logger) Debug(msg string) {
@@ -40,7 +40,7 @@ func (l *logger) Error(msg string) {
 func New(out io.Writer) Log {
 	return &logger{
 		out:   out,
-		war:   log.New(out, "[WARNING] ", 0),
+		warn:  log.New(out, "[WARNING] ", 0),
 		info:  log.New(out, "[INFO] ", 0),
 		debug: log.New(out, "[DEBUG] ", 0),
 		error: log.New(os.Stderr, "[ERROR] ", 0),

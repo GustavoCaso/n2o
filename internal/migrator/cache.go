@@ -31,8 +31,8 @@ func (c *Cache) Mark(key string) {
 }
 
 func (c *Cache) IsWorking(key string) bool {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	return c.working[key]
 }
 

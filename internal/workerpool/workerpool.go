@@ -111,6 +111,7 @@ func (w *WorkerPool) AddJobs(jobs []*Job) {
 
 	go func() {
 		w.queue.wg.Wait()
+		close(w.queue.jobs)
 	}()
 }
 
@@ -121,7 +122,11 @@ func (w *WorkerPool) DoWork(ctx context.Context) {
 		for {
 			select {
 			case <-ctx.Done():
-			case job := <-w.queue.jobs:
+				return
+			case job, ok := <-w.queue.jobs:
+				if !ok {
+					return
+				}
 				w.pool <- struct{}{}
 				go func(j *Job) {
 					defer w.wg.Done()
