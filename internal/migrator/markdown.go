@@ -19,19 +19,13 @@ func writeIndent(buffer *strings.Builder, indent bool, content string) {
 	buffer.WriteString(content)
 }
 
-// formatMarkdownImage formats an image/embed link with optional indentation.
-func formatMarkdownImage(indent bool, url string) string {
-	if indent {
-		return fmt.Sprintf("\t![](%s)", url)
-	}
+// markdownImage formats an image/embed link to markdown.
+func markdownImage(url string) string {
 	return fmt.Sprintf("![](%s)", url)
 }
 
-// formatObsidianImage formats an Obsidian internal image link with optional indentation.
-func formatObsidianImage(indent bool, imagePath string) string {
-	if indent {
-		return fmt.Sprintf("\t![[%s]]", imagePath)
-	}
+// obsidianImage formats an Obsidian internal image link to markdown.
+func obsidianImage(imagePath string) string {
 	return fmt.Sprintf("![[%s]]", imagePath)
 }
 
@@ -293,12 +287,12 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			}
 		case *notion.FileBlock:
 			if block.Type == notion.FileTypeExternal {
-				buffer.WriteString(formatMarkdownImage(indent, block.External.URL))
+				writeIndent(buffer, indent, markdownImage(block.External.URL))
 			}
 			buffer.WriteString("\n")
 		case *notion.PDFBlock:
 			if block.Type == notion.FileTypeExternal {
-				buffer.WriteString(formatMarkdownImage(indent, block.External.URL))
+				writeIndent(buffer, indent, markdownImage(block.External.URL))
 				buffer.WriteString("\n")
 			} else if m.config.StoreImages {
 				imageName := filepath.Join(parentPage.title, block.ID()+".pdf")
@@ -308,8 +302,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 					url:      block.File.URL,
 					name:     imageName,
 				})
-
-				buffer.WriteString(formatObsidianImage(indent, filepath.Join("Images", imageName)))
+				writeIndent(buffer, indent, obsidianImage(filepath.Join("Images", imageName)))
 				buffer.WriteString("\n")
 			}
 		case *notion.DividerBlock:
@@ -325,7 +318,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			}
 			buffer.WriteString("\n")
 		case *notion.LinkPreviewBlock:
-			buffer.WriteString(formatMarkdownImage(indent, block.URL))
+			writeIndent(buffer, indent, markdownImage(block.URL))
 			buffer.WriteString("\n")
 		case *notion.CodeBlock:
 			buffer.WriteString("```")
@@ -339,7 +332,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			buffer.WriteString("\n")
 		case *notion.ImageBlock:
 			if block.Type == notion.FileTypeExternal {
-				buffer.WriteString(formatMarkdownImage(indent, block.External.URL))
+				writeIndent(buffer, indent, markdownImage(block.External.URL))
 				buffer.WriteString("\n")
 			}
 			if block.Type == notion.FileTypeFile && m.config.StoreImages {
@@ -350,20 +343,19 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 					url:      block.File.URL,
 					name:     imageName,
 				})
-
-				buffer.WriteString(formatObsidianImage(indent, filepath.Join("Images", imageName)))
+				writeIndent(buffer, indent, obsidianImage(filepath.Join("Images", imageName)))
 				buffer.WriteString("\n")
 			}
 		case *notion.VideoBlock:
 			if block.Type == notion.FileTypeExternal {
-				buffer.WriteString(formatMarkdownImage(indent, block.External.URL))
+				writeIndent(buffer, indent, markdownImage(block.External.URL))
 			}
 			buffer.WriteString("\n")
 		case *notion.EmbedBlock:
-			buffer.WriteString(formatMarkdownImage(indent, block.URL))
+			writeIndent(buffer, indent, markdownImage(block.URL))
 			buffer.WriteString("\n")
 		case *notion.BookmarkBlock:
-			buffer.WriteString(formatMarkdownImage(indent, block.URL))
+			writeIndent(buffer, indent, markdownImage(block.URL))
 			buffer.WriteString("\n")
 		case *notion.ChildDatabaseBlock:
 			m.logger.Warn(fmt.Sprintf("Child database `%s` found on page `%s`. You might want to migrate that database separately", block.Title, m.removeObsidianVault(parentPage.Path)))
