@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"embed"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -47,7 +48,7 @@ func TestFetchPages(t *testing.T) {
 				DatabaseID:      "000000",
 				PageNameFilters: map[string]string{"name": ""},
 			},
-			statusCode: 200,
+			statusCode: http.StatusOK,
 			respBody: func(_ *http.Request) io.Reader {
 				f := mustReadFixture("fixtures/database_query.json")
 				return bytes.NewReader(f)
@@ -76,7 +77,7 @@ func TestFetchPages(t *testing.T) {
 			config: &config.Config{
 				PageID: "000000",
 			},
-			statusCode: 200,
+			statusCode: http.StatusOK,
 			respBody: func(_ *http.Request) io.Reader {
 				f := mustReadFixture("fixtures/page_query.json")
 				return bytes.NewReader(f)
@@ -187,7 +188,7 @@ func TestExtractPageTitle(t *testing.T) {
 						Type: notion.DBPropTypeDate,
 						Name: "Date",
 						Date: &notion.Date{
-							Start: parseDateTime("2021-05-18T12:49:00.000-05:00"),
+							Start: mustParseNotionDateTime("2021-05-18T12:49:00.000-05:00"),
 						},
 					},
 				},
@@ -211,7 +212,7 @@ func TestExtractPageTitle(t *testing.T) {
 						Type: notion.DBPropTypeDate,
 						Name: "Date",
 						Date: &notion.Date{
-							Start: parseDateTime("2021-05-18T12:49:00.000-05:00"),
+							Start: mustParseNotionDateTime("2021-05-18T12:49:00.000-05:00"),
 						},
 					},
 				},
@@ -267,7 +268,7 @@ func TestExtractPageTitle(t *testing.T) {
 						Type: notion.DBPropTypeDate,
 						Name: "Date",
 						Date: &notion.Date{
-							Start: parseDateTime("2021-05-18T12:49:00.000-05:00"),
+							Start: mustParseNotionDateTime("2021-05-18T12:49:00.000-05:00"),
 						},
 					},
 				},
@@ -341,7 +342,7 @@ func TestFetchParseAndSavePage_WritePagesToDisk(t *testing.T) {
 	}{
 		{
 			name:       "store page in the correct path and format markdown correctly",
-			statusCode: 200,
+			statusCode: http.StatusOK,
 			notionRespBody: func(_ *http.Request) io.Reader {
 				f, err := fixtures.ReadFile("fixtures/page_blocks.json")
 				if err != nil {
@@ -370,7 +371,7 @@ func TestFetchParseAndSavePage_WritePagesToDisk(t *testing.T) {
 		},
 		{
 			name:       "store page with frontmatter",
-			statusCode: 200,
+			statusCode: http.StatusOK,
 			notionRespBody: func(_ *http.Request) io.Reader {
 				f, err := fixtures.ReadFile("fixtures/page_blocks.json")
 				if err != nil {
@@ -496,7 +497,7 @@ URL: https://example.com
 									Type: notion.DBPropTypeCreatedTime,
 									Name: "Created time",
 									CreatedTime: notion.TimePtr(
-										parseTime(time.RFC3339Nano, "2021-05-24T15:44:09.123Z"),
+										mustParseTime(time.RFC3339Nano, "2021-05-24T15:44:09.123Z"),
 									),
 								},
 								"CreatedBy": notion.DatabasePageProperty{
@@ -518,7 +519,7 @@ URL: https://example.com
 									Type: notion.DBPropTypeLastEditedTime,
 									Name: "Last edited time",
 									LastEditedTime: notion.TimePtr(
-										parseTime(time.RFC3339Nano, "2021-05-24T15:44:09.123Z"),
+										mustParseTime(time.RFC3339Nano, "2021-05-24T15:44:09.123Z"),
 									),
 								},
 								"LastEditedBy": notion.DatabasePageProperty{
@@ -572,7 +573,7 @@ URL: https://example.com
 		},
 		{
 			name:       "store nested pages and creates subfolder in correct location",
-			statusCode: 200,
+			statusCode: http.StatusOK,
 			notionRespBody: func(r *http.Request) io.Reader {
 				readFixture := func(path string) io.Reader {
 					f := mustReadFixture(path)
@@ -622,7 +623,7 @@ URL: https://example.com
 		},
 		{
 			name:       "page with children blocks and download internal image",
-			statusCode: 200,
+			statusCode: http.StatusOK,
 			httpClient: func(t *testing.T) *http.Client {
 				internalImageURL := "https://prod-files-secure.s3.us-west-2.amazonaws.com/1f88cc90-92fd-4ce4-bfcd-25daec2ffbbe/5e659275-5b7b-4ed9-97a4-0316fccd1403/person.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20241010%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20241010T065327Z&X-Amz-Expires=3600&X-Amz-Signature=ea0420f025f133ac65ecc5b983c2b417900155936be42bd224130333e9c8eff2&X-Amz-SignedHeaders=host&x-id=GetObject"
 
@@ -677,7 +678,7 @@ URL: https://example.com
 		},
 		{
 			name:       "page with cover photo",
-			statusCode: 200,
+			statusCode: http.StatusOK,
 			notionRespBody: func(r *http.Request) io.Reader {
 				readFixture := func(path string) io.Reader {
 					f := mustReadFixture(path)
@@ -788,7 +789,7 @@ func TestFetchParseAndSavePage_DryRun(t *testing.T) {
 	}{
 		{
 			name:       "dry-run nested pages",
-			statusCode: 200,
+			statusCode: http.StatusOK,
 			respBody: func(r *http.Request) io.Reader {
 				readFixture := func(path string) io.Reader {
 					f := mustReadFixture(path)
@@ -876,219 +877,7 @@ func TestFetchParseAndSavePage_DryRun(t *testing.T) {
 	}
 }
 
-func TestWriteRichText_Annotations(t *testing.T) {
-	migrator := migrator{
-		notionClient: nil,
-		config:       &config.Config{},
-		cache:        nil,
-	}
-	ctx := context.Background()
-
-	tests := []struct {
-		name           string
-		notionRichText []notion.RichText
-	}{
-		{
-			"***[hello world](foobar)***",
-			[]notion.RichText{
-				{
-					Type: notion.RichTextTypeText,
-					Annotations: &notion.Annotations{
-						Bold:   true,
-						Italic: true,
-						Color:  notion.ColorDefault,
-					},
-					Text: &notion.Text{
-						Content: "hello world",
-						Link: &notion.Link{
-							URL: "foobar",
-						},
-					},
-				},
-			},
-		},
-		{
-			"`hello world`",
-			[]notion.RichText{
-				{
-					Type: notion.RichTextTypeText,
-					Annotations: &notion.Annotations{
-						Code:  true,
-						Color: notion.ColorDefault,
-					},
-					Text: &notion.Text{
-						Content: "hello world",
-						Link: &notion.Link{
-							URL: "foobar",
-						},
-					},
-				},
-			},
-		},
-		{
-			"***hello `world`***",
-			[]notion.RichText{
-				{
-					Type: notion.RichTextTypeText,
-					Annotations: &notion.Annotations{
-						Bold:   true,
-						Italic: true,
-						Color:  notion.ColorDefault,
-					},
-					Text: &notion.Text{
-						Content: "hello ",
-					},
-				},
-				{
-					Type: notion.RichTextTypeText,
-					Annotations: &notion.Annotations{
-						Bold:   true,
-						Italic: true,
-						Code:   true,
-						Color:  notion.ColorDefault,
-					},
-					Text: &notion.Text{
-						Content: "world",
-					},
-				},
-			},
-		},
-		{
-			"`hello world`",
-			[]notion.RichText{
-				{
-					Type: notion.RichTextTypeText,
-					Annotations: &notion.Annotations{
-						Code:  true,
-						Color: notion.ColorDefault,
-					},
-					Text: &notion.Text{
-						Content: "hello ",
-					},
-				},
-				{
-					Type: notion.RichTextTypeText,
-					Annotations: &notion.Annotations{
-						Code:  true,
-						Color: notion.ColorDefault,
-					},
-					Text: &notion.Text{
-						Content: "world",
-					},
-				},
-			},
-		},
-		{
-			"`hello world foo`",
-			[]notion.RichText{
-				{
-					Type: notion.RichTextTypeText,
-					Annotations: &notion.Annotations{
-						Code:  true,
-						Color: notion.ColorDefault,
-					},
-					Text: &notion.Text{
-						Content: "hello ",
-					},
-				},
-				{
-					Type: notion.RichTextTypeText,
-					Annotations: &notion.Annotations{
-						Code:  true,
-						Color: notion.ColorDefault,
-					},
-					Text: &notion.Text{
-						Content: "world ",
-					},
-				},
-				{
-					Type: notion.RichTextTypeText,
-					Annotations: &notion.Annotations{
-						Code:  true,
-						Color: notion.ColorDefault,
-					},
-					Text: &notion.Text{
-						Content: "foo",
-					},
-				},
-			},
-		},
-		{
-			"**hello **==world ==~~foo~~",
-			[]notion.RichText{
-				{
-					Type: notion.RichTextTypeText,
-					Annotations: &notion.Annotations{
-						Bold:  true,
-						Color: notion.ColorDefault,
-					},
-					Text: &notion.Text{
-						Content: "hello ",
-					},
-				},
-				{
-					Type: notion.RichTextTypeText,
-					Annotations: &notion.Annotations{
-						Color: notion.ColorBlue,
-					},
-					Text: &notion.Text{
-						Content: "world ",
-					},
-				},
-				{
-					Type: notion.RichTextTypeText,
-					Annotations: &notion.Annotations{
-						Color:         notion.ColorDefault,
-						Strikethrough: true,
-					},
-					Text: &notion.Text{
-						Content: "foo",
-					},
-				},
-			},
-		},
-		{
-			"**hello _world_**",
-			[]notion.RichText{
-				{
-					Type: notion.RichTextTypeText,
-					Annotations: &notion.Annotations{
-						Bold:  true,
-						Color: notion.ColorDefault,
-					},
-					Text: &notion.Text{
-						Content: "hello ",
-					},
-				},
-				{
-					Type: notion.RichTextTypeText,
-					Annotations: &notion.Annotations{
-						Italic: true,
-						Bold:   true,
-						Color:  notion.ColorDefault,
-					},
-					Text: &notion.Text{
-						Content: "world",
-					},
-				},
-			},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(*testing.T) {
-			parentPage := &Page{
-				buffer: &strings.Builder{},
-			}
-			err := migrator.writeRichText(ctx, parentPage, test.notionRichText)
-			require.NoError(t, err)
-
-			assert.Equal(t, test.name, parentPage.buffer.String())
-		})
-	}
-}
-
-func parseDateTime(value string) notion.DateTime {
+func mustParseNotionDateTime(value string) notion.DateTime {
 	dt, err := notion.ParseDateTime(value)
 	if err != nil {
 		panic(err)
@@ -1096,7 +885,7 @@ func parseDateTime(value string) notion.DateTime {
 	return dt
 }
 
-func parseTime(layout, value string) time.Time {
+func mustParseTime(layout, value string) time.Time {
 	t, err := time.Parse(layout, value)
 	if err != nil {
 		panic(err)
@@ -1163,7 +952,7 @@ func TestPageString(t *testing.T) {
 func TestFetchNotionDBPages_Pagination(t *testing.T) {
 	callCount := 0
 	httpClient := &http.Client{
-		Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+		Transport: &mockRoundtripper{fn: func(*http.Request) (*http.Response, error) {
 			callCount++
 			var respBody string
 
@@ -1197,8 +986,8 @@ func TestFetchNotionDBPages_Pagination(t *testing.T) {
 			}
 
 			return &http.Response{
-				StatusCode: 200,
-				Status:     http.StatusText(200),
+				StatusCode: http.StatusOK,
+				Status:     http.StatusText(http.StatusOK),
 				Body:       io.NopCloser(bytes.NewReader([]byte(respBody))),
 			}, nil
 		}},
@@ -1238,10 +1027,10 @@ func TestHandlePageParent(t *testing.T) {
 			parentType:   notion.ParentTypeWorkspace,
 			extractTitle: true,
 			childTitle:   "",
-			httpSetup: func(r *http.Request) (*http.Response, error) {
+			httpSetup: func(*http.Request) (*http.Response, error) {
 				return &http.Response{
-					StatusCode: 200,
-					Status:     http.StatusText(200),
+					StatusCode: http.StatusOK,
+					Status:     http.StatusText(http.StatusOK),
 					Body:       io.NopCloser(bytes.NewReader([]byte(`{}`))),
 				}, nil
 			},
@@ -1252,10 +1041,10 @@ func TestHandlePageParent(t *testing.T) {
 			parentType:   notion.ParentTypeWorkspace,
 			extractTitle: false,
 			childTitle:   "existing-title.md",
-			httpSetup: func(r *http.Request) (*http.Response, error) {
+			httpSetup: func(*http.Request) (*http.Response, error) {
 				return &http.Response{
-					StatusCode: 200,
-					Status:     http.StatusText(200),
+					StatusCode: http.StatusOK,
+					Status:     http.StatusText(http.StatusOK),
 					Body:       io.NopCloser(bytes.NewReader([]byte(`{}`))),
 				}, nil
 			},
@@ -1266,7 +1055,7 @@ func TestHandlePageParent(t *testing.T) {
 			parentType:   notion.ParentTypePage,
 			extractTitle: true,
 			childTitle:   "",
-			httpSetup: func(r *http.Request) (*http.Response, error) {
+			httpSetup: func(*http.Request) (*http.Response, error) {
 				respBody := `{
 					"object": "page",
 					"id": "parent-page-id",
@@ -1279,8 +1068,8 @@ func TestHandlePageParent(t *testing.T) {
 					}
 				}`
 				return &http.Response{
-					StatusCode: 200,
-					Status:     http.StatusText(200),
+					StatusCode: http.StatusOK,
+					Status:     http.StatusText(http.StatusOK),
 					Body:       io.NopCloser(bytes.NewReader([]byte(respBody))),
 				}, nil
 			},
@@ -1291,7 +1080,7 @@ func TestHandlePageParent(t *testing.T) {
 			parentType:   notion.ParentTypeBlock,
 			extractTitle: true,
 			childTitle:   "",
-			httpSetup: func(r *http.Request) (*http.Response, error) {
+			httpSetup: func(*http.Request) (*http.Response, error) {
 				respBody := `{
 					"object": "page",
 					"id": "parent-block-id",
@@ -1304,8 +1093,8 @@ func TestHandlePageParent(t *testing.T) {
 					}
 				}`
 				return &http.Response{
-					StatusCode: 200,
-					Status:     http.StatusText(200),
+					StatusCode: http.StatusOK,
+					Status:     http.StatusText(http.StatusOK),
 					Body:       io.NopCloser(bytes.NewReader([]byte(respBody))),
 				}, nil
 			},
@@ -1332,9 +1121,10 @@ func TestHandlePageParent(t *testing.T) {
 				Parent: notion.Parent{Type: test.parentType},
 			}
 
-			if test.parentType == notion.ParentTypePage {
+			switch test.parentType {
+			case notion.ParentTypePage:
 				mentionPage.Parent.PageID = "parent-page-id"
-			} else if test.parentType == notion.ParentTypeBlock {
+			case notion.ParentTypeBlock:
 				mentionPage.Parent.BlockID = "parent-block-id"
 			}
 
@@ -1354,11 +1144,11 @@ func TestHandlePageParent(t *testing.T) {
 func TestWritePage_WithImages(t *testing.T) {
 	imageDownloaded := false
 	httpClient := &http.Client{
-		Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+		Transport: &mockRoundtripper{fn: func(*http.Request) (*http.Response, error) {
 			imageDownloaded = true
 			return &http.Response{
-				StatusCode: 200,
-				Status:     http.StatusText(200),
+				StatusCode: http.StatusOK,
+				Status:     http.StatusText(http.StatusOK),
 				Body:       io.NopCloser(bytes.NewReader([]byte("fake-image-data"))),
 			}, nil
 		}},
@@ -1477,24 +1267,24 @@ func TestWritePagesToDisk(t *testing.T) {
 func TestFetchPage_Cached(t *testing.T) {
 	logger, _ := log.MockLogger()
 	cache := NewCache()
-	
+
 	cachedPage := &Page{
 		id:    "cached-page-id",
 		title: "Cached Page.md",
 		Path:  "Cached Page.md",
 	}
 	cache.Set("cached-page-id", cachedPage)
-	
+
 	m := &migrator{
 		config: &config.Config{},
 		logger: logger,
 		cache:  cache,
 	}
-	
+
 	parentPage := &Page{
 		buffer: &strings.Builder{},
 	}
-	
+
 	err := m.fetchPage(context.Background(), parentPage, "cached-page-id", "", parentPage.buffer, false)
 	require.NoError(t, err)
 	assert.Contains(t, parentPage.buffer.String(), "[[Cached Page.md]]")
@@ -1503,20 +1293,20 @@ func TestFetchPage_Cached(t *testing.T) {
 func TestFetchPage_Untitled(t *testing.T) {
 	logger, _ := log.MockLogger()
 	cache := NewCache()
-	
+
 	m := &migrator{
 		config: &config.Config{},
 		logger: logger,
 		cache:  cache,
 	}
-	
+
 	parentPage := &Page{
 		buffer: &strings.Builder{},
 	}
-	
+
 	err := m.fetchPage(context.Background(), parentPage, "untitled-page-id", "Untitled", parentPage.buffer, false)
 	require.NoError(t, err)
-	
+
 	// Check that untitled page was cached
 	cached, ok := cache.Get("untitled-page-id")
 	assert.True(t, ok)
@@ -1526,24 +1316,24 @@ func TestFetchPage_Untitled(t *testing.T) {
 func TestFetchPage_WithQuotes(t *testing.T) {
 	logger, _ := log.MockLogger()
 	cache := NewCache()
-	
+
 	cachedPage := &Page{
 		id:    "quoted-page-id",
 		title: "Quoted Page.md",
 		Path:  "Quoted Page.md",
 	}
 	cache.Set("quoted-page-id", cachedPage)
-	
+
 	m := &migrator{
 		config: &config.Config{},
 		logger: logger,
 		cache:  cache,
 	}
-	
+
 	parentPage := &Page{
 		buffer: &strings.Builder{},
 	}
-	
+
 	err := m.fetchPage(context.Background(), parentPage, "quoted-page-id", "", parentPage.buffer, true)
 	require.NoError(t, err)
 	assert.Contains(t, parentPage.buffer.String(), `"[[Quoted Page.md]]"`)
@@ -1560,7 +1350,7 @@ func TestExtractPageTitle_ErrorCases(t *testing.T) {
 		},
 		logger: logger,
 	}
-	
+
 	page := notion.Page{
 		Parent: notion.Parent{
 			Type: notion.ParentTypeDatabase,
@@ -1577,7 +1367,7 @@ func TestExtractPageTitle_ErrorCases(t *testing.T) {
 			},
 		},
 	}
-	
+
 	title := m.extractPageTitle(page)
 	assert.Equal(t, "Test Title.md", title)
 }
@@ -1585,35 +1375,35 @@ func TestExtractPageTitle_ErrorCases(t *testing.T) {
 func TestWritePage_WithChildPages(t *testing.T) {
 	tempDir := t.TempDir()
 	logger, _ := log.MockLogger()
-	
+
 	m := &migrator{
 		config: &config.Config{
 			VaultPath: tempDir,
 		},
 		logger: logger,
 	}
-	
+
 	childPage := &Page{
 		Path:   filepath.Join(tempDir, "child.md"),
 		buffer: &strings.Builder{},
 	}
 	childPage.buffer.WriteString("Child content")
-	
+
 	parentPage := &Page{
-		Path:   filepath.Join(tempDir, "parent.md"),
-		buffer: &strings.Builder{},
+		Path:     filepath.Join(tempDir, "parent.md"),
+		buffer:   &strings.Builder{},
 		children: []*Page{childPage},
 	}
 	parentPage.buffer.WriteString("Parent content")
-	
+
 	err := m.writePage(parentPage)
 	require.NoError(t, err)
-	
+
 	// Verify both files were created
 	parentContent, err := os.ReadFile(parentPage.Path)
 	require.NoError(t, err)
 	assert.Equal(t, "Parent content", string(parentContent))
-	
+
 	childContent, err := os.ReadFile(childPage.Path)
 	require.NoError(t, err)
 	assert.Equal(t, "Child content", string(childContent))
@@ -1621,18 +1411,18 @@ func TestWritePage_WithChildPages(t *testing.T) {
 
 func TestFetchNotionDBPages_Error(t *testing.T) {
 	httpClient := &http.Client{
-		Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+		Transport: &mockRoundtripper{fn: func(*http.Request) (*http.Response, error) {
 			return &http.Response{
-				StatusCode: 500,
-				Status:     http.StatusText(500),
+				StatusCode: http.StatusInternalServerError,
+				Status:     http.StatusText(http.StatusInternalServerError),
 				Body:       io.NopCloser(bytes.NewReader([]byte(`{"message": "Internal Server Error"}`))),
 			}, nil
 		}},
 	}
-	
+
 	notionClient := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
 	logger, _ := log.MockLogger()
-	
+
 	m := &migrator{
 		notionClient: notionClient,
 		config: &config.Config{
@@ -1640,25 +1430,25 @@ func TestFetchNotionDBPages_Error(t *testing.T) {
 		},
 		logger: logger,
 	}
-	
+
 	_, err := m.fetchNotionDBPages(context.Background())
 	assert.Error(t, err)
 }
 
 func TestHandlePageParent_DatabaseWithSameID(t *testing.T) {
 	httpClient := &http.Client{
-		Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+		Transport: &mockRoundtripper{fn: func(*http.Request) (*http.Response, error) {
 			return &http.Response{
-				StatusCode: 200,
-				Status:     http.StatusText(200),
+				StatusCode: http.StatusOK,
+				Status:     http.StatusText(http.StatusOK),
 				Body:       io.NopCloser(bytes.NewReader([]byte(`{}`))),
 			}, nil
 		}},
 	}
-	
+
 	notionClient := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
 	logger, _ := log.MockLogger()
-	
+
 	m := &migrator{
 		notionClient: notionClient,
 		config: &config.Config{
@@ -1666,14 +1456,14 @@ func TestHandlePageParent_DatabaseWithSameID(t *testing.T) {
 		},
 		logger: logger,
 	}
-	
+
 	mentionPage := notion.Page{
 		Parent: notion.Parent{
 			Type:       notion.ParentTypeDatabase,
 			DatabaseID: "same-db-id",
 		},
 	}
-	
+
 	result, err := m.handlePageParent(context.Background(), mentionPage, "Test.md", false)
 	require.NoError(t, err)
 	assert.Equal(t, "Test.md", result)
@@ -1681,23 +1471,23 @@ func TestHandlePageParent_DatabaseWithSameID(t *testing.T) {
 
 func TestHandlePageParent_DatabaseWithDifferentID(t *testing.T) {
 	httpClient := &http.Client{
-		Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+		Transport: &mockRoundtripper{fn: func(*http.Request) (*http.Response, error) {
 			respBody := `{
 				"object": "database",
 				"id": "different-db-id",
 				"title": [{"plain_text": "Other Database"}]
 			}`
 			return &http.Response{
-				StatusCode: 200,
-				Status:     http.StatusText(200),
+				StatusCode: http.StatusOK,
+				Status:     http.StatusText(http.StatusOK),
 				Body:       io.NopCloser(bytes.NewReader([]byte(respBody))),
 			}, nil
 		}},
 	}
-	
+
 	notionClient := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
 	logger, _ := log.MockLogger()
-	
+
 	m := &migrator{
 		notionClient: notionClient,
 		config: &config.Config{
@@ -1705,14 +1495,14 @@ func TestHandlePageParent_DatabaseWithDifferentID(t *testing.T) {
 		},
 		logger: logger,
 	}
-	
+
 	mentionPage := notion.Page{
 		Parent: notion.Parent{
 			Type:       notion.ParentTypeDatabase,
 			DatabaseID: "different-db-id",
 		},
 	}
-	
+
 	result, err := m.handlePageParent(context.Background(), mentionPage, "Test.md", false)
 	require.NoError(t, err)
 	assert.Equal(t, "Other Database/Test.md", result)
@@ -1724,14 +1514,14 @@ func TestExtractPageTitle_DatabaseWithInvalidProperties(t *testing.T) {
 		config: &config.Config{},
 		logger: logger,
 	}
-	
+
 	page := notion.Page{
 		Parent: notion.Parent{
 			Type: notion.ParentTypeDatabase,
 		},
 		Properties: "invalid",
 	}
-	
+
 	title := m.extractPageTitle(page)
 	assert.Equal(t, "untitled.md", title)
 }
@@ -1742,18 +1532,17 @@ func TestExtractPageTitle_PageWithInvalidProperties(t *testing.T) {
 		config: &config.Config{},
 		logger: logger,
 	}
-	
+
 	page := notion.Page{
 		Parent: notion.Parent{
 			Type: notion.ParentTypePage,
 		},
 		Properties: "invalid",
 	}
-	
+
 	title := m.extractPageTitle(page)
 	assert.Equal(t, "untitled.md", title)
 }
-
 
 func TestFetchPage_WorkingPage(t *testing.T) {
 	httpClient := &http.Client{
@@ -1771,8 +1560,8 @@ func TestFetchPage_WorkingPage(t *testing.T) {
 					}
 				}`
 				return &http.Response{
-					StatusCode: 200,
-					Status:     http.StatusText(200),
+					StatusCode: http.StatusOK,
+					Status:     http.StatusText(http.StatusOK),
 					Body:       io.NopCloser(bytes.NewReader([]byte(respBody))),
 				}, nil
 			}
@@ -1782,14 +1571,14 @@ func TestFetchPage_WorkingPage(t *testing.T) {
 					"has_more": false
 				}`
 				return &http.Response{
-					StatusCode: 200,
-					Status:     http.StatusText(200),
+					StatusCode: http.StatusOK,
+					Status:     http.StatusText(http.StatusOK),
 					Body:       io.NopCloser(bytes.NewReader([]byte(respBody))),
 				}, nil
 			}
 			return &http.Response{
-				StatusCode: 404,
-				Status:     http.StatusText(404),
+				StatusCode: http.StatusNotFound,
+				Status:     http.StatusText(http.StatusNotFound),
 				Body:       io.NopCloser(bytes.NewReader([]byte(`{}`))),
 			}, nil
 		}},
@@ -1820,7 +1609,7 @@ func TestFetchPage_WorkingPage(t *testing.T) {
 
 func TestFetchPage_IsWorking(t *testing.T) {
 	httpClient := &http.Client{
-		Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+		Transport: &mockRoundtripper{fn: func(*http.Request) (*http.Response, error) {
 			respBody := `{
 				"object": "page",
 				"id": "self-ref-page-id",
@@ -1833,8 +1622,8 @@ func TestFetchPage_IsWorking(t *testing.T) {
 				}
 			}`
 			return &http.Response{
-				StatusCode: 200,
-				Status:     http.StatusText(200),
+				StatusCode: http.StatusOK,
+				Status:     http.StatusText(http.StatusOK),
 				Body:       io.NopCloser(bytes.NewReader([]byte(respBody))),
 			}, nil
 		}},
@@ -1864,10 +1653,10 @@ func TestFetchPage_IsWorking(t *testing.T) {
 func TestDownloadImage_Success(t *testing.T) {
 	imageData := []byte("fake-image-content")
 	httpClient := &http.Client{
-		Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+		Transport: &mockRoundtripper{fn: func(*http.Request) (*http.Response, error) {
 			return &http.Response{
-				StatusCode: 200,
-				Status:     http.StatusText(200),
+				StatusCode: http.StatusOK,
+				Status:     http.StatusText(http.StatusOK),
 				Body:       io.NopCloser(bytes.NewReader(imageData)),
 			}, nil
 		}},
@@ -1896,8 +1685,8 @@ func TestDownloadImage_Success(t *testing.T) {
 
 func TestDownloadImage_HTTPError(t *testing.T) {
 	httpClient := &http.Client{
-		Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
-			return nil, fmt.Errorf("network error")
+		Transport: &mockRoundtripper{fn: func(*http.Request) (*http.Response, error) {
+			return nil, errors.New("network error")
 		}},
 	}
 
@@ -1966,7 +1755,7 @@ func TestWritePagesToDisk_Error(t *testing.T) {
 
 func TestFetchPages_WithCover(t *testing.T) {
 	httpClient := &http.Client{
-		Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+		Transport: &mockRoundtripper{fn: func(*http.Request) (*http.Response, error) {
 			respBody := `{
 				"object": "page",
 				"id": "page-with-cover",
@@ -1985,8 +1774,8 @@ func TestFetchPages_WithCover(t *testing.T) {
 				}
 			}`
 			return &http.Response{
-				StatusCode: 200,
-				Status:     http.StatusText(200),
+				StatusCode: http.StatusOK,
+				Status:     http.StatusText(http.StatusOK),
 				Body:       io.NopCloser(bytes.NewReader([]byte(respBody))),
 			}, nil
 		}},
@@ -2010,4 +1799,3 @@ func TestFetchPages_WithCover(t *testing.T) {
 	assert.NotNil(t, pages[0].coverPhoto)
 	assert.Equal(t, "https://example.com/cover.jpg", pages[0].coverPhoto.url)
 }
-

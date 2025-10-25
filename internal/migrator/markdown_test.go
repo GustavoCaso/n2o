@@ -287,6 +287,218 @@ func TestHasAnnotation(t *testing.T) {
 	}
 }
 
+func TestWriteRichText_Annotations(t *testing.T) {
+	migrator := migrator{
+		notionClient: nil,
+		config:       &config.Config{},
+		cache:        nil,
+	}
+	ctx := context.Background()
+
+	tests := []struct {
+		name           string
+		notionRichText []notion.RichText
+	}{
+		{
+			"***[hello world](foobar)***",
+			[]notion.RichText{
+				{
+					Type: notion.RichTextTypeText,
+					Annotations: &notion.Annotations{
+						Bold:   true,
+						Italic: true,
+						Color:  notion.ColorDefault,
+					},
+					Text: &notion.Text{
+						Content: "hello world",
+						Link: &notion.Link{
+							URL: "foobar",
+						},
+					},
+				},
+			},
+		},
+		{
+			"`hello world`",
+			[]notion.RichText{
+				{
+					Type: notion.RichTextTypeText,
+					Annotations: &notion.Annotations{
+						Code:  true,
+						Color: notion.ColorDefault,
+					},
+					Text: &notion.Text{
+						Content: "hello world",
+						Link: &notion.Link{
+							URL: "foobar",
+						},
+					},
+				},
+			},
+		},
+		{
+			"***hello `world`***",
+			[]notion.RichText{
+				{
+					Type: notion.RichTextTypeText,
+					Annotations: &notion.Annotations{
+						Bold:   true,
+						Italic: true,
+						Color:  notion.ColorDefault,
+					},
+					Text: &notion.Text{
+						Content: "hello ",
+					},
+				},
+				{
+					Type: notion.RichTextTypeText,
+					Annotations: &notion.Annotations{
+						Bold:   true,
+						Italic: true,
+						Code:   true,
+						Color:  notion.ColorDefault,
+					},
+					Text: &notion.Text{
+						Content: "world",
+					},
+				},
+			},
+		},
+		{
+			"`hello world`",
+			[]notion.RichText{
+				{
+					Type: notion.RichTextTypeText,
+					Annotations: &notion.Annotations{
+						Code:  true,
+						Color: notion.ColorDefault,
+					},
+					Text: &notion.Text{
+						Content: "hello ",
+					},
+				},
+				{
+					Type: notion.RichTextTypeText,
+					Annotations: &notion.Annotations{
+						Code:  true,
+						Color: notion.ColorDefault,
+					},
+					Text: &notion.Text{
+						Content: "world",
+					},
+				},
+			},
+		},
+		{
+			"`hello world foo`",
+			[]notion.RichText{
+				{
+					Type: notion.RichTextTypeText,
+					Annotations: &notion.Annotations{
+						Code:  true,
+						Color: notion.ColorDefault,
+					},
+					Text: &notion.Text{
+						Content: "hello ",
+					},
+				},
+				{
+					Type: notion.RichTextTypeText,
+					Annotations: &notion.Annotations{
+						Code:  true,
+						Color: notion.ColorDefault,
+					},
+					Text: &notion.Text{
+						Content: "world ",
+					},
+				},
+				{
+					Type: notion.RichTextTypeText,
+					Annotations: &notion.Annotations{
+						Code:  true,
+						Color: notion.ColorDefault,
+					},
+					Text: &notion.Text{
+						Content: "foo",
+					},
+				},
+			},
+		},
+		{
+			"**hello **==world ==~~foo~~",
+			[]notion.RichText{
+				{
+					Type: notion.RichTextTypeText,
+					Annotations: &notion.Annotations{
+						Bold:  true,
+						Color: notion.ColorDefault,
+					},
+					Text: &notion.Text{
+						Content: "hello ",
+					},
+				},
+				{
+					Type: notion.RichTextTypeText,
+					Annotations: &notion.Annotations{
+						Color: notion.ColorBlue,
+					},
+					Text: &notion.Text{
+						Content: "world ",
+					},
+				},
+				{
+					Type: notion.RichTextTypeText,
+					Annotations: &notion.Annotations{
+						Color:         notion.ColorDefault,
+						Strikethrough: true,
+					},
+					Text: &notion.Text{
+						Content: "foo",
+					},
+				},
+			},
+		},
+		{
+			"**hello _world_**",
+			[]notion.RichText{
+				{
+					Type: notion.RichTextTypeText,
+					Annotations: &notion.Annotations{
+						Bold:  true,
+						Color: notion.ColorDefault,
+					},
+					Text: &notion.Text{
+						Content: "hello ",
+					},
+				},
+				{
+					Type: notion.RichTextTypeText,
+					Annotations: &notion.Annotations{
+						Italic: true,
+						Bold:   true,
+						Color:  notion.ColorDefault,
+					},
+					Text: &notion.Text{
+						Content: "world",
+					},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(*testing.T) {
+			parentPage := &Page{
+				buffer: &strings.Builder{},
+			}
+			err := migrator.writeRichText(ctx, parentPage, test.notionRichText)
+			require.NoError(t, err)
+
+			assert.Equal(t, test.name, parentPage.buffer.String())
+		})
+	}
+}
+
 func TestReverseString(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -847,22 +1059,22 @@ func TestPageToMarkdown_VariousBlocks(t *testing.T) {
 
 func TestDebugLog(t *testing.T) {
 	tests := []struct {
-		name        string
-		debugMode   bool
-		message     string
-		shouldLog   bool
+		name      string
+		debugMode bool
+		message   string
+		shouldLog bool
 	}{
 		{
-			name:        "debug mode enabled",
-			debugMode:   true,
-			message:     "Debug message",
-			shouldLog:   true,
+			name:      "debug mode enabled",
+			debugMode: true,
+			message:   "Debug message",
+			shouldLog: true,
 		},
 		{
-			name:        "debug mode disabled",
-			debugMode:   false,
-			message:     "Debug message",
-			shouldLog:   false,
+			name:      "debug mode disabled",
+			debugMode: false,
+			message:   "Debug message",
+			shouldLog: false,
 		},
 	}
 
@@ -1449,11 +1661,11 @@ func TestPropertiesToFrontMatter_Formula(t *testing.T) {
 
 func TestPageToMarkdown_ColumnBlocks(t *testing.T) {
 	httpClient := &http.Client{
-		Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+		Transport: &mockRoundtripper{fn: func(*http.Request) (*http.Response, error) {
 			// Return empty children for column blocks
 			respBody := `{"results": [], "has_more": false}`
 			return &http.Response{
-				StatusCode: 200,
+				StatusCode: http.StatusOK,
 				Body:       io.NopCloser(bytes.NewReader([]byte(respBody))),
 			}, nil
 		}},
@@ -1745,12 +1957,4 @@ func TestWriteRichText_CodeWithLink(t *testing.T) {
 	require.NoError(t, err)
 	// When code annotation is present, the link should be ignored
 	assert.Equal(t, "`code`", parentPage.buffer.String())
-}
-
-func mustParseTime(layout, value string) time.Time {
-	t, err := time.Parse(layout, value)
-	if err != nil {
-		panic(err)
-	}
-	return t
 }
