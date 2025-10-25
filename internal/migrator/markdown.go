@@ -11,6 +11,55 @@ import (
 	"github.com/dstotijn/go-notion"
 )
 
+// writeIndent writes a string to the buffer with optional indentation
+func writeIndent(buffer *strings.Builder, indent bool, content string) {
+	if indent {
+		buffer.WriteString("\t")
+	}
+	buffer.WriteString(content)
+}
+
+// formatMarkdownImage formats an image/embed link with optional indentation
+func formatMarkdownImage(indent bool, url string) string {
+	if indent {
+		return fmt.Sprintf("\t![](%s)", url)
+	}
+	return fmt.Sprintf("![](%s)", url)
+}
+
+// formatObsidianImage formats an Obsidian internal image link with optional indentation
+func formatObsidianImage(indent bool, imagePath string) string {
+	if indent {
+		return fmt.Sprintf("\t![[%s]]", imagePath)
+	}
+	return fmt.Sprintf("![[%s]]", imagePath)
+}
+
+// formatFrontmatterValue safely formats a property value, handling nil pointers
+func formatFrontmatterValue(key string, value *string) string {
+	if value != nil {
+		return fmt.Sprintf("%s: %s\n", key, *value)
+	}
+	return fmt.Sprintf("%s: \n", key)
+}
+
+// formatFrontmatterNumber safely formats a number property, handling nil pointers
+func formatFrontmatterNumber(key string, value *float64) string {
+	if value != nil {
+		return fmt.Sprintf("%s: %f\n", key, *value)
+	}
+	return fmt.Sprintf("%s: \n", key)
+}
+
+// formatFrontmatterBool safely formats a boolean property, handling nil pointers
+func formatFrontmatterBool(key string, value *bool) string {
+	if value != nil {
+		return fmt.Sprintf("%s: %t\n", key, *value)
+	}
+	return fmt.Sprintf("%s: \n", key)
+}
+
+
 func (m *migrator) propertiesToFrontMatter(
 	ctx context.Context,
 	parentPage *Page,
@@ -31,11 +80,7 @@ func (m *migrator) propertiesToFrontMatter(
 		case notion.DBPropTypeRichText:
 			fmt.Fprintf(buffer, "%s: %s\n", key, extractPlainTextFromRichText(value.RichText))
 		case notion.DBPropTypeNumber:
-			if value.Number != nil {
-				fmt.Fprintf(buffer, "%s: %f\n", key, *value.Number)
-			} else {
-				fmt.Fprintf(buffer, "%s: \n", key)
-			}
+			buffer.WriteString(formatFrontmatterNumber(key, value.Number))
 		case notion.DBPropTypeSelect:
 			if value.Select != nil {
 				fmt.Fprintf(buffer, "%s: %s\n", key, value.Select.Name)
@@ -58,29 +103,13 @@ func (m *migrator) propertiesToFrontMatter(
 		case notion.DBPropTypePeople:
 		case notion.DBPropTypeFiles:
 		case notion.DBPropTypeCheckbox:
-			if value.Checkbox != nil {
-				fmt.Fprintf(buffer, "%s: %t\n", key, *value.Checkbox)
-			} else {
-				fmt.Fprintf(buffer, "%s: \n", key)
-			}
+			buffer.WriteString(formatFrontmatterBool(key, value.Checkbox))
 		case notion.DBPropTypeURL:
-			if value.URL != nil {
-				fmt.Fprintf(buffer, "%s: %s\n", key, *value.URL)
-			} else {
-				fmt.Fprintf(buffer, "%s: \n", key)
-			}
+			buffer.WriteString(formatFrontmatterValue(key, value.URL))
 		case notion.DBPropTypeEmail:
-			if value.Email != nil {
-				fmt.Fprintf(buffer, "%s: %s\n", key, *value.Email)
-			} else {
-				fmt.Fprintf(buffer, "%s: \n", key)
-			}
+			buffer.WriteString(formatFrontmatterValue(key, value.Email))
 		case notion.DBPropTypePhoneNumber:
-			if value.PhoneNumber != nil {
-				fmt.Fprintf(buffer, "%s: %s\n", key, *value.PhoneNumber)
-			} else {
-				fmt.Fprintf(buffer, "%s: \n", key)
-			}
+			buffer.WriteString(formatFrontmatterValue(key, value.PhoneNumber))
 		case notion.DBPropTypeStatus:
 			fmt.Fprintf(buffer, "%s: %s\n", key, value.Status.Name)
 		case notion.DBPropTypeFormula:
@@ -107,11 +136,7 @@ func (m *migrator) propertiesToFrontMatter(
 		case notion.DBPropTypeRollup:
 			switch value.Rollup.Type {
 			case notion.RollupResultTypeNumber:
-				if value.Rollup.Number != nil {
-					fmt.Fprintf(buffer, "%s: %f\n", key, *value.Rollup.Number)
-				} else {
-					fmt.Fprintf(buffer, "%s: \n", key)
-				}
+				buffer.WriteString(formatFrontmatterNumber(key, value.Rollup.Number))
 			case notion.RollupResultTypeDate:
 				if value.Rollup.Date.Start.HasTime() {
 					fmt.Fprintf(buffer, "%s: %s\n", key, value.Rollup.Date.Start.Format("2006-01-02T15:04:05"))
@@ -311,20 +336,12 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			}
 		case *notion.FileBlock:
 			if block.Type == notion.FileTypeExternal {
-				if indent {
-					fmt.Fprintf(buffer, "	![](%s)", block.External.URL)
-				} else {
-					fmt.Fprintf(buffer, "![](%s)", block.External.URL)
-				}
+				buffer.WriteString(formatMarkdownImage(indent, block.External.URL))
 			}
 			buffer.WriteString("\n")
 		case *notion.PDFBlock:
 			if block.Type == notion.FileTypeExternal {
-				if indent {
-					fmt.Fprintf(buffer, "	![](%s)", block.External.URL)
-				} else {
-					fmt.Fprintf(buffer, "![](%s)", block.External.URL)
-				}
+				buffer.WriteString(formatMarkdownImage(indent, block.External.URL))
 				buffer.WriteString("\n")
 			} else if m.config.StoreImages {
 				imageName := filepath.Join(parentPage.title, block.ID()+".pdf")
@@ -335,11 +352,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 					name:     imageName,
 				})
 
-				if indent {
-					fmt.Fprintf(buffer, "	![[%s]]", filepath.Join("Images", imageName))
-				} else {
-					fmt.Fprintf(buffer, "![[%s]]", filepath.Join("Images", imageName))
-				}
+				buffer.WriteString(formatObsidianImage(indent, filepath.Join("Images", imageName)))
 				buffer.WriteString("\n")
 			}
 		case *notion.DividerBlock:
@@ -359,11 +372,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			}
 			buffer.WriteString("\n")
 		case *notion.LinkPreviewBlock:
-			if indent {
-				fmt.Fprintf(buffer, "	![](%s)", block.URL)
-			} else {
-				fmt.Fprintf(buffer, "![](%s)", block.URL)
-			}
+			buffer.WriteString(formatMarkdownImage(indent, block.URL))
 			buffer.WriteString("\n")
 		case *notion.CodeBlock:
 			buffer.WriteString("```")
@@ -377,11 +386,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			buffer.WriteString("\n")
 		case *notion.ImageBlock:
 			if block.Type == notion.FileTypeExternal {
-				if indent {
-					fmt.Fprintf(buffer, "	![](%s)", block.External.URL)
-				} else {
-					fmt.Fprintf(buffer, "![](%s)", block.External.URL)
-				}
+				buffer.WriteString(formatMarkdownImage(indent, block.External.URL))
 				buffer.WriteString("\n")
 			}
 			if block.Type == notion.FileTypeFile && m.config.StoreImages {
@@ -393,35 +398,19 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 					name:     imageName,
 				})
 
-				if indent {
-					fmt.Fprintf(buffer, "	![[%s]]", filepath.Join("Images", imageName))
-				} else {
-					fmt.Fprintf(buffer, "![[%s]]", filepath.Join("Images", imageName))
-				}
+				buffer.WriteString(formatObsidianImage(indent, filepath.Join("Images", imageName)))
 				buffer.WriteString("\n")
 			}
 		case *notion.VideoBlock:
 			if block.Type == notion.FileTypeExternal {
-				if indent {
-					fmt.Fprintf(buffer, "	![](%s)", block.External.URL)
-				} else {
-					fmt.Fprintf(buffer, "![](%s)", block.External.URL)
-				}
+				buffer.WriteString(formatMarkdownImage(indent, block.External.URL))
 			}
 			buffer.WriteString("\n")
 		case *notion.EmbedBlock:
-			if indent {
-				fmt.Fprintf(buffer, "	![](%s)", block.URL)
-			} else {
-				fmt.Fprintf(buffer, "![](%s)", block.URL)
-			}
+			buffer.WriteString(formatMarkdownImage(indent, block.URL))
 			buffer.WriteString("\n")
 		case *notion.BookmarkBlock:
-			if indent {
-				fmt.Fprintf(buffer, "	![](%s)", block.URL)
-			} else {
-				fmt.Fprintf(buffer, "![](%s)", block.URL)
-			}
+			buffer.WriteString(formatMarkdownImage(indent, block.URL))
 			buffer.WriteString("\n")
 		case *notion.ChildDatabaseBlock:
 			m.logger.Warn(fmt.Sprintf("Child database `%s` found on page `%s`. You might want to migrate that database separately", block.Title, m.removeObsidianVault(parentPage.Path)))
