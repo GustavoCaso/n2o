@@ -63,3 +63,13 @@ func TestWorkerPool(t *testing.T) {
 	assert.Contains(t, result, "50% |████████████████████                    |  [0s:0s]")
 	assert.Contains(t, result, "100% |████████████████████████████████████████|")
 }
+
+func TestWithProgressBar(t *testing.T) {
+	option := WithProgressBar()
+	assert.NotNil(t, option)
+
+	// Test that it implements the Option interface
+	option.OnCreate("test description")
+	option.OnAdd(10)
+	option.OnDone()
+}

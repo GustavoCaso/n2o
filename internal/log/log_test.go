@@ -49,3 +49,14 @@ func TestError(t *testing.T) {
 
 	os.Stderr = originalStderr
 }
+
+func TestDebug(t *testing.T) {
+	logger, buffer := MockLogger()
+
+	logger.Debug("Testing")
+	bytes, err := io.ReadAll(buffer)
+	require.NoError(t, err)
+	result := string(bytes)
+	assert.Contains(t, result, "[DEBUG]")
+	assert.Contains(t, result, "Testing")
+}
