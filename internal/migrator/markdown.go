@@ -11,7 +11,7 @@ import (
 	"github.com/dstotijn/go-notion"
 )
 
-// writeIndent writes a string to the buffer with optional indentation
+// writeIndent writes a string to the buffer with optional indentation.
 func writeIndent(buffer *strings.Builder, indent bool, content string) {
 	if indent {
 		buffer.WriteString("\t")
@@ -19,7 +19,7 @@ func writeIndent(buffer *strings.Builder, indent bool, content string) {
 	buffer.WriteString(content)
 }
 
-// formatMarkdownImage formats an image/embed link with optional indentation
+// formatMarkdownImage formats an image/embed link with optional indentation.
 func formatMarkdownImage(indent bool, url string) string {
 	if indent {
 		return fmt.Sprintf("\t![](%s)", url)
@@ -27,7 +27,7 @@ func formatMarkdownImage(indent bool, url string) string {
 	return fmt.Sprintf("![](%s)", url)
 }
 
-// formatObsidianImage formats an Obsidian internal image link with optional indentation
+// formatObsidianImage formats an Obsidian internal image link with optional indentation.
 func formatObsidianImage(indent bool, imagePath string) string {
 	if indent {
 		return fmt.Sprintf("\t![[%s]]", imagePath)
@@ -35,7 +35,7 @@ func formatObsidianImage(indent bool, imagePath string) string {
 	return fmt.Sprintf("![[%s]]", imagePath)
 }
 
-// formatFrontmatterValue safely formats a property value, handling nil pointers
+// formatFrontmatterValue safely formats a property value, handling nil pointers.
 func formatFrontmatterValue(key string, value *string) string {
 	if value != nil {
 		return fmt.Sprintf("%s: %s\n", key, *value)
@@ -43,7 +43,7 @@ func formatFrontmatterValue(key string, value *string) string {
 	return fmt.Sprintf("%s: \n", key)
 }
 
-// formatFrontmatterNumber safely formats a number property, handling nil pointers
+// formatFrontmatterNumber safely formats a number property, handling nil pointers.
 func formatFrontmatterNumber(key string, value *float64) string {
 	if value != nil {
 		return fmt.Sprintf("%s: %f\n", key, *value)
@@ -51,14 +51,13 @@ func formatFrontmatterNumber(key string, value *float64) string {
 	return fmt.Sprintf("%s: \n", key)
 }
 
-// formatFrontmatterBool safely formats a boolean property, handling nil pointers
+// formatFrontmatterBool safely formats a boolean property, handling nil pointers.
 func formatFrontmatterBool(key string, value *bool) string {
 	if value != nil {
 		return fmt.Sprintf("%s: %t\n", key, *value)
 	}
 	return fmt.Sprintf("%s: \n", key)
 }
-
 
 func (m *migrator) propertiesToFrontMatter(
 	ctx context.Context,
@@ -192,11 +191,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 	for _, object := range blocks {
 		switch block := object.(type) {
 		case *notion.Heading1Block:
-			if indent {
-				buffer.WriteString("	# ")
-			} else {
-				buffer.WriteString("# ")
-			}
+			writeIndent(buffer, indent, "# ")
 			if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
 				return err
 			}
@@ -205,11 +200,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 				return err
 			}
 		case *notion.Heading2Block:
-			if indent {
-				buffer.WriteString("	## ")
-			} else {
-				buffer.WriteString("## ")
-			}
+			writeIndent(buffer, indent, "## ")
 			if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
 				return err
 			}
@@ -218,11 +209,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 				return err
 			}
 		case *notion.Heading3Block:
-			if indent {
-				buffer.WriteString("	### ")
-			} else {
-				buffer.WriteString("### ")
-			}
+			writeIndent(buffer, indent, "### ")
 			if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
 				return err
 			}
@@ -231,19 +218,13 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 				return err
 			}
 		case *notion.ToDoBlock:
-			if indent {
-				if *block.Checked {
-					buffer.WriteString("	- [x] ")
-				} else {
-					buffer.WriteString("	- [ ] ")
-				}
+			var content string
+			if *block.Checked {
+				content = "- [x] "
 			} else {
-				if *block.Checked {
-					buffer.WriteString("- [x] ")
-				} else {
-					buffer.WriteString("- [ ] ")
-				}
+				content = "- [ ] "
 			}
+			writeIndent(buffer, indent, content)
 			if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
 				return err
 			}
@@ -255,13 +236,9 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			if len(block.RichText) > 0 {
 				if indent {
 					buffer.WriteString("	")
-					if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
-						return err
-					}
-				} else {
-					if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
-						return err
-					}
+				}
+				if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
+					return err
 				}
 			}
 			buffer.WriteString("\n")
@@ -269,11 +246,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 				return err
 			}
 		case *notion.BulletedListItemBlock:
-			if indent {
-				buffer.WriteString("	- ")
-			} else {
-				buffer.WriteString("- ")
-			}
+			writeIndent(buffer, indent, "- ")
 			if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
 				return err
 			}
@@ -282,11 +255,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 				return err
 			}
 		case *notion.NumberedListItemBlock:
-			if indent {
-				buffer.WriteString("	- ")
-			} else {
-				buffer.WriteString("- ")
-			}
+			writeIndent(buffer, indent, "- ")
 			if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
 				return err
 			}
@@ -295,11 +264,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 				return err
 			}
 		case *notion.CalloutBlock:
-			if indent {
-				buffer.WriteString("	> [!")
-			} else {
-				buffer.WriteString("> [!")
-			}
+			writeIndent(buffer, indent, "> [!")
 			if len(*block.Icon.Emoji) > 0 {
 				buffer.WriteString(*block.Icon.Emoji)
 			}
@@ -309,11 +274,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			buffer.WriteString("]")
 			buffer.WriteString("\n")
 		case *notion.ToggleBlock:
-			if indent {
-				buffer.WriteString("	- ")
-			} else {
-				buffer.WriteString("- ")
-			}
+			writeIndent(buffer, indent, "- ")
 			if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
 				return err
 			}
@@ -322,11 +283,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 				return err
 			}
 		case *notion.QuoteBlock:
-			if indent {
-				buffer.WriteString("	> ")
-			} else {
-				buffer.WriteString("> ")
-			}
+			writeIndent(buffer, indent, "> ")
 			if err = m.writeRichText(ctx, parentPage, block.RichText); err != nil {
 				return err
 			}
@@ -359,11 +316,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			buffer.WriteString("---")
 			buffer.WriteString("\n")
 		case *notion.ChildPageBlock:
-			if indent {
-				fmt.Fprintf(buffer, " [[%s]]", block.Title)
-			} else {
-				fmt.Fprintf(buffer, "[[%s]]", block.Title)
-			}
+			writeIndent(buffer, indent, fmt.Sprintf("[[%s]]", block.Title))
 			buffer.WriteString("\n")
 		case *notion.LinkToPageBlock:
 			err := m.fetchPage(ctx, parentPage, block.PageID, "", buffer, false)
@@ -414,12 +367,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 			buffer.WriteString("\n")
 		case *notion.ChildDatabaseBlock:
 			m.logger.Warn(fmt.Sprintf("Child database `%s` found on page `%s`. You might want to migrate that database separately", block.Title, m.removeObsidianVault(parentPage.Path)))
-
-			if indent {
-				fmt.Fprintf(buffer, "	%s", block.Title)
-			} else {
-				buffer.WriteString(block.Title)
-			}
+			writeIndent(buffer, indent, block.Title)
 			buffer.WriteString("\n")
 		case *notion.ColumnListBlock:
 			if err = m.writeChrildren(ctx, parentPage, object); err != nil {
@@ -434,11 +382,7 @@ func (m *migrator) pageToMarkdown(ctx context.Context, parentPage *Page, blocks 
 				return err
 			}
 		case *notion.EquationBlock:
-			if indent {
-				fmt.Fprintf(buffer, " $$%s$$", block.Expression)
-			} else {
-				fmt.Fprintf(buffer, "$$%s$$", block.Expression)
-			}
+			writeIndent(buffer, indent, fmt.Sprintf("$$%s$$", block.Expression))
 			buffer.WriteString("\n")
 		case *notion.TableOfContentsBlock:
 		case *notion.BreadcrumbBlock:
