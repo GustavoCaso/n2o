@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/GustavoCaso/n2o/internal/config"
 	"github.com/GustavoCaso/n2o/internal/log"
@@ -64,12 +65,22 @@ type migrator struct {
 func NewMigrator(config *config.Config, cache *Cache, logger log.Log) Migrator {
 	notionClient := notion.NewClient(config.Token)
 
+	// Configure HTTP client with reasonable timeouts
+	httpClient := &http.Client{
+		Timeout: 30 * time.Second,
+		Transport: &http.Transport{
+			IdleConnTimeout:       90 * time.Second,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ResponseHeaderTimeout: 10 * time.Second,
+		},
+	}
+
 	return &migrator{
 		notionClient: notionClient,
 		config:       config,
 		cache:        cache,
 		logger:       logger,
-		httpClient:   http.DefaultClient,
+		httpClient:   httpClient,
 	}
 }
 
@@ -117,7 +128,7 @@ func (m *migrator) FetchPages(ctx context.Context) ([]*Page, error) {
 
 		return pages, nil
 	}
-	notionPage, err := m.notionClient.FindPageByID(context.Background(), m.config.PageID)
+	notionPage, err := m.notionClient.FindPageByID(ctx, m.config.PageID)
 	if err != nil {
 		return []*Page{}, fmt.Errorf(
 			"failed to find the page %s make sure the page exists in your Notioin workspace. error: %s",
@@ -152,7 +163,7 @@ func (m *migrator) FetchPages(ctx context.Context) ([]*Page, error) {
 }
 
 func (m *migrator) extractPageTitle(page notion.Page) string {
-	var str string
+	var builder strings.Builder
 
 	switch page.Parent.Type {
 	case notion.ParentTypeDatabase:
@@ -185,12 +196,12 @@ func (m *migrator) extractPageTitle(page notion.Page) string {
 				case notion.DBPropTypeDate:
 					date := value.Date.Start
 					if val != "" {
-						str += timefmt.Format(date.Time, val)
+						builder.WriteString(timefmt.Format(date.Time, val))
 					} else {
-						str += date.Time.String()
+						builder.WriteString(date.Time.String())
 					}
 				case notion.DBPropTypeTitle:
-					str += extractPlainTextFromRichText(value.Title)
+					builder.WriteString(extractPlainTextFromRichText(value.Title))
 				default:
 					m.logger.Info(fmt.Sprintf("type: `%s` for extracting page title not supported\n", value.Type))
 				}
@@ -198,8 +209,8 @@ func (m *migrator) extractPageTitle(page notion.Page) string {
 		}
 
 		// In the case we did not find any element to create the page title, we default to the title property
-		if str == "" {
-			str = extractPlainTextFromRichText(titleProperty.Title)
+		if builder.Len() == 0 {
+			builder.WriteString(extractPlainTextFromRichText(titleProperty.Title))
 		}
 	case notion.ParentTypeWorkspace:
 		fallthrough
@@ -211,11 +222,10 @@ func (m *migrator) extractPageTitle(page notion.Page) string {
 			m.logger.Error(fmt.Sprintf("expected PageProperties, got %T", page.Properties))
 			return "untitled.md"
 		}
-		str = extractPlainTextFromRichText(properties.Title.Title)
+		builder.WriteString(extractPlainTextFromRichText(properties.Title.Title))
 	}
 
-	fileName := fmt.Sprintf("%s.md", str)
-	return fileName
+	return fmt.Sprintf("%s.md", builder.String())
 }
 
 func (m *migrator) FetchParseAndSavePage(ctx context.Context, page *Page, pageProperties map[string]bool) error {
@@ -326,7 +336,7 @@ func (m *migrator) writePage(page *Page) error {
 		return fmt.Errorf("failed to create the necessary directories in for the Obsidian vault.  error: %w", err)
 	}
 
-	f, err := os.Create(page.Path)
+	f, err := os.OpenFile(page.Path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to create the markdown file %s. error: %w", path.Base(page.Path), err)
 	}
@@ -342,8 +352,10 @@ func (m *migrator) writePage(page *Page) error {
 
 	if m.config.StoreImages {
 		for _, image := range page.images {
-			err := m.downloadImage(image.name, image.url)
-			return err
+			if err := m.downloadImage(image.name, image.url); err != nil {
+				m.logger.Error(fmt.Sprintf("failed to download image %s: %v", image.name, err))
+				// Continue processing other images even if one fails
+			}
 		}
 	}
 
@@ -587,7 +599,7 @@ func (m *migrator) downloadImage(name, url string) error {
 	}
 	defer response.Body.Close()
 
-	file, err := os.Create(imageLocation)
+	file, err := os.OpenFile(imageLocation, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}

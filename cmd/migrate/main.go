@@ -146,9 +146,12 @@ func main() {
 	// blocking operation
 	pool.DoWork(ctx)
 
-	migratorLogs, _ := io.ReadAll(buf)
-
-	fmt.Fprint(os.Stdout, string(migratorLogs))
+	migratorLogs, err := io.ReadAll(buf)
+	if err != nil {
+		logger.Error(fmt.Sprintf("failed to read migrator logs: %v\n", err))
+	} else {
+		fmt.Fprint(os.Stdout, string(migratorLogs))
+	}
 
 	if config.SaveToDisk {
 		logger.Info("Saving pages to the Obsidian vault")
