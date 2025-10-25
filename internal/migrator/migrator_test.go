@@ -1125,3 +1125,889 @@ func captureStdout(f func() error) (string, error) {
 	out, _ := io.ReadAll(r)
 	return string(out), err
 }
+
+func TestNewMigrator(t *testing.T) {
+	cfg := &config.Config{
+		Token:     "test-token",
+		VaultPath: "/tmp/vault",
+	}
+	cache := NewCache()
+	logger, _ := log.MockLogger()
+
+	migrator := NewMigrator(cfg, cache, logger)
+
+	assert.NotNil(t, migrator)
+}
+
+func TestPageString(t *testing.T) {
+	parentPage := &Page{
+		Path:     "parent.md",
+		title:    "parent.md",
+		children: []*Page{},
+	}
+
+	childPage := &Page{
+		Path:     "child.md",
+		title:    "child.md",
+		parent:   parentPage,
+		children: []*Page{},
+	}
+
+	parentPage.children = append(parentPage.children, childPage)
+
+	result := parentPage.String()
+	assert.Contains(t, result, "parent.md")
+	assert.Contains(t, result, "child.md")
+}
+
+func TestFetchNotionDBPages_Pagination(t *testing.T) {
+	callCount := 0
+	httpClient := &http.Client{
+		Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+			callCount++
+			var respBody string
+
+			if callCount == 1 {
+				// First page with has_more = true
+				respBody = `{
+					"results": [
+						{
+							"object": "page",
+							"id": "page1",
+							"parent": {"type": "database_id", "database_id": "db1"},
+							"properties": {}
+						}
+					],
+					"has_more": true,
+					"next_cursor": "cursor123"
+				}`
+			} else {
+				// Second page with has_more = false
+				respBody = `{
+					"results": [
+						{
+							"object": "page",
+							"id": "page2",
+							"parent": {"type": "database_id", "database_id": "db1"},
+							"properties": {}
+						}
+					],
+					"has_more": false
+				}`
+			}
+
+			return &http.Response{
+				StatusCode: 200,
+				Status:     http.StatusText(200),
+				Body:       io.NopCloser(bytes.NewReader([]byte(respBody))),
+			}, nil
+		}},
+	}
+
+	notionClient := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+	logger, _ := log.MockLogger()
+
+	m := &migrator{
+		notionClient: notionClient,
+		config: &config.Config{
+			DatabaseID: "db1",
+		},
+		logger: logger,
+	}
+
+	ctx := context.Background()
+	pages, err := m.fetchNotionDBPages(ctx)
+
+	require.NoError(t, err)
+	assert.Len(t, pages, 2)
+	assert.Equal(t, 2, callCount, "Should have made 2 API calls for pagination")
+}
+
+func TestHandlePageParent(t *testing.T) {
+	tests := []struct {
+		name         string
+		parentType   notion.ParentType
+		extractTitle bool
+		childTitle   string
+		httpSetup    func(*http.Request) (*http.Response, error)
+		expected     string
+		hasError     bool
+	}{
+		{
+			name:         "workspace parent with title extraction",
+			parentType:   notion.ParentTypeWorkspace,
+			extractTitle: true,
+			childTitle:   "",
+			httpSetup: func(r *http.Request) (*http.Response, error) {
+				return &http.Response{
+					StatusCode: 200,
+					Status:     http.StatusText(200),
+					Body:       io.NopCloser(bytes.NewReader([]byte(`{}`))),
+				}, nil
+			},
+			expected: "untitled.md",
+		},
+		{
+			name:         "workspace parent without title extraction",
+			parentType:   notion.ParentTypeWorkspace,
+			extractTitle: false,
+			childTitle:   "existing-title.md",
+			httpSetup: func(r *http.Request) (*http.Response, error) {
+				return &http.Response{
+					StatusCode: 200,
+					Status:     http.StatusText(200),
+					Body:       io.NopCloser(bytes.NewReader([]byte(`{}`))),
+				}, nil
+			},
+			expected: "existing-title.md",
+		},
+		{
+			name:         "page parent",
+			parentType:   notion.ParentTypePage,
+			extractTitle: true,
+			childTitle:   "",
+			httpSetup: func(r *http.Request) (*http.Response, error) {
+				respBody := `{
+					"object": "page",
+					"id": "parent-page-id",
+					"parent": {"type": "workspace"},
+					"properties": {
+						"title": {
+							"type": "title",
+							"title": [{"plain_text": "Parent Page"}]
+						}
+					}
+				}`
+				return &http.Response{
+					StatusCode: 200,
+					Status:     http.StatusText(200),
+					Body:       io.NopCloser(bytes.NewReader([]byte(respBody))),
+				}, nil
+			},
+			expected: "Parent Page.md",
+		},
+		{
+			name:         "block parent",
+			parentType:   notion.ParentTypeBlock,
+			extractTitle: true,
+			childTitle:   "",
+			httpSetup: func(r *http.Request) (*http.Response, error) {
+				respBody := `{
+					"object": "page",
+					"id": "parent-block-id",
+					"parent": {"type": "workspace"},
+					"properties": {
+						"title": {
+							"type": "title",
+							"title": [{"plain_text": "Block Parent"}]
+						}
+					}
+				}`
+				return &http.Response{
+					StatusCode: 200,
+					Status:     http.StatusText(200),
+					Body:       io.NopCloser(bytes.NewReader([]byte(respBody))),
+				}, nil
+			},
+			expected: "Block Parent.md",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			httpClient := &http.Client{
+				Transport: &mockRoundtripper{fn: test.httpSetup},
+			}
+
+			notionClient := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+			logger, _ := log.MockLogger()
+
+			m := &migrator{
+				notionClient: notionClient,
+				config:       &config.Config{},
+				logger:       logger,
+			}
+
+			mentionPage := notion.Page{
+				Parent: notion.Parent{Type: test.parentType},
+			}
+
+			if test.parentType == notion.ParentTypePage {
+				mentionPage.Parent.PageID = "parent-page-id"
+			} else if test.parentType == notion.ParentTypeBlock {
+				mentionPage.Parent.BlockID = "parent-block-id"
+			}
+
+			ctx := context.Background()
+			result, err := m.handlePageParent(ctx, mentionPage, test.childTitle, test.extractTitle)
+
+			if test.hasError {
+				assert.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, test.expected, result)
+			}
+		})
+	}
+}
+
+func TestWritePage_WithImages(t *testing.T) {
+	imageDownloaded := false
+	httpClient := &http.Client{
+		Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+			imageDownloaded = true
+			return &http.Response{
+				StatusCode: 200,
+				Status:     http.StatusText(200),
+				Body:       io.NopCloser(bytes.NewReader([]byte("fake-image-data"))),
+			}, nil
+		}},
+	}
+
+	tempDir := t.TempDir()
+	logger, _ := log.MockLogger()
+
+	m := &migrator{
+		config: &config.Config{
+			VaultPath:   tempDir,
+			StoreImages: true,
+		},
+		logger:     logger,
+		httpClient: httpClient,
+	}
+
+	page := &Page{
+		Path:   filepath.Join(tempDir, "test.md"),
+		buffer: &strings.Builder{},
+		images: []*image{
+			{
+				external: false,
+				url:      "https://example.com/image.png",
+				name:     "test-image.png",
+			},
+		},
+	}
+	page.buffer.WriteString("# Test Content")
+
+	err := m.writePage(page)
+	require.NoError(t, err)
+
+	// Verify file was created
+	content, err := os.ReadFile(page.Path)
+	require.NoError(t, err)
+	assert.Equal(t, "# Test Content", string(content))
+
+	// Verify image was downloaded
+	assert.True(t, imageDownloaded, "Image should have been downloaded")
+}
+
+func TestDisplayInformation(t *testing.T) {
+	logger, _ := log.MockLogger()
+
+	tempDir := t.TempDir()
+
+	m := &migrator{
+		config: &config.Config{
+			VaultPath: tempDir,
+		},
+		logger: logger,
+		pages: []*Page{
+			{
+				Path:  filepath.Join(tempDir, "page1.md"),
+				title: "page1.md",
+				children: []*Page{
+					{
+						Path:  filepath.Join(tempDir, "nested", "page2.md"),
+						title: "page2.md",
+					},
+				},
+			},
+		},
+	}
+
+	ctx := context.Background()
+	output, err := captureStdout(func() error {
+		return m.DisplayInformation(ctx)
+	})
+
+	require.NoError(t, err)
+	assert.Contains(t, output, "page1.md")
+	assert.Contains(t, output, "page2.md")
+	assert.Contains(t, output, "|->")
+}
+
+func TestWritePagesToDisk(t *testing.T) {
+	tempDir := t.TempDir()
+	logger, _ := log.MockLogger()
+
+	m := &migrator{
+		config: &config.Config{
+			VaultPath: tempDir,
+		},
+		logger: logger,
+		pages: []*Page{
+			{
+				Path:   filepath.Join(tempDir, "test1.md"),
+				buffer: &strings.Builder{},
+			},
+			{
+				Path:   filepath.Join(tempDir, "subdir", "test2.md"),
+				buffer: &strings.Builder{},
+			},
+		},
+	}
+
+	m.pages[0].buffer.WriteString("Content 1")
+	m.pages[1].buffer.WriteString("Content 2")
+
+	ctx := context.Background()
+	err := m.WritePagesToDisk(ctx)
+	require.NoError(t, err)
+
+	// Verify files were created
+	content1, err := os.ReadFile(m.pages[0].Path)
+	require.NoError(t, err)
+	assert.Equal(t, "Content 1", string(content1))
+
+	content2, err := os.ReadFile(m.pages[1].Path)
+	require.NoError(t, err)
+	assert.Equal(t, "Content 2", string(content2))
+}
+
+func TestFetchPage_Cached(t *testing.T) {
+	logger, _ := log.MockLogger()
+	cache := NewCache()
+	
+	cachedPage := &Page{
+		id:    "cached-page-id",
+		title: "Cached Page.md",
+		Path:  "Cached Page.md",
+	}
+	cache.Set("cached-page-id", cachedPage)
+	
+	m := &migrator{
+		config: &config.Config{},
+		logger: logger,
+		cache:  cache,
+	}
+	
+	parentPage := &Page{
+		buffer: &strings.Builder{},
+	}
+	
+	err := m.fetchPage(context.Background(), parentPage, "cached-page-id", "", parentPage.buffer, false)
+	require.NoError(t, err)
+	assert.Contains(t, parentPage.buffer.String(), "[[Cached Page.md]]")
+}
+
+func TestFetchPage_Untitled(t *testing.T) {
+	logger, _ := log.MockLogger()
+	cache := NewCache()
+	
+	m := &migrator{
+		config: &config.Config{},
+		logger: logger,
+		cache:  cache,
+	}
+	
+	parentPage := &Page{
+		buffer: &strings.Builder{},
+	}
+	
+	err := m.fetchPage(context.Background(), parentPage, "untitled-page-id", "Untitled", parentPage.buffer, false)
+	require.NoError(t, err)
+	
+	// Check that untitled page was cached
+	cached, ok := cache.Get("untitled-page-id")
+	assert.True(t, ok)
+	assert.Equal(t, "Untitled", cached.title)
+}
+
+func TestFetchPage_WithQuotes(t *testing.T) {
+	logger, _ := log.MockLogger()
+	cache := NewCache()
+	
+	cachedPage := &Page{
+		id:    "quoted-page-id",
+		title: "Quoted Page.md",
+		Path:  "Quoted Page.md",
+	}
+	cache.Set("quoted-page-id", cachedPage)
+	
+	m := &migrator{
+		config: &config.Config{},
+		logger: logger,
+		cache:  cache,
+	}
+	
+	parentPage := &Page{
+		buffer: &strings.Builder{},
+	}
+	
+	err := m.fetchPage(context.Background(), parentPage, "quoted-page-id", "", parentPage.buffer, true)
+	require.NoError(t, err)
+	assert.Contains(t, parentPage.buffer.String(), `"[[Quoted Page.md]]"`)
+}
+
+func TestExtractPageTitle_ErrorCases(t *testing.T) {
+	logger, _ := log.MockLogger()
+	m := &migrator{
+		config: &config.Config{
+			DatabaseID: "test-db",
+			PageNameFilters: map[string]string{
+				"unsupported": "",
+			},
+		},
+		logger: logger,
+	}
+	
+	page := notion.Page{
+		Parent: notion.Parent{
+			Type: notion.ParentTypeDatabase,
+		},
+		Properties: notion.DatabasePageProperties{
+			"Title": notion.DatabasePageProperty{
+				Type: notion.DBPropTypeTitle,
+				Title: []notion.RichText{
+					{PlainText: "Test Title"},
+				},
+			},
+			"Unsupported": notion.DatabasePageProperty{
+				Type: notion.DBPropTypeFiles,
+			},
+		},
+	}
+	
+	title := m.extractPageTitle(page)
+	assert.Equal(t, "Test Title.md", title)
+}
+
+func TestWritePage_WithChildPages(t *testing.T) {
+	tempDir := t.TempDir()
+	logger, _ := log.MockLogger()
+	
+	m := &migrator{
+		config: &config.Config{
+			VaultPath: tempDir,
+		},
+		logger: logger,
+	}
+	
+	childPage := &Page{
+		Path:   filepath.Join(tempDir, "child.md"),
+		buffer: &strings.Builder{},
+	}
+	childPage.buffer.WriteString("Child content")
+	
+	parentPage := &Page{
+		Path:   filepath.Join(tempDir, "parent.md"),
+		buffer: &strings.Builder{},
+		children: []*Page{childPage},
+	}
+	parentPage.buffer.WriteString("Parent content")
+	
+	err := m.writePage(parentPage)
+	require.NoError(t, err)
+	
+	// Verify both files were created
+	parentContent, err := os.ReadFile(parentPage.Path)
+	require.NoError(t, err)
+	assert.Equal(t, "Parent content", string(parentContent))
+	
+	childContent, err := os.ReadFile(childPage.Path)
+	require.NoError(t, err)
+	assert.Equal(t, "Child content", string(childContent))
+}
+
+func TestFetchNotionDBPages_Error(t *testing.T) {
+	httpClient := &http.Client{
+		Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: 500,
+				Status:     http.StatusText(500),
+				Body:       io.NopCloser(bytes.NewReader([]byte(`{"message": "Internal Server Error"}`))),
+			}, nil
+		}},
+	}
+	
+	notionClient := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+	logger, _ := log.MockLogger()
+	
+	m := &migrator{
+		notionClient: notionClient,
+		config: &config.Config{
+			DatabaseID: "test-db",
+		},
+		logger: logger,
+	}
+	
+	_, err := m.fetchNotionDBPages(context.Background())
+	assert.Error(t, err)
+}
+
+func TestHandlePageParent_DatabaseWithSameID(t *testing.T) {
+	httpClient := &http.Client{
+		Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: 200,
+				Status:     http.StatusText(200),
+				Body:       io.NopCloser(bytes.NewReader([]byte(`{}`))),
+			}, nil
+		}},
+	}
+	
+	notionClient := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+	logger, _ := log.MockLogger()
+	
+	m := &migrator{
+		notionClient: notionClient,
+		config: &config.Config{
+			DatabaseID: "same-db-id",
+		},
+		logger: logger,
+	}
+	
+	mentionPage := notion.Page{
+		Parent: notion.Parent{
+			Type:       notion.ParentTypeDatabase,
+			DatabaseID: "same-db-id",
+		},
+	}
+	
+	result, err := m.handlePageParent(context.Background(), mentionPage, "Test.md", false)
+	require.NoError(t, err)
+	assert.Equal(t, "Test.md", result)
+}
+
+func TestHandlePageParent_DatabaseWithDifferentID(t *testing.T) {
+	httpClient := &http.Client{
+		Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+			respBody := `{
+				"object": "database",
+				"id": "different-db-id",
+				"title": [{"plain_text": "Other Database"}]
+			}`
+			return &http.Response{
+				StatusCode: 200,
+				Status:     http.StatusText(200),
+				Body:       io.NopCloser(bytes.NewReader([]byte(respBody))),
+			}, nil
+		}},
+	}
+	
+	notionClient := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+	logger, _ := log.MockLogger()
+	
+	m := &migrator{
+		notionClient: notionClient,
+		config: &config.Config{
+			DatabaseID: "original-db-id",
+		},
+		logger: logger,
+	}
+	
+	mentionPage := notion.Page{
+		Parent: notion.Parent{
+			Type:       notion.ParentTypeDatabase,
+			DatabaseID: "different-db-id",
+		},
+	}
+	
+	result, err := m.handlePageParent(context.Background(), mentionPage, "Test.md", false)
+	require.NoError(t, err)
+	assert.Equal(t, "Other Database/Test.md", result)
+}
+
+func TestExtractPageTitle_DatabaseWithInvalidProperties(t *testing.T) {
+	logger, _ := log.MockLogger()
+	m := &migrator{
+		config: &config.Config{},
+		logger: logger,
+	}
+	
+	page := notion.Page{
+		Parent: notion.Parent{
+			Type: notion.ParentTypeDatabase,
+		},
+		Properties: "invalid",
+	}
+	
+	title := m.extractPageTitle(page)
+	assert.Equal(t, "untitled.md", title)
+}
+
+func TestExtractPageTitle_PageWithInvalidProperties(t *testing.T) {
+	logger, _ := log.MockLogger()
+	m := &migrator{
+		config: &config.Config{},
+		logger: logger,
+	}
+	
+	page := notion.Page{
+		Parent: notion.Parent{
+			Type: notion.ParentTypePage,
+		},
+		Properties: "invalid",
+	}
+	
+	title := m.extractPageTitle(page)
+	assert.Equal(t, "untitled.md", title)
+}
+
+
+func TestFetchPage_WorkingPage(t *testing.T) {
+	httpClient := &http.Client{
+		Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+			if strings.Contains(r.URL.String(), "/pages/") {
+				respBody := `{
+					"object": "page",
+					"id": "working-page-id",
+					"parent": {"type": "workspace"},
+					"properties": {
+						"title": {
+							"type": "title",
+							"title": [{"plain_text": "Working Page"}]
+						}
+					}
+				}`
+				return &http.Response{
+					StatusCode: 200,
+					Status:     http.StatusText(200),
+					Body:       io.NopCloser(bytes.NewReader([]byte(respBody))),
+				}, nil
+			}
+			if strings.Contains(r.URL.String(), "/blocks/") {
+				respBody := `{
+					"results": [],
+					"has_more": false
+				}`
+				return &http.Response{
+					StatusCode: 200,
+					Status:     http.StatusText(200),
+					Body:       io.NopCloser(bytes.NewReader([]byte(respBody))),
+				}, nil
+			}
+			return &http.Response{
+				StatusCode: 404,
+				Status:     http.StatusText(404),
+				Body:       io.NopCloser(bytes.NewReader([]byte(`{}`))),
+			}, nil
+		}},
+	}
+
+	notionClient := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+	logger, _ := log.MockLogger()
+	cache := NewCache()
+
+	m := &migrator{
+		notionClient: notionClient,
+		config: &config.Config{
+			PagePropertiesToMigrate: map[string]bool{},
+		},
+		logger: logger,
+		cache:  cache,
+	}
+
+	parentPage := &Page{
+		buffer: &strings.Builder{},
+	}
+
+	err := m.fetchPage(context.Background(), parentPage, "working-page-id", "", parentPage.buffer, false)
+	require.NoError(t, err)
+	assert.Contains(t, parentPage.buffer.String(), "[[Working Page.md]]")
+	assert.Len(t, parentPage.children, 1)
+}
+
+func TestFetchPage_IsWorking(t *testing.T) {
+	httpClient := &http.Client{
+		Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+			respBody := `{
+				"object": "page",
+				"id": "self-ref-page-id",
+				"parent": {"type": "workspace"},
+				"properties": {
+					"title": {
+						"type": "title",
+						"title": [{"plain_text": "Self Ref Page"}]
+					}
+				}
+			}`
+			return &http.Response{
+				StatusCode: 200,
+				Status:     http.StatusText(200),
+				Body:       io.NopCloser(bytes.NewReader([]byte(respBody))),
+			}, nil
+		}},
+	}
+
+	notionClient := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+	logger, _ := log.MockLogger()
+	cache := NewCache()
+	cache.Mark("self-ref-page-id")
+
+	m := &migrator{
+		notionClient: notionClient,
+		config:       &config.Config{},
+		logger:       logger,
+		cache:        cache,
+	}
+
+	parentPage := &Page{
+		buffer: &strings.Builder{},
+	}
+
+	err := m.fetchPage(context.Background(), parentPage, "self-ref-page-id", "", parentPage.buffer, false)
+	require.NoError(t, err)
+	assert.Contains(t, parentPage.buffer.String(), "[[Self Ref Page.md]]")
+}
+
+func TestDownloadImage_Success(t *testing.T) {
+	imageData := []byte("fake-image-content")
+	httpClient := &http.Client{
+		Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: 200,
+				Status:     http.StatusText(200),
+				Body:       io.NopCloser(bytes.NewReader(imageData)),
+			}, nil
+		}},
+	}
+
+	tempDir := t.TempDir()
+	logger, _ := log.MockLogger()
+
+	m := &migrator{
+		config: &config.Config{
+			VaultPath: tempDir,
+		},
+		logger:     logger,
+		httpClient: httpClient,
+	}
+
+	err := m.downloadImage("test.png", "https://example.com/image.png")
+	require.NoError(t, err)
+
+	// Verify image was downloaded
+	imagePath := filepath.Join(tempDir, "Images", "test.png")
+	content, err := os.ReadFile(imagePath)
+	require.NoError(t, err)
+	assert.Equal(t, imageData, content)
+}
+
+func TestDownloadImage_HTTPError(t *testing.T) {
+	httpClient := &http.Client{
+		Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+			return nil, fmt.Errorf("network error")
+		}},
+	}
+
+	tempDir := t.TempDir()
+	logger, _ := log.MockLogger()
+
+	m := &migrator{
+		config: &config.Config{
+			VaultPath: tempDir,
+		},
+		logger:     logger,
+		httpClient: httpClient,
+	}
+
+	err := m.downloadImage("test.png", "https://example.com/image.png")
+	assert.Error(t, err)
+}
+
+func TestDisplayInformation_Error(t *testing.T) {
+	logger, _ := log.MockLogger()
+
+	m := &migrator{
+		config: &config.Config{
+			VaultPath: "/nonexistent",
+		},
+		logger: logger,
+		pages:  []*Page{},
+	}
+
+	ctx := context.Background()
+	err := m.DisplayInformation(ctx)
+	require.NoError(t, err)
+}
+
+func TestWritePagesToDisk_Error(t *testing.T) {
+	logger, _ := log.MockLogger()
+
+	// Create a temp directory
+	tmpDir := t.TempDir()
+
+	// Create a file where we need a directory to exist
+	blockingFile := filepath.Join(tmpDir, "blockingfile")
+	err := os.WriteFile(blockingFile, []byte("blocking"), 0644)
+	require.NoError(t, err)
+
+	m := &migrator{
+		config: &config.Config{
+			VaultPath: tmpDir,
+		},
+		logger: logger,
+		pages: []*Page{
+			{
+				// Try to create a file under what should be a directory, but is actually a file
+				Path:   filepath.Join(blockingFile, "test.md"),
+				buffer: &strings.Builder{},
+			},
+		},
+	}
+
+	m.pages[0].buffer.WriteString("Content")
+
+	ctx := context.Background()
+	err = m.WritePagesToDisk(ctx)
+	assert.Error(t, err)
+}
+
+func TestFetchPages_WithCover(t *testing.T) {
+	httpClient := &http.Client{
+		Transport: &mockRoundtripper{fn: func(r *http.Request) (*http.Response, error) {
+			respBody := `{
+				"object": "page",
+				"id": "page-with-cover",
+				"parent": {"type": "page_id", "page_id": "parent-page"},
+				"properties": {
+					"title": {
+						"type": "title",
+						"title": [{"plain_text": "Page With Cover"}]
+					}
+				},
+				"cover": {
+					"type": "external",
+					"external": {
+						"url": "https://example.com/cover.jpg"
+					}
+				}
+			}`
+			return &http.Response{
+				StatusCode: 200,
+				Status:     http.StatusText(200),
+				Body:       io.NopCloser(bytes.NewReader([]byte(respBody))),
+			}, nil
+		}},
+	}
+
+	notionClient := notion.NewClient("secret-api-key", notion.WithHTTPClient(httpClient))
+	logger, _ := log.MockLogger()
+
+	m := &migrator{
+		notionClient: notionClient,
+		config: &config.Config{
+			PageID: "page-with-cover",
+		},
+		logger: logger,
+	}
+
+	ctx := context.Background()
+	pages, err := m.FetchPages(ctx)
+	require.NoError(t, err)
+	assert.Len(t, pages, 1)
+	assert.NotNil(t, pages[0].coverPhoto)
+	assert.Equal(t, "https://example.com/cover.jpg", pages[0].coverPhoto.url)
+}
+
